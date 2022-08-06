@@ -1,11 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using SSC.Tools;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SSC.Data.Models
 {
     [Index(propertyNames: nameof(OrderNumber), IsUnique = true)]
-    public class Test
+    public class Test : ICSV
     {
         [Key]
         public Guid Id { get; set; }
@@ -46,5 +47,15 @@ namespace SSC.Data.Models
 
         [ForeignKey("Place")]
         public Guid? PlaceId { get; set; }
+
+        public string Header()
+        {
+            return "TestDate;Result;Place";
+        }
+
+        public string ToCSV()
+        {
+            return $"{TestDate};{Result};{Place?.Name}";
+        }
     }
 }

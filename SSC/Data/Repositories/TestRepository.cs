@@ -22,7 +22,7 @@ namespace SSC.Data.Repositories
                 return DbResult<Test>.CreateFail("Test has already been added");
             }
 
-            if (GetPatient(test.PatientId.Value) == null)
+            if (await GetPatient(test.PatientId.Value) == null)
             {
                 return DbResult<Test>.CreateFail("Patient does not exist");
             }
@@ -38,17 +38,28 @@ namespace SSC.Data.Repositories
                 Place = await context.Places.FirstOrDefaultAsync(x => x.Id == test.Place),
             };
 
-            var treatmentsList = await context.Treatments.Where(x => x.PatientId == test.PatientId).ToListAsync();
-            Treatment treatment = treatmentsList.FirstOrDefault(x => x.EndDate == null);
+            var treatment = await treatmentRepository.TreatmentLasts(test.PatientId.Value);
            
-            if (treatment != null)
+            if (treatment == null)
             {
-                //new treatment
+                var newTreatment = new TreatmentViewModel
+                {
+                    StartDate = DateTime.Now,
+                    PatientId = test.PatientId.Value,
+                    TreatmentStatusName = "Rozpoczęto"
+                };
+                var info = await treatmentRepository.AddTreatment(newTreatment, id);
+                treatment = info.Data;
             }
-            else
+            newTest.TreatmentId = treatment.Id;
+            switch(newTest.Result)
             {
-                newTest.Treatment = treatment;
-                newTest.TreatmentId = treatment.Id;
+                case 'P':
+                    treatment.IsCovid = true;
+                    break;
+                case 'N':
+                    treatment.IsCovid = false;
+                    break;
             }
             await context.AddAsync(newTest);
             await context.SaveChangesAsync();

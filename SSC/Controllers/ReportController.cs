@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using OfficeOpenXml;
 using SSC.Data.Models;
 using SSC.Data.Repositories;
+using SSC.Tools;
 
 namespace SSC.Controllers
 {
@@ -20,11 +22,43 @@ namespace SSC.Controllers
             this.treatmentRepository = treatmentRepository;
         }
 
-        [HttpGet("tests/{category}/{provinceId}/{dateFrom}/{dateTo}")]
-        public async Task<IActionResult> GetTestsReport(string category, Guid provinceId, DateTime dateFrom, DateTime dateTo)
+        private byte[] CreateExcel(List<Test> tests)
+        {
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+            using (ExcelPackage package = new ExcelPackage())
+            {
+                package.Workbook.Worksheets.Add("results");
+                ExcelWorksheet ws = package.Workbook.Worksheets[0];
+                string[] columns = { "TestDate", "Result", "Place" };
+                for(int i = 1; i <= columns.Length; i++)
+                {
+                    ws.Cells[1, i].Value = columns[i - 1];
+                }
+                for(int i = 0; i < tests.Count; i++)
+                {
+                    ws.Cells[i + 2, 1].Value = tests[i].TestDate;
+                    ws.Cells[i + 2, 2].Value = tests[i].Result;
+                    ws.Cells[i + 2, 3].Value = tests[i].Place.Name;
+                }
+                return package.GetAsByteArray();
+            }    
+        }
+
+        [HttpGet("tests/{category}/{provinceId}/{dateFrom}/{dateTo}/")]
+        [HttpGet("tests/{category}/{provinceId}/{dateFrom}/{dateTo}/{type}")]
+        public async Task<IActionResult> GetTestsReport(string category, Guid provinceId, DateTime dateFrom, DateTime dateTo, string? type)
         {
             var tests = await testRepository.GetTests(provinceId, dateFrom, dateTo);
-            if(tests.Count() == 0)
+            if(type == "xlsx")
+            {
+                return File(CreateExcel(tests), "application/xlsx", "results.xlsx");
+            }
+            else if(type == "csv")
+            {
+                return File(System.Text.Encoding.UTF8.GetBytes(ICSV.CreateCSV(tests.Cast<ICSV>().ToList())), "application/csv", "results.csv");
+            }
+
+            if (tests.Count() == 0)
             {
                 return NotFound();
             }

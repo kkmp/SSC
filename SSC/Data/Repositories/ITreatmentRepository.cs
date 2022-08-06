@@ -8,7 +8,6 @@ namespace SSC.Data.Repositories
 
         Task<List<Treatment>> GetTreatments(Guid provinceId, DateTime dateFrom, DateTime dateTo);
         Task<DbResult<Treatment>> AddTreatment(TreatmentViewModel treatment, Guid id);
-        Task<Treatment> TreatmentLasts(); //zwraca treatment nieskończony (z nullem)
-                                          //gdy nie zwróci znaczy, że wszystkie skończone i można dodać nowy
+        Task<Treatment> TreatmentLasts(Guid patientId);
     }
 }

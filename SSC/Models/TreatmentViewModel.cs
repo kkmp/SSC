@@ -15,6 +15,6 @@ namespace SSC.Models
         public Guid? PatientId { get; set; }
 
         [Required]
-        public string? TreatmentStatus { get; set; }
+        public string? TreatmentStatusName { get; set; }
     }
 }
