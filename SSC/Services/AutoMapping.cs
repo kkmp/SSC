@@ -11,7 +11,8 @@ namespace SSC.Services
         {
             CreateMap<Patient, PatientDTO>();
             CreateMap<TreatmentViewModel, Treatment>();
-                //.ForMember(x => x.BirthDate, x => x.MapFrom(y => y.City.Name));
+            //.ForMember(x => x.BirthDate, x => x.MapFrom(y => y.City.Name));
+            CreateMap<TestEditViewModel, Test>();
         }
     }
 }

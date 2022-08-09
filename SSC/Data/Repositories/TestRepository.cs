@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using SSC.Data.Models;
 using SSC.Models;
 
@@ -8,11 +9,13 @@ namespace SSC.Data.Repositories
     {
         private readonly DataContext context;
         private readonly ITreatmentRepository treatmentRepository;
+        private readonly IMapper mapper;
 
-        public TestRepository(DataContext context, ITreatmentRepository treatmentRepository)
+        public TestRepository(DataContext context, ITreatmentRepository treatmentRepository, IMapper mapper)
         {
             this.context = context;
             this.treatmentRepository = treatmentRepository;
+            this.mapper = mapper;
         }
 
         public async Task<DbResult<Test>> AddTest(TestViewModel test, Guid id)
@@ -76,8 +79,72 @@ namespace SSC.Data.Repositories
                 .ToListAsync();
         }
 
-        private async Task<Test> GetTest(string orderNumber) => await context.Tests.FirstOrDefaultAsync(x => x.OrderNumber == orderNumber);
+        private async Task<Test> GetTest(string orderNumber) => await context.Tests.AsNoTracking().FirstOrDefaultAsync(x => x.OrderNumber == orderNumber);
         private async Task<Patient> GetPatient(Guid patientId) => await context.Patients.FirstOrDefaultAsync(x => x.Id == patientId);
 
+        public async Task<DbResult<Test>> EditTest(TestEditViewModel test, Guid id) //dużo tych warunków, może jakoś ładniej? + no tracking
+        {
+            var testToCheck = await GetTest(test.OrderNumber);
+
+            if (testToCheck == null)
+            {
+                return DbResult<Test>.CreateFail("Test does not exist");
+            }
+
+            if (testToCheck.UserId != id)
+            {
+                return DbResult<Test>.CreateFail("Only the user who added the test can edit");
+            }
+
+            var treatment = await context.Treatments.FirstOrDefaultAsync(x => x.Id == testToCheck.TreatmentId);
+            if (treatment.EndDate != null)
+            {
+                return DbResult<Test>.CreateFail("The test cannot be edited anymore - the treatment has been ended");
+            }
+
+            if (test.TestDate < testToCheck.TestDate || test.ResultDate < testToCheck.TestDate)
+            {
+                return DbResult<Test>.CreateFail("The test date and result date cannot be earlier than the treatment start date");
+            }
+
+            if (test.TestDate > test.ResultDate)
+            {
+                return DbResult<Test>.CreateFail("The test result date cannot be earlier than the test date");
+            }
+
+            var newTest = mapper.Map<Test>(test);
+            newTest.TestType = await context.TestTypes.FirstOrDefaultAsync(x => x.Name == test.TestTypeName);
+            newTest.TreatmentId = testToCheck.TreatmentId;
+            newTest.UserId = testToCheck.UserId;
+
+            context.Update(newTest);
+            await context.SaveChangesAsync();
+            return DbResult<Test>.CreateSuccess("Test has been edited", newTest);
+        }
+
+        public async Task<List<Test>> ShowTests(Guid patientId)
+        {
+            if (await GetPatient(patientId) == null)
+            {
+                return null; //co zrobić gdy pacjent nie istnieje?
+            }
+
+            return await context.Tests
+                .Include(x => x.Treatment)
+                .Include(x => x.TestType)
+                .Include(x => x.Place)
+                .Where(x => x.Treatment.PatientId == patientId)
+                .ToListAsync();
+        }
+
+        public async Task<Test> TestDetails(Guid testId)
+        {
+            return await context.Tests
+                .Include(x => x.TestType)
+                .Include(x => x.Treatment)
+                .Include(x => x.Place)
+                .Include(x => x.User.Role)
+                .FirstOrDefaultAsync(x => x.Id == testId);
+        }
     }
 }
