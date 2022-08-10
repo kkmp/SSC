@@ -10,6 +10,8 @@ namespace SSC.Data.Models
 
         public DateTime? Date { get; set; }
 
+        [Required]
+        [MinLength(3)]
         [MaxLength(255)]
         public string? Description { get; set; }
 

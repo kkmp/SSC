@@ -14,6 +14,7 @@ namespace SSC.Services
             //.ForMember(x => x.BirthDate, x => x.MapFrom(y => y.City.Name));
             CreateMap<TestEditViewModel, Test>();
             CreateMap<MedicalHistoryViewModel, MedicalHistory>();
+            CreateMap<TreatmentDiseaseCoursesViewModel, TreatmentDiseaseCourse>();
         }
     }
 }

@@ -46,6 +46,14 @@ namespace SSC.Data.Repositories
               .ToListAsync();
         }
 
+        public async Task<List<Treatment>> ShowTreatments(Guid patientId)
+        {
+            return await context.Treatments
+                .Include(x => x.User.Role)
+                .Include(x => x.TreatmentStatus)
+                .Where(x => x.PatientId == patientId).ToListAsync();
+        }
+
         public async Task<Treatment> TreatmentLasts(Guid patientId)
         {
             return await context.Treatments
