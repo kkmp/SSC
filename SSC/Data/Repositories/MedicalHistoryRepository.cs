@@ -65,5 +65,12 @@ namespace SSC.Data.Repositories
             await context.SaveChangesAsync();
             return DbResult<MedicalHistory>.CreateSuccess("Medical history has been edited", medicalHistoryUpdate);
         }
+
+        public async Task<List<MedicalHistory>> ShowMedicalHistories(Guid patientId)
+        {
+            return await context.MedicalHistories
+                .Include(x => x.User.Role)
+                .Where(x => x.PatientId == patientId).ToListAsync();
+        }
     }
 }

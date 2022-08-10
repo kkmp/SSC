@@ -58,5 +58,24 @@ namespace SSC.Controllers
             }
             return BadRequest(new { message = "Invalid data" });
         }
+
+        [HttpGet("showMedicalHistories")]
+        public async Task<IActionResult> ShowMedicalHistories(IdViewModel patientId)
+        {
+            if (ModelState.IsValid)
+            {
+                var result = await medicalHistoryRepository.ShowMedicalHistories(patientId.Id);
+                //select się może popsuć gdy null
+                return Ok(result.Select(x => new
+                {
+                    x.Date,
+                    x.Description,
+                    UserName = x.User.Name,
+                    UserSurname = x.User.Surname,
+                    UserRole = x.User.Role.Name,
+                }));
+            }
+            return BadRequest(new { message = "Invalid data" });
+        }
     }
 }
