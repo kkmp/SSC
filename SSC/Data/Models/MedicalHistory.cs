@@ -9,7 +9,7 @@ namespace SSC.Data.Models
         public Guid Id { get; set; }
 
         [Required]
-        public string? Date { get; set; }
+        public DateTime? Date { get; set; }
 
         [Required]
         [MaxLength(255)]

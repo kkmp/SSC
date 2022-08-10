@@ -13,6 +13,7 @@ namespace SSC.Services
             CreateMap<TreatmentViewModel, Treatment>();
             //.ForMember(x => x.BirthDate, x => x.MapFrom(y => y.City.Name));
             CreateMap<TestEditViewModel, Test>();
+            CreateMap<MedicalHistoryViewModel, MedicalHistory>();
         }
     }
 }

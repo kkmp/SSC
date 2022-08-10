@@ -79,9 +79,6 @@ namespace SSC.Data.Repositories
                 .ToListAsync();
         }
 
-        private async Task<Test> GetTest(string orderNumber) => await context.Tests.AsNoTracking().FirstOrDefaultAsync(x => x.OrderNumber == orderNumber);
-        private async Task<Patient> GetPatient(Guid patientId) => await context.Patients.FirstOrDefaultAsync(x => x.Id == patientId);
-
         public async Task<DbResult<Test>> EditTest(TestEditViewModel test, Guid id) //dużo tych warunków, może jakoś ładniej? + no tracking
         {
             var testToCheck = await GetTest(test.OrderNumber);
@@ -146,5 +143,8 @@ namespace SSC.Data.Repositories
                 .Include(x => x.User.Role)
                 .FirstOrDefaultAsync(x => x.Id == testId);
         }
+
+        private async Task<Test> GetTest(string orderNumber) => await context.Tests.AsNoTracking().FirstOrDefaultAsync(x => x.OrderNumber == orderNumber);
+        private async Task<Patient> GetPatient(Guid patientId) => await context.Patients.FirstOrDefaultAsync(x => x.Id == patientId);
     }
 }

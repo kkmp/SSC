@@ -14,12 +14,19 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultMySQL")
 
 builder.Services.AddDbContext<DataContext>(options =>
   options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 22))));
+
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IPatientRepository, PatientRepository>();
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddScoped<ITestRepository, TestRepository>();
 builder.Services.AddScoped<ITreatmentDiseaseCoursesRepository, TreatmentDiseaseCoursesRepository>();
 builder.Services.AddScoped<ITreatmentRepository, TreatmentRepository>();
+builder.Services.AddScoped<IMedicalHistoryRepository, MedicalHistoryRepository>();
+
+int MedicalHistoryRepository()
+{
+    throw new NotImplementedException();
+}
 
 builder.Services.AddAutoMapper(typeof(AutoMapping));
 
