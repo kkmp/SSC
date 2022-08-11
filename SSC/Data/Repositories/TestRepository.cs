@@ -82,6 +82,8 @@ namespace SSC.Data.Repositories
         public async Task<DbResult<Test>> EditTest(TestEditViewModel test, Guid id) //dużo tych warunków, może jakoś ładniej? + no tracking
         {
             var testToCheck = await GetTest(test.OrderNumber);
+            var treatment = await context.Treatments.FirstOrDefaultAsync(x => x.Id == testToCheck.TreatmentId);
+
 
             if (testToCheck == null)
             {
@@ -93,7 +95,7 @@ namespace SSC.Data.Repositories
                 return DbResult<Test>.CreateFail("Only the user who added the test can edit");
             }
 
-            var treatment = await context.Treatments.FirstOrDefaultAsync(x => x.Id == testToCheck.TreatmentId);
+            
             if (treatment.EndDate != null)
             {
                 return DbResult<Test>.CreateFail("The test cannot be edited anymore - the treatment has been ended");

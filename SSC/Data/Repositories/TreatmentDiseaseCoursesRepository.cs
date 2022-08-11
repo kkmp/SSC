@@ -43,5 +43,13 @@ namespace SSC.Data.Repositories
             return DbResult<TreatmentDiseaseCourse>.CreateSuccess("Treatment disease course added", newTreatmentDiseaseCourse);
 
         }
+
+        public async Task<List<TreatmentDiseaseCourse>> ShowTreatmentDiseaseCourses(Guid patientId)
+        {
+            return await context.TreatmentDiseaseCourses
+                .Include(x => x.DiseaseCourse)
+                .Where(x => x.PatientId == patientId)
+                .ToListAsync();
+        }
     }
 }

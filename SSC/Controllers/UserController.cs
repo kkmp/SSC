@@ -187,7 +187,7 @@ namespace SSC.Controllers
         [Authorize(Roles = "Administrator")]
         [HttpGet("filterUsers/{option}/{orderType}")]
         [HttpGet("filterUsers/{option}/{orderType}/{searchName}")]
-        public async Task<IActionResult> FilterPatients(string option, string orderType, string? searchName)
+        public async Task<IActionResult> FilterUsers(string option, string orderType, string? searchName)
         {
             List<User> result = await userRepository.GetUsers();
 
