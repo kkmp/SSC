@@ -108,11 +108,13 @@ namespace SSC.Data.Repositories
             return DbResult<Test>.CreateSuccess("Test has been edited", testToCheck);
         }
 
-        public async Task<DbResult<List<Test>>> ShowTests(Guid patientId)
+        public async Task<List<Test>> ShowTests(Guid patientId)
         {
+            //poprawić
             if (await GetPatient(patientId) == null)
             {
-                return DbResult<List<Test>>.CreateFail("Patient does not exist");
+                //return DbResult<List<Test>>.CreateFail("Patient does not exist");
+                return null;
             }
 
             var result = await context.Tests
@@ -121,7 +123,7 @@ namespace SSC.Data.Repositories
                 .Include(x => x.Place)
                 .Where(x => x.Treatment.PatientId == patientId)
                 .ToListAsync();
-            return DbResult<List<Test>>.CreateSuccess("Success", result);
+            return result;
         }
 
         public async Task<Test> TestDetails(Guid testId)

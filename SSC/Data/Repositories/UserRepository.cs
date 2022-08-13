@@ -66,8 +66,6 @@ namespace SSC.Data.Repositories
 
         public async Task<List<User>> GetUsers()
         {
-            //var role = await context.Roles.FirstOrDefaultAsync(x => x.Name == "Administrator");
-            //return await context.Users.Include(x => x.Role).Where(x => x.Role != role).ToListAsync();
             return await context.Users.Include(x => x.Role).ToListAsync();
         }
 

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SSC.Data.Models;
 using SSC.Data.Repositories;
+using SSC.DTO;
 using SSC.Models;
 using System.Web.Http.Cors;
 
@@ -18,10 +19,11 @@ namespace SSC.Controllers
         private readonly ITestRepository testRepository;
         private readonly IMapper mapper;
 
-        public TestController(IConfiguration config, ITestRepository testRepository, IRoleRepository roleRepository)
+        public TestController(IConfiguration config, ITestRepository testRepository, IMapper mapper)
         {
             _config = config;
             this.testRepository = testRepository;
+            this.mapper = mapper;
         }
 
         [HttpPost("addTest")]
@@ -69,21 +71,14 @@ namespace SSC.Controllers
         {
             if (ModelState.IsValid)
             {
+                //poprawić
                 var result = await testRepository.ShowTests(patientId.Id);
-                if(!result.Success)
+                /*if(!result.Success)
                 {
                     return BadRequest(result.Message);
                 }
-
-                return Ok(result.Data.Select(x => new
-                {
-                    TestDate = x.TestDate?.ToString(),
-                    x.OrderNumber,
-                    ResultDate = x.ResultDate?.ToString(),
-                    x.Result,
-                    TestType = x.TestType.Name,
-                    Place = x.Place.Name
-                }));
+                */
+                return Ok(mapper.Map<List<TestOverallDTO>>(result));
             }
             return BadRequest(new { message = "Invalid data" });
         }
@@ -93,20 +88,9 @@ namespace SSC.Controllers
         {
             if (ModelState.IsValid)
             {
+                //null?
                 var result = await testRepository.TestDetails(testId.Id);
-                return Ok(new //obsługa dla null
-                {
-                    TestDate = result.TestDate?.ToString(),
-                    result.OrderNumber,
-                    ResultDate = result.ResultDate?.ToString(),
-                    result.Result,
-                    TestType = result.TestType.Name,
-                    result.TreatmentId, //być może oddzielne zapytanie o te dane np. po kliknięciu po więcej info
-                    UserName = result.User.Name,
-                    UserSurname = result.User.Surname,
-                    UserRole = result.User.Role.Name,
-                    Place = result.Place.Name
-                });
+                return Ok(mapper.Map<TestDTO>(result));
             }
             return BadRequest(new { message = "Invalid data" });
         }

@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using SSC.Data.Models;
 using SSC.Data.Repositories;
+using SSC.DTO;
 using SSC.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -19,12 +21,14 @@ namespace SSC.Controllers
         private IConfiguration _config;
         private readonly IUserRepository userRepository;
         private readonly IRoleRepository roleRepository;
+        private readonly IMapper mapper;
 
-        public UserController(IConfiguration config, IUserRepository userRepository, IRoleRepository roleRepository)
+        public UserController(IConfiguration config, IUserRepository userRepository, IRoleRepository roleRepository, IMapper mapper)
         {
             _config = config;
             this.userRepository = userRepository;
             this.roleRepository = roleRepository;
+            this.mapper = mapper;
         }
 
         [Authorize(Roles = "Administrator")]
@@ -68,14 +72,6 @@ namespace SSC.Controllers
             return response;
         }
 
-        //Funkcja testowa!!!!!
-        [Authorize(Roles = "Administrator")]
-        [HttpGet("showUsers")]
-        public async Task<IActionResult> ShowUsers()
-        {
-                var result = await userRepository.GetUsers();
-                return Ok(result);
-        }
 
         [Authorize(Roles = "Administrator")]
         [HttpPut("deactivateUser")]
@@ -128,16 +124,7 @@ namespace SSC.Controllers
             if (ModelState.IsValid)
             {
                 var result = await userRepository.UserDetails(userid.Id);
-                return Ok(new
-                {
-                    result.Name,
-                    result.Surname,
-                    result.Email,
-                    Date = result.Date?.ToString(),
-                    result.IsActive,
-                    Role = result.Role.Name,
-                    result.PhoneNumber,
-                });
+                return Ok(mapper.Map<UserDTO>(result));
             }
             return BadRequest(new { message = "Invalid data" });
         }
@@ -213,16 +200,7 @@ namespace SSC.Controllers
                     || (x.Name + " " + x.Surname).ToLower().Contains(searchName))
                     .ToList();
             }
-            return Ok(result.Select(x => new
-            {
-                x.Id,
-                x.Name,
-                x.Surname,
-                x.Email,
-                x.PhoneNumber,
-                x.IsActive,
-                Role = x.Role.Name
-            }));
+            return Ok(mapper.Map<List<UserOverallDTO>>(result));
         }
     }
 }

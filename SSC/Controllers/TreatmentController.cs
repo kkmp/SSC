@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SSC.Data.Repositories;
+using SSC.DTO;
 using SSC.Models;
 using System.Web.Http.Cors;
 
@@ -51,16 +52,7 @@ namespace SSC.Controllers
             {
                 var result = await treatmentRepository.ShowTreatments(patientId.Id);
                 //select się może popsuć gdy null
-                return Ok(result.Select(x => new
-                {
-                    StartDate = x.StartDate?.ToString(),
-                    EndDate = x.EndDate?.ToString(),
-                    x.IsCovid,
-                    UserName = x.User.Name,
-                    UserSurname = x.User.Surname,
-                    UserRole = x.User.Role.Name,
-                    TreatmentStatus = x.TreatmentStatus.Name
-                }));
+                return Ok(mapper.Map<List<TreatmentDTO>>(result));
             }
             return BadRequest(new { message = "Invalid data" });
         }

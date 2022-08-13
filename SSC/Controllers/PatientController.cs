@@ -49,41 +49,13 @@ namespace SSC.Controllers
         }
 
         [Authorize]
-        [HttpGet("showPatients")]
-        public async Task<IActionResult> ShowPatients()
-        {
-            var result = await patientRepository.GetPatients();
-            return Ok(result.Select(x => new
-            {
-                x.Id,
-                x.Name,
-                x.Surname,
-                x.Pesel, 
-                BirthDate = x.BirthDate?.ToString(), 
-            }));
-        }
-
-        [Authorize]
         [HttpGet("patientDetails")]
         public async Task<IActionResult> PatientDetails([FromBody] IdViewModel patientId)
         {
             if (ModelState.IsValid)
             {
                 var result = await patientRepository.PatientDetails(patientId.Id);
-                return Ok(new
-                {
-                    result.Name,
-                    result.Surname,
-                    result.Pesel,
-                    BirthDate = result.BirthDate?.ToString(),
-                    result.Sex,
-                    result.Street,
-                    result.Address,
-                    result.PhoneNumber,
-                    City = result.City.Name, // Czy tak można >>>>>>>>>>>> ???
-                    Province = result.City.Province.Name,
-                    Citizenship = result.Citizenship.Name
-                });
+                return Ok(mapper.Map<PatientDTO>(result));
             }
             return BadRequest(new { message = "Invalid data" });
         }
@@ -126,7 +98,7 @@ namespace SSC.Controllers
                     || (x.Name + " " + x.Surname).ToLower().Contains(searchName))
                     .ToList();
             }
-            return Ok(mapper.Map<List<PatientDTO>>(result));
+            return Ok(mapper.Map<List<PatientOverallDTO>>(result));
         }
 
     }

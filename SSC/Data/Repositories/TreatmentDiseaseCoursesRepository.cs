@@ -48,12 +48,10 @@ namespace SSC.Data.Repositories
 
         public async Task<List<TreatmentDiseaseCourse>> ShowTreatmentDiseaseCourses(Guid patientId)
         {
-            /*
             return await context.TreatmentDiseaseCourses
                 .Include(x => x.DiseaseCourse)
-                .Where(x => x.PatientId == patientId)
+                .Where(x => x.Treatment.PatientId == patientId)
                 .ToListAsync();
-            */
             return null;
         }
     }

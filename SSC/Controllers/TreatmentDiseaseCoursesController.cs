@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SSC.Data.Repositories;
+using SSC.DTO;
 using SSC.Models;
 
 namespace SSC.Controllers
@@ -12,11 +14,13 @@ namespace SSC.Controllers
     {
         private IConfiguration _config;
         private readonly ITreatmentDiseaseCoursesRepository treatmentDiseaseCoursesRepository;
+        private readonly IMapper mapper;
 
-        public TreatmentDiseaseCoursesController(IConfiguration config, ITreatmentDiseaseCoursesRepository treatmentDiseaseCoursesRepository)
+        public TreatmentDiseaseCoursesController(IConfiguration config, ITreatmentDiseaseCoursesRepository treatmentDiseaseCoursesRepository, IMapper mapper)
         {
             _config = config;
             this.treatmentDiseaseCoursesRepository = treatmentDiseaseCoursesRepository;
+            this.mapper = mapper;
         }
 
         [HttpPost("addTreatmentDiseaseCourse")]
@@ -46,12 +50,7 @@ namespace SSC.Controllers
             {
                 var result = await treatmentDiseaseCoursesRepository.ShowTreatmentDiseaseCourses(patientId.Id);
                 //select się może popsuć gdy null
-                return Ok(result.Select(x => new
-                {
-                    x.Date,
-                    x.Description,
-                    DiseaseCourse = x.DiseaseCourse.Name
-                })); ;
+                return Ok(mapper.Map<List<TreatmentDiseaseCourseDTO>>(result));
             }
             return BadRequest(new { message = "Invalid data" });
         }
