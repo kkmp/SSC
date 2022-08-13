@@ -5,7 +5,7 @@ using SSC.Models;
 
 namespace SSC.Data.Repositories
 {
-    public class TestRepository : ITestRepository
+    public class TestRepository : BaseRepository<Test>, ITestRepository
     {
         private readonly DataContext context;
         private readonly ITreatmentRepository treatmentRepository;
@@ -84,56 +84,44 @@ namespace SSC.Data.Repositories
             var testToCheck = await GetTest(test.OrderNumber);
             var treatment = await context.Treatments.FirstOrDefaultAsync(x => x.Id == testToCheck.TreatmentId);
 
-
-            if (testToCheck == null)
+            Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
-                return DbResult<Test>.CreateFail("Test does not exist");
+                { () =>  testToCheck == null, "Test does not exist"},
+                { () =>  testToCheck.UserId != id, "Only the user who added the test can edit"},
+                { () =>  treatment.EndDate != null, "The test cannot be edited anymore - the treatment has been ended"},
+                { () =>  test.TestDate < testToCheck.TestDate || test.ResultDate < testToCheck.TestDate, "The test date and result date cannot be earlier than the treatment start date"},
+                { () => test.TestDate > test.ResultDate,  "The test result date cannot be earlier than the test date"},
+                { () => !context.Places.AnyAsync(x => x.Id == test.PlaceId).Result, "Place does not exist" }
+            };
+
+            var result = Validate(conditions);
+            if(result != null)
+            {
+                return result;
             }
 
-            if (testToCheck.UserId != id)
-            {
-                return DbResult<Test>.CreateFail("Only the user who added the test can edit");
-            }
+            mapper.Map(test, testToCheck);
+            testToCheck.TestType = await context.TestTypes.FirstOrDefaultAsync(x => x.Name == test.TestTypeName);
 
-            
-            if (treatment.EndDate != null)
-            {
-                return DbResult<Test>.CreateFail("The test cannot be edited anymore - the treatment has been ended");
-            }
-
-            if (test.TestDate < testToCheck.TestDate || test.ResultDate < testToCheck.TestDate)
-            {
-                return DbResult<Test>.CreateFail("The test date and result date cannot be earlier than the treatment start date");
-            }
-
-            if (test.TestDate > test.ResultDate)
-            {
-                return DbResult<Test>.CreateFail("The test result date cannot be earlier than the test date");
-            }
-
-            var newTest = mapper.Map<Test>(test);
-            newTest.TestType = await context.TestTypes.FirstOrDefaultAsync(x => x.Name == test.TestTypeName);
-            newTest.TreatmentId = testToCheck.TreatmentId;
-            newTest.UserId = testToCheck.UserId;
-
-            context.Update(newTest);
+            context.Update(testToCheck);
             await context.SaveChangesAsync();
-            return DbResult<Test>.CreateSuccess("Test has been edited", newTest);
+            return DbResult<Test>.CreateSuccess("Test has been edited", testToCheck);
         }
 
-        public async Task<List<Test>> ShowTests(Guid patientId)
+        public async Task<DbResult<List<Test>>> ShowTests(Guid patientId)
         {
             if (await GetPatient(patientId) == null)
             {
-                return null; //co zrobić gdy pacjent nie istnieje?
+                return DbResult<List<Test>>.CreateFail("Patient does not exist");
             }
 
-            return await context.Tests
+            var result = await context.Tests
                 .Include(x => x.Treatment)
                 .Include(x => x.TestType)
                 .Include(x => x.Place)
                 .Where(x => x.Treatment.PatientId == patientId)
                 .ToListAsync();
+            return DbResult<List<Test>>.CreateSuccess("Success", result);
         }
 
         public async Task<Test> TestDetails(Guid testId)
@@ -146,7 +134,7 @@ namespace SSC.Data.Repositories
                 .FirstOrDefaultAsync(x => x.Id == testId);
         }
 
-        private async Task<Test> GetTest(string orderNumber) => await context.Tests.AsNoTracking().FirstOrDefaultAsync(x => x.OrderNumber == orderNumber);
+        private async Task<Test> GetTest(string orderNumber) => await context.Tests.FirstOrDefaultAsync(x => x.OrderNumber == orderNumber);
         private async Task<Patient> GetPatient(Guid patientId) => await context.Patients.FirstOrDefaultAsync(x => x.Id == patientId);
     }
 }

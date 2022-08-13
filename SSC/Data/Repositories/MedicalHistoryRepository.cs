@@ -46,14 +46,13 @@ namespace SSC.Data.Repositories
                 return DbResult<MedicalHistory>.CreateFail("Only the user who added the medical history entry can edit");
             }
 
-            if (await context.MedicalHistories.AnyAsync(x => x.Date < medicalHistoryUpdate.Date))
+            var newest = await context.MedicalHistories.Where(x => x.PatientId == medicalHistoryUpdate.PatientId).OrderByDescending(x => x.Date).FirstOrDefaultAsync();
+            if(newest != null && newest.Id != medicalHistoryUpdate.Id)
             {
                 return DbResult<MedicalHistory>.CreateFail("The medical history cannot be edited anymore");
             }
 
-            //tutaj poprawić
-            var lastAvailableDate = await context.MedicalHistories.Where(x => x.Date < medicalHistoryUpdate.Date && x.Date != medicalHistoryUpdate.Date).MaxAsync(x => x.Date);
-            if (lastAvailableDate < medicalHistory.Date)
+            if (await context.MedicalHistories.AnyAsync(x => x.PatientId == medicalHistoryUpdate.PatientId && x.Date >= medicalHistory.Date && x.Id != medicalHistory.Id))
             {
                 return DbResult<MedicalHistory>.CreateFail("Cannot edit medical history. There is already an entry before the given date");
             }

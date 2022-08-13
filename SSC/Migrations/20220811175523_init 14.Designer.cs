@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SSC.Data;
 
@@ -10,9 +11,10 @@ using SSC.Data;
 namespace SSC.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20220811175523_init 14")]
+    partial class init14
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -409,7 +411,7 @@ namespace SSC.Migrations
                         .IsRequired()
                         .HasColumnType("char(36)");
 
-                    b.Property<Guid?>("TreatmentId")
+                    b.Property<Guid?>("PatientId")
                         .IsRequired()
                         .HasColumnType("char(36)");
 
@@ -417,7 +419,7 @@ namespace SSC.Migrations
 
                     b.HasIndex("DiseaseCourseId");
 
-                    b.HasIndex("TreatmentId");
+                    b.HasIndex("PatientId");
 
                     b.ToTable("TreatmentDiseaseCourses");
                 });
@@ -634,15 +636,15 @@ namespace SSC.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SSC.Data.Models.Treatment", "Treatment")
+                    b.HasOne("SSC.Data.Models.Patient", "Patient")
                         .WithMany()
-                        .HasForeignKey("TreatmentId")
+                        .HasForeignKey("PatientId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("DiseaseCourse");
 
-                    b.Navigation("Treatment");
+                    b.Navigation("Patient");
                 });
 
             modelBuilder.Entity("SSC.Data.Models.User", b =>

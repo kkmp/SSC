@@ -70,8 +70,12 @@ namespace SSC.Controllers
             if (ModelState.IsValid)
             {
                 var result = await testRepository.ShowTests(patientId.Id);
-                //select się może popsuć gdy null
-                return Ok(result.Select(x => new
+                if(!result.Success)
+                {
+                    return BadRequest(result.Message);
+                }
+
+                return Ok(result.Data.Select(x => new
                 {
                     TestDate = x.TestDate?.ToString(),
                     x.OrderNumber,

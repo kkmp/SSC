@@ -16,10 +16,10 @@ namespace SSC.Data.Models
         public string? Description { get; set; }
 
         [Required]
-        public Patient? Patient { get; set; }
+        public Treatment? Treatment { get; set; }
 
-        [ForeignKey("Patient")]
-        public Guid? PatientId { get; set; }
+        [ForeignKey("Treatment")]
+        public Guid? TreatmentId { get; set; }
 
         [Required]
         public DiseaseCourse? DiseaseCourse { get; set; }

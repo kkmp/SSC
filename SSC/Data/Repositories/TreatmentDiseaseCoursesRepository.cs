@@ -18,12 +18,14 @@ namespace SSC.Data.Repositories
 
         public async Task<List<TreatmentDiseaseCourse>> GetTreatmentDiseaseCourses(Guid provinceId, DateTime dateFrom, DateTime dateTo)
         {
-            return await context.TreatmentDiseaseCourses
+            /*return await context.TreatmentDiseaseCourses
                 .Include(x => x.DiseaseCourse)
-                .Include(x => x.Patient)
-                .ThenInclude(x => x.City)
+                //.Include(x => x.Patient)
+                //.ThenInclude(x => x.City)
                 .Where(x => x.Patient.City.ProvinceId == provinceId && x.Date >= dateFrom && x.Date <= dateTo)
-               .ToListAsync();        
+               .ToListAsync();      
+            */
+            return null;
         }
 
         public async Task<DbResult<TreatmentDiseaseCourse>> AddTreatmentDiseaseCourse(TreatmentDiseaseCoursesViewModel treatmentDiseaseCourse, Guid id)
@@ -46,10 +48,13 @@ namespace SSC.Data.Repositories
 
         public async Task<List<TreatmentDiseaseCourse>> ShowTreatmentDiseaseCourses(Guid patientId)
         {
+            /*
             return await context.TreatmentDiseaseCourses
                 .Include(x => x.DiseaseCourse)
                 .Where(x => x.PatientId == patientId)
                 .ToListAsync();
+            */
+            return null;
         }
     }
 }
