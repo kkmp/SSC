@@ -54,5 +54,24 @@ namespace SSC.Controllers
             }
             return BadRequest(new { message = "Invalid data" });
         }
+
+        [HttpPut("editTreatmentDiseaseCourse")]
+        public async Task<IActionResult> EditTreatmentDiseaseCourse(TreatmentDiseaseCourseEditViewModel treatmentDiseaseCourse)
+        {
+            if (ModelState.IsValid)
+            {
+                var id = GetUserId();
+                var result = await treatmentDiseaseCoursesRepository.EditTreatmentDiseaseCourses(treatmentDiseaseCourse, id);
+                if (result.Success)
+                {
+                    return Ok(result);
+                }
+                else
+                {
+                    return BadRequest(result);
+                }
+            }
+            return BadRequest(new { message = "Invalid data" });
+        }
     }
 }

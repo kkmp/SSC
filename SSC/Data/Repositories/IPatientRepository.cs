@@ -8,6 +8,7 @@ namespace SSC.Data.Repositories
     {
         Task<DbResult<Patient>> AddPatient(PatientViewModel p, Guid issuer);
         Task<List<Patient>> GetPatients();
+        Task<Patient> GetPatient(Guid id);
         Task<List<Patient>> GetPatients(Expression<Func<Patient, bool>> condition);
         Task<Patient> PatientDetails(Guid patientId);
     }

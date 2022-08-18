@@ -54,6 +54,12 @@ namespace SSC.Data.Repositories
                 var info = await treatmentRepository.AddTreatment(newTreatment, id);
                 treatment = info.Data;
             }
+
+            if(test.TestDate < treatment.StartDate)
+            {
+                return DbResult<Test>.CreateFail("Test date cannot be older than treatment start date");
+            }
+
             newTest.TreatmentId = treatment.Id;
             switch(newTest.Result)
             {
@@ -79,7 +85,7 @@ namespace SSC.Data.Repositories
                 .ToListAsync();
         }
 
-        public async Task<DbResult<Test>> EditTest(TestEditViewModel test, Guid id) //dużo tych warunków, może jakoś ładniej? + no tracking
+        public async Task<DbResult<Test>> EditTest(TestEditViewModel test, Guid id)
         {
             var testToCheck = await GetTest(test.OrderNumber);
             var treatment = await context.Treatments.FirstOrDefaultAsync(x => x.Id == testToCheck.TreatmentId);
@@ -89,9 +95,12 @@ namespace SSC.Data.Repositories
                 { () =>  testToCheck == null, "Test does not exist"},
                 { () =>  testToCheck.UserId != id, "Only the user who added the test can edit"},
                 { () =>  treatment.EndDate != null, "The test cannot be edited anymore - the treatment has been ended"},
+                { () => test.TestDate < treatment.StartDate, "Test cannot be older than treatment start date" },
                 { () =>  test.TestDate < testToCheck.TestDate || test.ResultDate < testToCheck.TestDate, "The test date and result date cannot be earlier than the treatment start date"},
                 { () => test.TestDate > test.ResultDate,  "The test result date cannot be earlier than the test date"},
-                { () => !context.Places.AnyAsync(x => x.Id == test.PlaceId).Result, "Place does not exist" }
+                { () => !context.Places.AnyAsync(x => x.Id == test.PlaceId).Result, "Place does not exist" },
+                { () =>  context.Tests.OrderByDescending(x => x.TestDate).FirstOrDefaultAsync().Result.TestDate > test.TestDate, "Cannot add entry before another test" },
+
             };
 
             var result = Validate(conditions);

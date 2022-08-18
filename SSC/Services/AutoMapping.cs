@@ -47,6 +47,8 @@ namespace SSC.Services
             CreateMap<TestEditViewModel, Test>();
             CreateMap<MedicalHistoryViewModel, MedicalHistory>();
             CreateMap<TreatmentDiseaseCoursesViewModel, TreatmentDiseaseCourse>();
+            CreateMap<TreatmentDiseaseCourseEditViewModel, TreatmentDiseaseCourse>();
+            CreateMap<TreatmentEditViewModel, Treatment>();
         }
     }
 }

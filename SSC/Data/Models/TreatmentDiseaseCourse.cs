@@ -26,5 +26,11 @@ namespace SSC.Data.Models
 
         [ForeignKey("DiseaseCourse")]
         public Guid? DiseaseCourseId { get; set; }
+
+        [Required]
+        public User? User { get; set; }
+
+        [ForeignKey("User")]
+        public Guid? UserId { get; set; }
     }
 }

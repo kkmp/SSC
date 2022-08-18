@@ -2,9 +2,11 @@
 
 namespace SSC.Models
 {
-    public class TreatmentDiseaseCoursesViewModel
+    public class TreatmentDiseaseCourseEditViewModel
     {
         [Required]
+        public Guid Id { get; set; }
+
         public DateTime? Date { get; set; }
 
         [Required]
@@ -14,8 +16,5 @@ namespace SSC.Models
 
         [Required]
         public string? DiseaseCourseName { get; set; }
-
-        [Required]
-        public Guid? PatientId { get; set; }
     }
 }

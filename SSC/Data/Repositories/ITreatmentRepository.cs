@@ -9,5 +9,6 @@ namespace SSC.Data.Repositories
         Task<DbResult<Treatment>> AddTreatment(TreatmentViewModel treatment, Guid id);
         Task<Treatment> TreatmentLasts(Guid patientId);
         Task<List<Treatment>> ShowTreatments(Guid patientId);
+        Task<DbResult<Treatment>>EditTreatment(TreatmentEditViewModel treatment, Guid id);
     }
 }

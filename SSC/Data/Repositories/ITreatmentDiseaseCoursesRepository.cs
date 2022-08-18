@@ -8,5 +8,6 @@ namespace SSC.Data.Repositories
         Task<List<TreatmentDiseaseCourse>> GetTreatmentDiseaseCourses(Guid provinceId, DateTime dateFrom, DateTime dateTo);
         Task<DbResult<TreatmentDiseaseCourse>> AddTreatmentDiseaseCourse(TreatmentDiseaseCoursesViewModel treatmentDiseaseCourse, Guid id);
         Task<List<TreatmentDiseaseCourse>> ShowTreatmentDiseaseCourses(Guid patientId);
+        Task<DbResult<TreatmentDiseaseCourse>> EditTreatmentDiseaseCourses(TreatmentDiseaseCourseEditViewModel treatmentDiseaseCourse, Guid id);
     }
 }

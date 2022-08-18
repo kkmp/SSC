@@ -64,6 +64,11 @@ namespace SSC.Data.Repositories
             return DbResult<Patient>.CreateSuccess("Patient added", patient);
         }
 
+        public async Task<Patient> GetPatient(Guid id)
+        {
+            return await context.Patients.FirstOrDefaultAsync(x => x.Id == id);
+        }
+
         public async Task<List<Patient>> GetPatients()
         {
             return await context.Patients.ToListAsync();

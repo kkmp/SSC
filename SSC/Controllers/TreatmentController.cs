@@ -56,5 +56,24 @@ namespace SSC.Controllers
             }
             return BadRequest(new { message = "Invalid data" });
         }
+
+        [HttpPut("editTreatment")]
+        public async Task<IActionResult> EditTreatment(TreatmentEditViewModel treatment)
+        {
+            if (ModelState.IsValid)
+            {
+                var id = GetUserId();
+                var result = await treatmentRepository.EditTreatment(treatment, id);
+                if (result.Success)
+                {
+                    return Ok(result);
+                }
+                else
+                {
+                    return BadRequest(result);
+                }
+            }
+            return BadRequest(new { message = "Invalid data" });
+        }
     }
 }
