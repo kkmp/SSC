@@ -10,26 +10,26 @@ namespace SSC.Controllers
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class TreatmentDiseaseCoursesController : CommonController
+    public class TreatmentDiseaseCourseController : CommonController
     {
         private IConfiguration _config;
-        private readonly ITreatmentDiseaseCoursesRepository treatmentDiseaseCoursesRepository;
+        private readonly ITreatmentDiseaseCourseRepository treatmentDiseaseCourseRepository;
         private readonly IMapper mapper;
 
-        public TreatmentDiseaseCoursesController(IConfiguration config, ITreatmentDiseaseCoursesRepository treatmentDiseaseCoursesRepository, IMapper mapper)
+        public TreatmentDiseaseCourseController(IConfiguration config, ITreatmentDiseaseCourseRepository treatmentDiseaseCourseRepository, IMapper mapper)
         {
             _config = config;
-            this.treatmentDiseaseCoursesRepository = treatmentDiseaseCoursesRepository;
+            this.treatmentDiseaseCourseRepository = treatmentDiseaseCourseRepository;
             this.mapper = mapper;
         }
 
         [HttpPost("addTreatmentDiseaseCourse")]
-        public async Task<IActionResult> AddTreatmentDiseaseCourse(TreatmentDiseaseCoursesViewModel treatmentDiseaseCourse)
+        public async Task<IActionResult> AddTreatmentDiseaseCourse(TreatmentDiseaseCourseViewModel treatmentDiseaseCourse)
         {
             if (ModelState.IsValid)
             {
-                var id = GetUserId();
-                var result = await treatmentDiseaseCoursesRepository.AddTreatmentDiseaseCourse(treatmentDiseaseCourse, id);
+                var issuerId = GetUserId();
+                var result = await treatmentDiseaseCourseRepository.AddTreatmentDiseaseCourse(treatmentDiseaseCourse, issuerId);
                 var msg = new { errors = new { Message = new string[] { result.Message } } };
                 if (result.Success)
                 {
@@ -48,7 +48,7 @@ namespace SSC.Controllers
         {
             if (ModelState.IsValid)
             {
-                var result = await treatmentDiseaseCoursesRepository.ShowTreatmentDiseaseCourses(patientId.Id);
+                var result = await treatmentDiseaseCourseRepository.ShowTreatmentDiseaseCourses(patientId.Id);
                 //select się może popsuć gdy null
                 return Ok(mapper.Map<List<TreatmentDiseaseCourseDTO>>(result));
             }
@@ -60,8 +60,8 @@ namespace SSC.Controllers
         {
             if (ModelState.IsValid)
             {
-                var id = GetUserId();
-                var result = await treatmentDiseaseCoursesRepository.EditTreatmentDiseaseCourses(treatmentDiseaseCourse, id);
+                var issuerId = GetUserId();
+                var result = await treatmentDiseaseCourseRepository.EditTreatmentDiseaseCourse(treatmentDiseaseCourse, issuerId);
                 if (result.Success)
                 {
                     return Ok(result);

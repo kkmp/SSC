@@ -19,7 +19,7 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IPatientRepository, PatientRepository>();
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddScoped<ITestRepository, TestRepository>();
-builder.Services.AddScoped<ITreatmentDiseaseCoursesRepository, TreatmentDiseaseCoursesRepository>();
+builder.Services.AddScoped<ITreatmentDiseaseCourseRepository, TreatmentDiseaseCoursesRepository>();
 builder.Services.AddScoped<ITreatmentRepository, TreatmentRepository>();
 builder.Services.AddScoped<IMedicalHistoryRepository, MedicalHistoryRepository>();
 

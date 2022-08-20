@@ -10,7 +10,6 @@ namespace SSC.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [EnableCors(origins: "http://localhost:3000", headers: "*", methods: "*")]
     public class TreatmentController : CommonController
     {
         private IConfiguration _config;
@@ -30,8 +29,8 @@ namespace SSC.Controllers
         {
             if (ModelState.IsValid)
             {
-                var id = GetUserId();
-                var result = await treatmentRepository.AddTreatment(treatment, id);
+                var issuerId = GetUserId();
+                var result = await treatmentRepository.AddTreatment(treatment, issuerId);
                 var msg = new { errors = new { Message = new string[] { result.Message } } };
                 if (result.Success)
                 {
@@ -62,8 +61,8 @@ namespace SSC.Controllers
         {
             if (ModelState.IsValid)
             {
-                var id = GetUserId();
-                var result = await treatmentRepository.EditTreatment(treatment, id);
+                var issuerId = GetUserId();
+                var result = await treatmentRepository.EditTreatment(treatment, issuerId);
                 if (result.Success)
                 {
                     return Ok(result);

@@ -2,16 +2,20 @@
 
 namespace SSC.Models
 {
-    public class EditMedicalHistoryViewModel
+    public class TreatmentDiseaseCourseViewModel
     {
-        [Required]
-        public Guid Id { get; set; }
-
         [Required]
         public DateTime? Date { get; set; }
 
         [Required]
+        [MinLength(3)]
         [MaxLength(255)]
         public string? Description { get; set; }
+
+        [Required]
+        public string? DiseaseCourseName { get; set; }
+
+        [Required]
+        public Guid? PatientId { get; set; }
     }
 }

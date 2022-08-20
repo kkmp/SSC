@@ -5,8 +5,8 @@ namespace SSC.Data.Repositories
 {
     public interface IMedicalHistoryRepository
     {
-        Task<DbResult<MedicalHistory>> AddMedicalHistory(MedicalHistoryViewModel medicalHistory, Guid userId);
-        Task<DbResult<MedicalHistory>> EditMedicalHistory(EditMedicalHistoryViewModel medicalHistory, Guid userId);
+        Task<DbResult<MedicalHistory>> AddMedicalHistory(MedicalHistoryViewModel medicalHistory, Guid issuerId);
+        Task<DbResult<MedicalHistory>> EditMedicalHistory(MedicalHistoryEditViewModel medicalHistory, Guid issuerId);
         Task<List<MedicalHistory>> ShowMedicalHistories(Guid patientId);
     }
 }

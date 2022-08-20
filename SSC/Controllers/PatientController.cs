@@ -5,22 +5,18 @@ using SSC.Data.Models;
 using SSC.Data.Repositories;
 using SSC.DTO;
 using SSC.Models;
-using System.Web.Http.Cors;
 
 namespace SSC.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [EnableCors(origins: "http://localhost:3000", headers: "*", methods: "*")]
     public class PatientController : CommonController
     {
         private IConfiguration _config;
         private readonly IPatientRepository patientRepository;
         private readonly IMapper mapper;
 
-        public PatientController(IConfiguration config, 
-            IPatientRepository patientRepository,
-            IMapper mapper)
+        public PatientController(IConfiguration config, IPatientRepository patientRepository, IMapper mapper)
         {
             _config = config;
             this.patientRepository = patientRepository;
@@ -29,12 +25,12 @@ namespace SSC.Controllers
 
         [Authorize]
         [HttpPost("addPatient")]
-        public async Task<IActionResult> AddPatient([FromBody] PatientViewModel patient)
+        public async Task<IActionResult> AddPatient(PatientViewModel patient)
         {
             if (ModelState.IsValid)
             {
-                var id = GetUserId();
-                var result = await patientRepository.AddPatient(patient, id);
+                var issuerId = GetUserId();
+                var result = await patientRepository.AddPatient(patient, issuerId);
                 var msg = new { errors = new { Message = new string[] { result.Message } } };
                 if (result.Success)
                 {
@@ -50,7 +46,7 @@ namespace SSC.Controllers
 
         [Authorize]
         [HttpGet("patientDetails")]
-        public async Task<IActionResult> PatientDetails([FromBody] IdViewModel patientId)
+        public async Task<IActionResult> PatientDetails(IdViewModel patientId)
         {
             if (ModelState.IsValid)
             {
@@ -77,6 +73,8 @@ namespace SSC.Controllers
                 case "female":
                     result = await patientRepository.GetPatients(x => x.Sex == 'F');
                     break;
+                default:
+                    return BadRequest(new { message = "Incorrect sex option" });
             }
 
             switch (option)
@@ -87,7 +85,10 @@ namespace SSC.Controllers
                 case "birthdate":
                     result = (orderType == "descending" ? result.OrderByDescending(x => x.BirthDate) : result.OrderBy(x => x.BirthDate)).ToList();
                     break;
+                default:
+                    return BadRequest(new { message = "Incorrect filter option" });
             }
+
             if(searchName != null)
             {
                 searchName = searchName.ToLower();
@@ -100,6 +101,5 @@ namespace SSC.Controllers
             }
             return Ok(mapper.Map<List<PatientOverallDTO>>(result));
         }
-
     }
 }

@@ -15,7 +15,6 @@ namespace SSC.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [EnableCors(origins: "http://localhost:3000", headers: "*", methods: "*")]
     public class UserController : CommonController
     {
         private IConfiguration _config;
@@ -33,7 +32,7 @@ namespace SSC.Controllers
 
         [Authorize(Roles = "Administrator")]
         [HttpPost("addUser")]
-        public async Task<IActionResult> AddUser([FromBody] UserViewModel user)
+        public async Task<IActionResult> AddUser(UserViewModel user)
         {
             if (ModelState.IsValid)
             {
@@ -53,7 +52,7 @@ namespace SSC.Controllers
 
         [AllowAnonymous]
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] UserLoginViewModel login)
+        public async Task<IActionResult> Login(UserLoginViewModel login)
         {
             IActionResult response;
             var result = await userRepository.AuthenticateUser(login.Email, login.Password);
@@ -74,13 +73,26 @@ namespace SSC.Controllers
 
 
         [Authorize(Roles = "Administrator")]
-        [HttpPut("deactivateUser")]
-        public async Task<IActionResult> DeactivateUser([FromBody] UserEmailViewModel useremail)
+        [HttpPut("changeActivity/{option}")]
+        public async Task<IActionResult> ChangeActivity(string option, IdViewModel userId)
         {
             if (ModelState.IsValid)
             {
-                var id = GetUserId();
-                var result = await userRepository.DeactivateUser(useremail.Email, id);
+                bool activation = false;
+                switch (option)
+                {
+                    case "activate":
+                        activation = true;
+                        break;
+                    case "deactivate":
+                        activation = false;
+                        break;
+                    default:
+                        return BadRequest(new { message = "Incorrect option" });
+                }
+
+                var issuer = GetUserId();
+                var result = await userRepository.ChangeActivity(userId.Id, issuer, activation);
                     var msg = new { message = result.Message };
 
                     if (result.Success)
@@ -96,30 +108,8 @@ namespace SSC.Controllers
         }
 
         [Authorize(Roles = "Administrator")]
-        [HttpPut("activateUser")]
-        public async Task<IActionResult> ActivateUser([FromBody] UserEmailViewModel useremail)
-        {
-            if (ModelState.IsValid)
-            {
-                var id = GetUserId();
-                var result = await userRepository.ActivateUser(useremail.Email, id);
-                var msg = new { message = result.Message };
-
-                if (result.Success)
-                {
-                    return Ok(msg);
-                }
-                else
-                {
-                    return BadRequest(msg);
-                }
-            }
-            return BadRequest(new { message = "Invalid data" });
-        }
-
-        [Authorize(Roles = "Administrator")]
         [HttpGet("userDetails")]
-        public async Task<IActionResult> UserDetails([FromBody] IdViewModel userid)
+        public async Task<IActionResult> UserDetails(IdViewModel userid)
         {
             if (ModelState.IsValid)
             {
@@ -131,12 +121,12 @@ namespace SSC.Controllers
 
         [Authorize(Roles = "Administrator")]
         [HttpPut("editUser")]
-        public async Task<IActionResult> EditUser([FromBody] UserEditViewModel user)
+        public async Task<IActionResult> EditUser(UserEditViewModel user)
         {
             if (ModelState.IsValid)
             {
-                var id = GetUserId();
-                var result = await userRepository.EditUser(user, id);
+                var issuerId = GetUserId();
+                var result = await userRepository.EditUser(user, issuerId);
 
                 var msg = new { message = result.Message };
                 if (result.Success)
@@ -189,7 +179,10 @@ namespace SSC.Controllers
                 case "active":
                     result = (orderType == "descending" ? result.OrderByDescending(x => x.IsActive) : result.OrderBy(x => x.IsActive)).ToList();
                     break;
+                default:
+                    return BadRequest(new { message = "Incorrect filter option" });
             }
+
             if (searchName != null)
             {
                 searchName = searchName.ToLower();
@@ -200,6 +193,7 @@ namespace SSC.Controllers
                     || (x.Name + " " + x.Surname).ToLower().Contains(searchName))
                     .ToList();
             }
+
             return Ok(mapper.Map<List<UserOverallDTO>>(result));
         }
     }

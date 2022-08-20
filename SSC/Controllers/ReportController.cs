@@ -13,9 +13,9 @@ namespace SSC.Controllers
     public class ReportController : CommonController
     {
         private readonly ITestRepository testRepository;
-        private readonly ITreatmentDiseaseCoursesRepository treatmentDiseaseCoursesRepository;
+        private readonly ITreatmentDiseaseCourseRepository treatmentDiseaseCoursesRepository;
         private readonly ITreatmentRepository treatmentRepository;
-        public ReportController(ITestRepository testRepository, ITreatmentDiseaseCoursesRepository treatmentDiseaseCoursesRepository, ITreatmentRepository treatmentRepository)
+        public ReportController(ITestRepository testRepository, ITreatmentDiseaseCourseRepository treatmentDiseaseCoursesRepository, ITreatmentRepository treatmentRepository)
         {
             this.testRepository = testRepository;
             this.treatmentDiseaseCoursesRepository = treatmentDiseaseCoursesRepository;
@@ -30,18 +30,18 @@ namespace SSC.Controllers
                 package.Workbook.Worksheets.Add("results");
                 ExcelWorksheet ws = package.Workbook.Worksheets[0];
                 string[] columns = { "TestDate", "Result", "Place" };
-                for(int i = 1; i <= columns.Length; i++)
+                for (int i = 1; i <= columns.Length; i++)
                 {
                     ws.Cells[1, i].Value = columns[i - 1];
                 }
-                for(int i = 0; i < tests.Count; i++)
+                for (int i = 0; i < tests.Count; i++)
                 {
                     ws.Cells[i + 2, 1].Value = tests[i].TestDate;
                     ws.Cells[i + 2, 2].Value = tests[i].Result;
                     ws.Cells[i + 2, 3].Value = tests[i].Place.Name;
                 }
                 return package.GetAsByteArray();
-            }    
+            }
         }
 
         [HttpGet("tests/{category}/{provinceId}/{dateFrom}/{dateTo}/")]
@@ -49,13 +49,17 @@ namespace SSC.Controllers
         public async Task<IActionResult> GetTestsReport(string category, Guid provinceId, DateTime dateFrom, DateTime dateTo, string? type)
         {
             var tests = await testRepository.GetTests(provinceId, dateFrom, dateTo);
-            if(type == "xlsx")
+
+            switch (type)
             {
-                return File(CreateExcel(tests), "application/xlsx", "results.xlsx");
-            }
-            else if(type == "csv")
-            {
-                return File(System.Text.Encoding.UTF8.GetBytes(ICSV.CreateCSV(tests.Cast<ICSV>().ToList())), "application/csv", "results.csv");
+                case "xlsx":
+                    return File(CreateExcel(tests), "application/xlsx", "results.xlsx");
+                    break;
+                case "csv":
+                    return File(System.Text.Encoding.UTF8.GetBytes(ICSV.CreateCSV(tests.Cast<ICSV>().ToList())), "application/csv", "results.csv");
+                    break;
+                default:
+                    return BadRequest(new { message = "Incorrect filetype option" });
             }
 
             if (tests.Count() == 0)
@@ -68,14 +72,16 @@ namespace SSC.Controllers
                 {"type", x => x.TestType.Name },
                 {"result", x => x.Result }
             };
-            if(!dict.ContainsKey(category))
+
+            if (!dict.ContainsKey(category))
             {
                 return BadRequest();
             }
 
             var result = tests
                 .GroupBy(dict[category])
-                .Select(x => new { Key = x.Key, Proc = ((double)x.Count() / tests.Count)*100 });
+                .Select(x => new { Key = x.Key, Proc = ((double)x.Count() / tests.Count) * 100 });
+
             return Ok(result);
         }
 
@@ -83,6 +89,7 @@ namespace SSC.Controllers
         public async Task<IActionResult> GetTestsReport(Guid provinceId, DateTime dateFrom, DateTime dateTo)
         {
             var diseaseCourses = await treatmentDiseaseCoursesRepository.GetTreatmentDiseaseCourses(provinceId, dateFrom, dateTo);
+
             if (diseaseCourses.Count() == 0)
             {
                 return NotFound();
@@ -91,6 +98,7 @@ namespace SSC.Controllers
             var result = diseaseCourses
                 .GroupBy(x => x.DiseaseCourse.Name)
                 .Select(x => new { Key = x.Key, Proc = ((double)x.Count() / diseaseCourses.Count) * 100 });
+
             return Ok(result);
         }
 
@@ -98,6 +106,7 @@ namespace SSC.Controllers
         public async Task<IActionResult> GetTreatment(Guid provinceId, DateTime dateFrom, DateTime dateTo)
         {
             var treatments = await treatmentRepository.GetTreatments(provinceId, dateFrom, dateTo);
+
             if (treatments.Count() == 0)
             {
                 return NotFound();
@@ -106,6 +115,7 @@ namespace SSC.Controllers
             var result = treatments
                 .GroupBy(x => x.TreatmentStatus.Name)
                 .Select(x => new { Key = x.Key, Proc = ((double)x.Count() / treatments.Count) * 100 });
+
             return Ok(result);
         }
     }

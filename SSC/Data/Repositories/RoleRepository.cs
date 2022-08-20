@@ -11,9 +11,9 @@ namespace SSC.Data.Repositories
         {
             this.context = context;
         }
-        public async Task<Role> GetRole(Guid id)
+        public async Task<Role> GetRole(Guid roleId)
         {
-            return await context.Roles.FirstOrDefaultAsync(x => x.Id == id);
+            return await context.Roles.FirstOrDefaultAsync(x => x.Id == roleId);
         }
     }
 }

@@ -18,7 +18,7 @@ namespace SSC.Data.Repositories
             this.mapper = mapper;
         }
 
-        public async Task<DbResult<Test>> AddTest(TestViewModel test, Guid id)
+        public async Task<DbResult<Test>> AddTest(TestViewModel test, Guid issuerId)
         {
             if (await GetTest(test.OrderNumber) != null)
             {
@@ -37,7 +37,7 @@ namespace SSC.Data.Repositories
                 ResultDate = test.ResultDate,
                 Result = test.Result,
                 TestType = await context.TestTypes.FirstOrDefaultAsync(x => x.Name == test.TestType),
-                User = await context.Users.FirstOrDefaultAsync(x => x.Id == id),
+                User = await context.Users.FirstOrDefaultAsync(x => x.Id == issuerId),
                 Place = await context.Places.FirstOrDefaultAsync(x => x.Id == test.Place),
             };
 
@@ -51,7 +51,7 @@ namespace SSC.Data.Repositories
                     PatientId = test.PatientId.Value,
                     TreatmentStatusName = "Rozpoczęto"
                 };
-                var info = await treatmentRepository.AddTreatment(newTreatment, id);
+                var info = await treatmentRepository.AddTreatment(newTreatment, issuerId);
                 treatment = info.Data;
             }
 
@@ -85,7 +85,7 @@ namespace SSC.Data.Repositories
                 .ToListAsync();
         }
 
-        public async Task<DbResult<Test>> EditTest(TestEditViewModel test, Guid id)
+        public async Task<DbResult<Test>> EditTest(TestEditViewModel test, Guid issuerId)
         {
             var testToCheck = await GetTest(test.OrderNumber);
             var treatment = await context.Treatments.FirstOrDefaultAsync(x => x.Id == testToCheck.TreatmentId);
@@ -93,7 +93,7 @@ namespace SSC.Data.Repositories
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
                 { () =>  testToCheck == null, "Test does not exist"},
-                { () =>  testToCheck.UserId != id, "Only the user who added the test can edit"},
+                { () =>  testToCheck.UserId != issuerId, "Only the user who added the test can edit"},
                 { () =>  treatment.EndDate != null, "The test cannot be edited anymore - the treatment has been ended"},
                 { () => test.TestDate < treatment.StartDate, "Test cannot be older than treatment start date" },
                 { () =>  test.TestDate < testToCheck.TestDate || test.ResultDate < testToCheck.TestDate, "The test date and result date cannot be earlier than the treatment start date"},

@@ -5,7 +5,7 @@ using SSC.Models;
 
 namespace SSC.Data.Repositories
 {
-    public class TreatmentDiseaseCoursesRepository : BaseRepository<TreatmentDiseaseCourse>, ITreatmentDiseaseCoursesRepository
+    public class TreatmentDiseaseCoursesRepository : BaseRepository<TreatmentDiseaseCourse>, ITreatmentDiseaseCourseRepository
     {
         private readonly DataContext context;
         private readonly IMapper mapper;
@@ -32,7 +32,7 @@ namespace SSC.Data.Repositories
             return null;
         }
 
-        public async Task<DbResult<TreatmentDiseaseCourse>> AddTreatmentDiseaseCourse(TreatmentDiseaseCoursesViewModel treatmentDiseaseCourse, Guid id)
+        public async Task<DbResult<TreatmentDiseaseCourse>> AddTreatmentDiseaseCourse(TreatmentDiseaseCourseViewModel treatmentDiseaseCourse, Guid issuerId)
         {
             var patient = await patientRepository.GetPatient(treatmentDiseaseCourse.PatientId.Value);
             var diseaseCourse = await context.DiseaseCourses.FirstOrDefaultAsync(x => x.Name == treatmentDiseaseCourse.DiseaseCourseName);
@@ -57,7 +57,7 @@ namespace SSC.Data.Repositories
                     PatientId = treatmentDiseaseCourse.PatientId.Value,
                     TreatmentStatusName = "Rozpoczęto"
                 };
-                var info = await treatmentRepository.AddTreatment(newTreatment, id);
+                var info = await treatmentRepository.AddTreatment(newTreatment, issuerId);
                 treatment = info.Data;
             }
 
@@ -69,7 +69,7 @@ namespace SSC.Data.Repositories
             var newTreatmentDiseaseCourse = mapper.Map<TreatmentDiseaseCourse>(treatmentDiseaseCourse);
             newTreatmentDiseaseCourse.TreatmentId = treatment.Id;
             newTreatmentDiseaseCourse.DiseaseCourse = diseaseCourse;
-            newTreatmentDiseaseCourse.UserId = id;
+            newTreatmentDiseaseCourse.UserId = issuerId;
             await context.TreatmentDiseaseCourses.AddAsync(newTreatmentDiseaseCourse);
             await context.SaveChangesAsync();
 
@@ -85,7 +85,7 @@ namespace SSC.Data.Repositories
             return null;
         }
 
-        public async Task<DbResult<TreatmentDiseaseCourse>> EditTreatmentDiseaseCourses(TreatmentDiseaseCourseEditViewModel treatmentDiseaseCourse, Guid id)
+        public async Task<DbResult<TreatmentDiseaseCourse>> EditTreatmentDiseaseCourse(TreatmentDiseaseCourseEditViewModel treatmentDiseaseCourse, Guid issuerId)
         {
             var chekTreatmentDiseaseCourse = await context.TreatmentDiseaseCourses.FirstOrDefaultAsync(x => treatmentDiseaseCourse.Id == x.Id);
             var treatment = await context.Treatments.FirstOrDefaultAsync(x => x.Id == chekTreatmentDiseaseCourse.TreatmentId);
@@ -94,7 +94,7 @@ namespace SSC.Data.Repositories
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
                 { () =>  treatmentDiseaseCourse == null, "Treatment disease course entry does not exist"},
-                { () =>  chekTreatmentDiseaseCourse.UserId != id, "Only the user who added the treatment disease course can edit"},
+                { () =>  chekTreatmentDiseaseCourse.UserId != issuerId, "Only the user who added the treatment disease course can edit"},
                 { () =>  treatment.EndDate != null, "The treatment disease course cannot be edited anymore - the treatment has been ended"},
                 { () =>  treatmentDiseaseCourse.Date < treatment.StartDate, "The test date and result date cannot be earlier than the treatment start date"},
                 { () =>  context.TreatmentDiseaseCourses.OrderByDescending(x => x.Date).FirstOrDefaultAsync().Result.Date > treatmentDiseaseCourse.Date, "Cannot add entry before another treatment disease course" },
@@ -106,7 +106,6 @@ namespace SSC.Data.Repositories
             {
                 return result;
             }
-
 
             mapper.Map(treatmentDiseaseCourse, chekTreatmentDiseaseCourse);
             chekTreatmentDiseaseCourse.DiseaseCourse = diseaseCourse;

@@ -11,7 +11,6 @@ namespace SSC.Services
         {
             CreateMap<Patient, PatientOverallDTO>();
             CreateMap<MedicalHistory, MedicalHistoryDTO>()
-                //.ForMember(x => x.Date, x => x.MapFrom(y => y.Date.ToString())) //czy DateTime w DTO i tak?
                 .ForMember(x => x.UserName, x => x.MapFrom(y => y.User.Name))
                 .ForMember(x => x.UserSurname, x => x.MapFrom(y => y.User.Surname))
                 .ForMember(x => x.UserRole, x => x.MapFrom(y => y.User.Role.Name));
@@ -41,12 +40,10 @@ namespace SSC.Services
             CreateMap<User, UserOverallDTO>()
                 .ForMember(x => x.Role, x => x.MapFrom(y => y.Role.Name));
 
-
             CreateMap<TreatmentViewModel, Treatment>();
-            //.ForMember(x => x.BirthDate, x => x.MapFrom(y => y.City.Name));
             CreateMap<TestEditViewModel, Test>();
             CreateMap<MedicalHistoryViewModel, MedicalHistory>();
-            CreateMap<TreatmentDiseaseCoursesViewModel, TreatmentDiseaseCourse>();
+            CreateMap<TreatmentDiseaseCourseViewModel, TreatmentDiseaseCourse>();
             CreateMap<TreatmentDiseaseCourseEditViewModel, TreatmentDiseaseCourse>();
             CreateMap<TreatmentEditViewModel, Treatment>();
         }

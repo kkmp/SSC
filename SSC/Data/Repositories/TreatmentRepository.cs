@@ -16,7 +16,7 @@ namespace SSC.Data.Repositories
             this.mapper = mapper;
         }
 
-        public async Task<DbResult<Treatment>> AddTreatment(TreatmentViewModel treatment, Guid id)
+        public async Task<DbResult<Treatment>> AddTreatment(TreatmentViewModel treatment, Guid issuerId)
         {
             if (await context.Treatments.AnyAsync(x => x.PatientId == treatment.PatientId && x.EndDate == null))
             {
@@ -29,21 +29,21 @@ namespace SSC.Data.Repositories
             }
 
             var newTreatment = mapper.Map<Treatment>(treatment);
-            newTreatment.UserId = id;
+            newTreatment.UserId = issuerId;
             newTreatment.TreatmentStatus = await context.TreatmentStatuses.FirstOrDefaultAsync(x => x.Name == treatment.TreatmentStatusName);
             await context.Treatments.AddAsync(newTreatment);
             await context.SaveChangesAsync();
             return DbResult<Treatment>.CreateSuccess("Treatment added", newTreatment);
         }
 
-        public async Task<DbResult<Treatment>> EditTreatment(TreatmentEditViewModel treatment, Guid id)
+        public async Task<DbResult<Treatment>> EditTreatment(TreatmentEditViewModel treatment, Guid issuerId)
         {
             var treatmentToCheck = await context.Treatments.FirstOrDefaultAsync(x => x.Id == treatment.Id);
 
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
                 { () =>  treatmentToCheck == null, "Treatment does not exist"},
-                { () =>  treatmentToCheck.UserId != id, "Only the user who added the treatment can edit"},
+                { () =>  treatmentToCheck.UserId != issuerId, "Only the user who added the treatment can edit"},
                 { () =>  treatmentToCheck.EndDate != null, "The treatment cannot be edited anymore - the treatment has been ended"},
                 { () =>  context.Treatments.AnyAsync(x => treatment.StartDate < x.EndDate && treatment.Id != x.Id && x.PatientId == treatmentToCheck.PatientId).Result, "The tratment date cannot be older than another tratment start date."},
                 { () =>  context.Tests.AnyAsync(x => x.TreatmentId == treatment.Id && treatment.StartDate > x.TestDate).Result, "Date of treatment cannot be after existing test" },

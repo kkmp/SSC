@@ -16,7 +16,7 @@ namespace SSC.Data.Repositories
             this.mapper = mapper;
         }
 
-        public async Task<DbResult<MedicalHistory>> AddMedicalHistory(MedicalHistoryViewModel medicalHistory, Guid userId)
+        public async Task<DbResult<MedicalHistory>> AddMedicalHistory(MedicalHistoryViewModel medicalHistory, Guid issuerId)
         {
             if (await context.MedicalHistories.AnyAsync(x => x.Date >= medicalHistory.Date))
             {
@@ -24,7 +24,7 @@ namespace SSC.Data.Repositories
             }
 
             var newMedicalHistory = mapper.Map<MedicalHistory>(medicalHistory);
-            newMedicalHistory.UserId = userId;
+            newMedicalHistory.UserId = issuerId;
 
             await context.AddAsync(newMedicalHistory);
             await context.SaveChangesAsync();
@@ -32,7 +32,7 @@ namespace SSC.Data.Repositories
             return DbResult<MedicalHistory>.CreateSuccess("Medical history added", newMedicalHistory);
         }
 
-        public async Task<DbResult<MedicalHistory>> EditMedicalHistory(EditMedicalHistoryViewModel medicalHistory, Guid userId)
+        public async Task<DbResult<MedicalHistory>> EditMedicalHistory(MedicalHistoryEditViewModel medicalHistory, Guid issuerId)
         {
             var medicalHistoryUpdate = await context.MedicalHistories.FirstOrDefaultAsync(x => x.Id == medicalHistory.Id);
 
@@ -41,7 +41,7 @@ namespace SSC.Data.Repositories
                 return DbResult<MedicalHistory>.CreateFail("There is no such entry in the medical history");
             }
 
-            if (medicalHistoryUpdate.UserId != userId)
+            if (medicalHistoryUpdate.UserId != issuerId)
             {
                 return DbResult<MedicalHistory>.CreateFail("Only the user who added the medical history entry can edit");
             }

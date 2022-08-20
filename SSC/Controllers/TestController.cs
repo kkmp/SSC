@@ -12,7 +12,6 @@ namespace SSC.Controllers
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    [EnableCors(origins: "http://localhost:3000", headers: "*", methods: "*")]
     public class TestController : CommonController
     {
         private IConfiguration _config;
@@ -27,12 +26,12 @@ namespace SSC.Controllers
         }
 
         [HttpPost("addTest")]
-        public async Task<IActionResult> AddTest([FromBody] TestViewModel test)
+        public async Task<IActionResult> AddTest(TestViewModel test)
         {
             if (ModelState.IsValid)
             {
-                var id = GetUserId();
-                var result = await testRepository.AddTest(test, id);
+                var issuerId = GetUserId();
+                var result = await testRepository.AddTest(test, issuerId);
                 var msg = new { errors = new { Message = new string[] { result.Message } } };
                 if (result.Success)
                 {
@@ -51,8 +50,8 @@ namespace SSC.Controllers
         {
             if (ModelState.IsValid)
             {
-                var id = GetUserId();
-                var result = await testRepository.EditTest(test, id);
+                var issuerId = GetUserId();
+                var result = await testRepository.EditTest(test, issuerId);
                 var msg = new { errors = new { Message = new string[] { result.Message } } };
                 if (result.Success)
                 {

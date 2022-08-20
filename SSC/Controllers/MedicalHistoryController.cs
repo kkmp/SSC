@@ -28,8 +28,8 @@ namespace SSC.Controllers
         {
             if (ModelState.IsValid)
             {
-                var id = GetUserId();
-                var result = await medicalHistoryRepository.AddMedicalHistory(medicalHistory, id);
+                var issuerId = GetUserId();
+                var result = await medicalHistoryRepository.AddMedicalHistory(medicalHistory, issuerId);
                 var msg = new { errors = new { Message = new string[] { result.Message } } };
                 if (result.Success)
                 {
@@ -44,12 +44,12 @@ namespace SSC.Controllers
         }
 
         [HttpPut("editMedicalHistory")]
-        public async Task<IActionResult> EditMedicalHistory(EditMedicalHistoryViewModel medicalHistory)
+        public async Task<IActionResult> EditMedicalHistory(MedicalHistoryEditViewModel medicalHistory)
         {
             if (ModelState.IsValid)
             {
-                var id = GetUserId();
-                var result = await medicalHistoryRepository.EditMedicalHistory(medicalHistory, id);
+                var issuerId = GetUserId();
+                var result = await medicalHistoryRepository.EditMedicalHistory(medicalHistory, issuerId);
                 var msg = new { errors = new { Message = new string[] { result.Message } } };
                 if (result.Success)
                 {

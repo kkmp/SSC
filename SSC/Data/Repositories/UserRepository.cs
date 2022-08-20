@@ -69,48 +69,28 @@ namespace SSC.Data.Repositories
             return await context.Users.Include(x => x.Role).ToListAsync();
         }
 
-        public async Task<DbResult<User>> DeactivateUser(string useremail, Guid id)
+        public async Task<DbResult<User>> ChangeActivity(Guid userId, Guid issuerId, bool activation)
         {
-            var user = await GetUserEmail(useremail);
+            var user = await GetUser(userId);
             if (user == null)
             {
                 return DbResult<User>.CreateFail("User does not exist");
             }
-            if (user.Id == id)
+            if (user.Id == issuerId)
             {
                 return DbResult<User>.CreateFail("Cannot deactivate own account");
             }
+            /*
             var test = await context.Roles.FirstOrDefaultAsync(x => x.Name == Roles.Admin);
             if (user.Role == test)
             {
                 return DbResult<User>.CreateFail("Cannot deactivate admin's account");
             }
-            user.IsActive = false;
+            */
+            user.IsActive = activation;
             context.Update(user);
             await context.SaveChangesAsync();
-            return DbResult<User>.CreateSuccess("User has been deactivated", user);
-        }
-
-        public async Task<DbResult<User>> ActivateUser(string useremail, Guid id)
-        {
-            var user = await GetUserEmail(useremail);
-            if (user == null)
-            {
-                return DbResult<User>.CreateFail("User does not exist");
-            }
-            if (user.Id == id)
-            {
-                return DbResult<User>.CreateFail("Cannot activate own account");
-            }
-            var test = await context.Roles.FirstOrDefaultAsync(x => x.Name == Roles.Admin);
-            if (user.Role == test)
-            {
-                return DbResult<User>.CreateFail("Cannot activate admin's account");
-            }
-            user.IsActive = true;
-            context.Update(user);
-            await context.SaveChangesAsync();
-            return DbResult<User>.CreateSuccess("User has been activated", user);
+            return DbResult<User>.CreateSuccess("User activity has been changed", user);
         }
 
         public async Task<User> UserDetails(Guid userId)
@@ -120,7 +100,7 @@ namespace SSC.Data.Repositories
                 .FirstOrDefaultAsync(x => x.Id == userId);
         }
 
-        public async Task<DbResult<User>> EditUser(UserEditViewModel user, Guid id)
+        public async Task<DbResult<User>> EditUser(UserEditViewModel user, Guid issuerId)
         {
             var u = await context.Users.FirstOrDefaultAsync(x => x.Id == user.Id);
             if (u == null)
@@ -128,7 +108,7 @@ namespace SSC.Data.Repositories
                 return DbResult<User>.CreateFail("User does not exist");
             }
             var test = await context.Roles.FirstOrDefaultAsync(x => x.Name == Roles.Admin);
-            if (u.Role == test && user.Id != id)
+            if (u.Role == test && user.Id != issuerId)
             {
                 return DbResult<User>.CreateFail("Cannot edit admin's account");
             }
@@ -144,6 +124,8 @@ namespace SSC.Data.Repositories
         }
 
         private async Task<User> GetUserEmail(string useremail) => await context.Users.FirstOrDefaultAsync(x => x.Email == useremail);
+
+        private async Task<User> GetUser(Guid userId) => await context.Users.FirstOrDefaultAsync(x => x.Id == userId);
 
         private string CreatePassword(int length)
         {

@@ -15,14 +15,14 @@ namespace SSC.Data.Repositories
             this.context = context;
         }
 
-        public async Task<DbResult<Patient>> AddPatient(PatientViewModel p, Guid issuer)
+        public async Task<DbResult<Patient>> AddPatient(PatientViewModel p, Guid issuerId)
         {
             if (await GetPatientPesel(p.Pesel) != null)
             {
                 return DbResult<Patient>.CreateFail("Patient has already been added");
             }
 
-            var user = await context.Users.FirstOrDefaultAsync(x => x.Id == issuer);
+            var user = await context.Users.FirstOrDefaultAsync(x => x.Id == issuerId);
             if(user == null)
             {
                 return DbResult<Patient>.CreateFail("Invalid issuer id");
@@ -64,9 +64,9 @@ namespace SSC.Data.Repositories
             return DbResult<Patient>.CreateSuccess("Patient added", patient);
         }
 
-        public async Task<Patient> GetPatient(Guid id)
+        public async Task<Patient> GetPatient(Guid patientId)
         {
-            return await context.Patients.FirstOrDefaultAsync(x => x.Id == id);
+            return await context.Patients.FirstOrDefaultAsync(x => x.Id == patientId);
         }
 
         public async Task<List<Patient>> GetPatients()
