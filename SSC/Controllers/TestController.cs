@@ -70,14 +70,12 @@ namespace SSC.Controllers
         {
             if (ModelState.IsValid)
             {
-                //poprawić
                 var result = await testRepository.ShowTests(patientId.Id);
-                /*if(!result.Success)
+                if(!result.Success)
                 {
-                    return BadRequest(result.Message);
+                    return BadRequest(new { message = result.Message });
                 }
-                */
-                return Ok(mapper.Map<List<TestOverallDTO>>(result));
+                return Ok(mapper.Map<List<TestOverallDTO>>(result.Data));
             }
             return BadRequest(new { message = "Invalid data" });
         }

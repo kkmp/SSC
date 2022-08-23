@@ -5,22 +5,31 @@ using SSC.Models;
 
 namespace SSC.Data.Repositories
 {
-    public class MedicalHistoryRepository : IMedicalHistoryRepository
+    public class MedicalHistoryRepository : BaseRepository<MedicalHistory>, IMedicalHistoryRepository
     {
         private readonly DataContext context;
         private readonly IMapper mapper;
+        private readonly IPatientRepository patientRepository;
 
-        public MedicalHistoryRepository(DataContext context, IMapper mapper)
+        public MedicalHistoryRepository(DataContext context, IMapper mapper, IPatientRepository patientRepository)
         {
             this.context = context;
             this.mapper = mapper;
+            this.patientRepository = patientRepository;
         }
 
         public async Task<DbResult<MedicalHistory>> AddMedicalHistory(MedicalHistoryViewModel medicalHistory, Guid issuerId)
         {
-            if (await context.MedicalHistories.AnyAsync(x => x.Date >= medicalHistory.Date))
+            Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
-                return DbResult<MedicalHistory>.CreateFail("Cannot add medical history. There is already an entry before the given date");
+                { () => patientRepository.GetPatient(medicalHistory.PatientId.Value).Result == null, "Patient does not exist" },
+                { () => context.MedicalHistories.Any(x => x.PatientId == medicalHistory.PatientId && x.Date >= medicalHistory.Date), "Cannot add medical history. There is already an entry before the given date" }
+            };
+
+            var result = Validate(conditions);
+            if (result != null)
+            {
+                return result;
             }
 
             var newMedicalHistory = mapper.Map<MedicalHistory>(medicalHistory);
@@ -41,20 +50,19 @@ namespace SSC.Data.Repositories
                 return DbResult<MedicalHistory>.CreateFail("There is no such entry in the medical history");
             }
 
-            if (medicalHistoryUpdate.UserId != issuerId)
-            {
-                return DbResult<MedicalHistory>.CreateFail("Only the user who added the medical history entry can edit");
-            }
-
             var newest = await context.MedicalHistories.Where(x => x.PatientId == medicalHistoryUpdate.PatientId).OrderByDescending(x => x.Date).FirstOrDefaultAsync();
-            if(newest != null && newest.Id != medicalHistoryUpdate.Id)
-            {
-                return DbResult<MedicalHistory>.CreateFail("The medical history cannot be edited anymore");
-            }
 
-            if (await context.MedicalHistories.AnyAsync(x => x.PatientId == medicalHistoryUpdate.PatientId && x.Date >= medicalHistory.Date && x.Id != medicalHistory.Id))
+            Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
-                return DbResult<MedicalHistory>.CreateFail("Cannot edit medical history. There is already an entry before the given date");
+                { () => medicalHistoryUpdate.UserId != issuerId, "Only the user who added the medical history entry can edit" },
+                { () => newest.Id != medicalHistoryUpdate.Id, "This medical history cannot be edited anymore" },
+                { () => context.MedicalHistories.Any(x => x.PatientId == medicalHistoryUpdate.PatientId && x.Date >= medicalHistory.Date && x.Id != medicalHistory.Id), "Cannot edit medical history. There is already an entry before the given date" },
+            };
+
+            var result = Validate(conditions);
+            if (result != null)
+            {
+                return result;
             }
 
             medicalHistoryUpdate.Date = medicalHistory.Date;
@@ -62,6 +70,7 @@ namespace SSC.Data.Repositories
 
             context.Update(medicalHistoryUpdate);
             await context.SaveChangesAsync();
+
             return DbResult<MedicalHistory>.CreateSuccess("Medical history has been edited", medicalHistoryUpdate);
         }
 

@@ -18,10 +18,10 @@ namespace SSC.Models
         public char? Result { get; set; }
 
         [Required]
-        public string? TestType { get; set; }
+        public string? TestTypeName { get; set; }
 
         [Required]
-        public Guid? Place { get; set; }
+        public Guid? PlaceId { get; set; }
 
         [Required]
         public Guid? PatientId { get; set; }

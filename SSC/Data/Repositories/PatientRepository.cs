@@ -1,23 +1,27 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using SSC.Data.Models;
+using SSC.DTO.Patient;
 using SSC.Models;
 using System.Linq.Expressions;
 using System.Web.Http;
 
 namespace SSC.Data.Repositories
 {
-    public class PatientRepository : IPatientRepository
+    public class PatientRepository : BaseRepository<Patient>, IPatientRepository
     {
         private readonly DataContext context;
+        private readonly IMapper mapper;
 
-        public PatientRepository(DataContext context)
+        public PatientRepository(DataContext context, IMapper mapper)
         {
             this.context = context;
+            this.mapper = mapper;
         }
 
         public async Task<DbResult<Patient>> AddPatient(PatientViewModel p, Guid issuerId)
         {
-            if (await GetPatientPesel(p.Pesel) != null)
+            if (await GetPatientByPesel(p.Pesel) != null)
             {
                 return DbResult<Patient>.CreateFail("Patient has already been added");
             }
@@ -42,6 +46,7 @@ namespace SSC.Data.Repositories
                 return DbResult<Patient>.CreateFail("Sex is not associated with pesel");
             }
 
+            /*
             var patient = new Patient
             {
                 Pesel = p.Pesel,
@@ -54,14 +59,47 @@ namespace SSC.Data.Repositories
                 PhoneNumber = p.PhoneNumber,
                 User = user,
             };
+            */
 
-            var city = await context.Cities.FirstOrDefaultAsync(x => x.Name == p.City); //dopisywanie miasta do województwa
+            Patient patient = mapper.Map<Patient>(p);
+
+            var city = await context.Cities.FirstOrDefaultAsync(x => x.Name == p.CityName); //dopisywanie miasta do województwa
+
             patient.City = city;
-            patient.Citizenship = await context.Citizenships.FirstOrDefaultAsync(x => x.Name == p.Citizenship);
+            patient.Citizenship = await context.Citizenships.FirstOrDefaultAsync(x => x.Name == p.CitizenshipName);
+            patient.UserId = issuerId;
 
             await context.AddAsync(patient);
             await context.SaveChangesAsync();
+
             return DbResult<Patient>.CreateSuccess("Patient added", patient);
+        }
+
+        public async Task<DbResult<Patient>> EditPatient(PatientUpdateDTO patient, Guid issuerId)
+        {
+            var patientToCheck = await GetPatient(patient.Id);
+
+            /*
+            Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
+            {
+               //dodać sprawdzenie czy istnieją elementy
+            };
+
+            var result = Validate(conditions);
+            if (result != null)
+            {
+                return result;
+            }
+            */
+
+            mapper.Map(patient, patientToCheck);
+            patientToCheck.City = await context.Cities.FirstOrDefaultAsync(x => x.Name == patient.CityName);
+            patientToCheck.Citizenship = await context.Citizenships.FirstOrDefaultAsync(x => x.Name == patient.CitizenshipName);
+
+            context.Update(patientToCheck);
+            await context.SaveChangesAsync();
+
+            return DbResult<Patient>.CreateSuccess("Patient has been edited", patientToCheck);
         }
 
         public async Task<Patient> GetPatient(Guid patientId)
@@ -88,7 +126,6 @@ namespace SSC.Data.Repositories
                 .FirstOrDefaultAsync(x => x.Id == patientId);
         }
 
-        private async Task<Patient> GetPatientPesel(string pesel) => await context.Patients.FirstOrDefaultAsync(x => x.Pesel == pesel);
-
+        private async Task<Patient> GetPatientByPesel(string pesel) => await context.Patients.FirstOrDefaultAsync(x => x.Pesel == pesel);
     }
 }

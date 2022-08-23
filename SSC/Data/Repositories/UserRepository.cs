@@ -125,7 +125,7 @@ namespace SSC.Data.Repositories
 
         private async Task<User> GetUserEmail(string useremail) => await context.Users.FirstOrDefaultAsync(x => x.Email == useremail);
 
-        private async Task<User> GetUser(Guid userId) => await context.Users.FirstOrDefaultAsync(x => x.Id == userId);
+        public async Task<User> GetUser(Guid userId) => await context.Users.FirstOrDefaultAsync(x => x.Id == userId);
 
         private string CreatePassword(int length)
         {

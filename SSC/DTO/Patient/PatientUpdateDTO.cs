@@ -1,14 +1,11 @@
-﻿using SSC.Data.Models;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace SSC.Models
+namespace SSC.DTO.Patient
 {
-    public class PatientViewModel
+    public class PatientUpdateDTO
     {
         [Required]
-        [MinLength(11)]
-        [MaxLength(11)]
-        public string? Pesel { get; set; }
+        public Guid Id { get; set; }
 
         [Required]
         [MaxLength(50)]
@@ -17,12 +14,6 @@ namespace SSC.Models
         [Required]
         [MaxLength(50)]
         public string? Surname { get; set; }
-
-        [Required]
-        public char? Sex { get; set; }
-
-        [Required]
-        public DateTime? BirthDate { get; set; }
 
         [Required]
         [MaxLength(50)]

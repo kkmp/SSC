@@ -64,6 +64,11 @@ namespace SSC.Data.Repositories
             return DbResult<Treatment>.CreateSuccess("Treatment has been edited", treatmentToCheck);
         }
 
+        public async Task<Treatment> GetTreatment(Guid treatmentId)
+        {
+            return await context.Treatments.FirstOrDefaultAsync(x => x.Id == treatmentId);
+        }
+
         public async Task<List<Treatment>> GetTreatments(Guid provinceId, DateTime dateFrom, DateTime dateTo)
         {
             return await context.Treatments

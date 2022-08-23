@@ -22,14 +22,12 @@ namespace SSC.Data.Repositories
 
         public async Task<List<TreatmentDiseaseCourse>> GetTreatmentDiseaseCourses(Guid provinceId, DateTime dateFrom, DateTime dateTo)
         {
-            /*return await context.TreatmentDiseaseCourses
+                return await context.TreatmentDiseaseCourses
                 .Include(x => x.DiseaseCourse)
-                //.Include(x => x.Patient)
-                //.ThenInclude(x => x.City)
-                .Where(x => x.Patient.City.ProvinceId == provinceId && x.Date >= dateFrom && x.Date <= dateTo)
+                .Include(x => x.Treatment)
+                .ThenInclude(x => x.Patient.City)
+                .Where(x => x.Treatment.Patient.City.ProvinceId == provinceId && x.Date >= dateFrom && x.Date <= dateTo)
                .ToListAsync();      
-            */
-            return null;
         }
 
         public async Task<DbResult<TreatmentDiseaseCourse>> AddTreatmentDiseaseCourse(TreatmentDiseaseCourseViewModel treatmentDiseaseCourse, Guid issuerId)
@@ -82,7 +80,6 @@ namespace SSC.Data.Repositories
                 .Include(x => x.DiseaseCourse)
                 .Where(x => x.Treatment.PatientId == patientId)
                 .ToListAsync();
-            return null;
         }
 
         public async Task<DbResult<TreatmentDiseaseCourse>> EditTreatmentDiseaseCourse(TreatmentDiseaseCourseEditViewModel treatmentDiseaseCourse, Guid issuerId)

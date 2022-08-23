@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using SSC.Data.Models;
 using SSC.Data.Repositories;
 using SSC.DTO;
+using SSC.DTO.Patient;
 using SSC.Models;
 
 namespace SSC.Controllers
@@ -31,6 +32,27 @@ namespace SSC.Controllers
             {
                 var issuerId = GetUserId();
                 var result = await patientRepository.AddPatient(patient, issuerId);
+                var msg = new { errors = new { Message = new string[] { result.Message } } };
+                if (result.Success)
+                {
+                    return Ok(msg);
+                }
+                else
+                {
+                    return BadRequest(msg);
+                }
+            }
+            return BadRequest(new { message = "Invalid data" });
+        }
+
+        [Authorize]
+        [HttpPut("editPatient")]
+        public async Task<IActionResult> EditPatient(PatientUpdateDTO patient)
+        {
+            if (ModelState.IsValid)
+            {
+                var issuerId = GetUserId();
+                var result = await patientRepository.EditPatient(patient, issuerId);
                 var msg = new { errors = new { Message = new string[] { result.Message } } };
                 if (result.Success)
                 {

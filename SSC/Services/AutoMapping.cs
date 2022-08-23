@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using SSC.Data.Models;
 using SSC.DTO;
+using SSC.DTO.Patient;
 using SSC.Models;
 
 namespace SSC.Services
@@ -46,6 +47,9 @@ namespace SSC.Services
             CreateMap<TreatmentDiseaseCourseViewModel, TreatmentDiseaseCourse>();
             CreateMap<TreatmentDiseaseCourseEditViewModel, TreatmentDiseaseCourse>();
             CreateMap<TreatmentEditViewModel, Treatment>();
+            CreateMap<TestViewModel, Test>();
+            CreateMap<PatientViewModel, Patient>();
+            CreateMap<PatientUpdateDTO, Patient>();
         }
     }
 }
