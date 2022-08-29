@@ -63,13 +63,14 @@ namespace SSC.Controllers
             {
                 var issuerId = GetUserId();
                 var result = await treatmentRepository.EditTreatment(treatment, issuerId);
+                var msg = new { errors = new { Message = new string[] { result.Message } } };
                 if (result.Success)
                 {
-                    return Ok(result);
+                    return Ok(msg);
                 }
                 else
                 {
-                    return BadRequest(result);
+                    return BadRequest(msg);
                 }
             }
             return BadRequest(new { message = "Invalid data" });

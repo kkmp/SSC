@@ -43,7 +43,7 @@ namespace SSC.Data.Repositories
 
         public async Task<DbResult<MedicalHistory>> EditMedicalHistory(MedicalHistoryEditViewModel medicalHistory, Guid issuerId)
         {
-            var medicalHistoryUpdate = await context.MedicalHistories.FirstOrDefaultAsync(x => x.Id == medicalHistory.Id);
+            var medicalHistoryUpdate = await GetMedicalHistory(medicalHistory.Id);
 
             if (medicalHistoryUpdate == null)
             {
@@ -74,11 +74,20 @@ namespace SSC.Data.Repositories
             return DbResult<MedicalHistory>.CreateSuccess("Medical history has been edited", medicalHistoryUpdate);
         }
 
-        public async Task<List<MedicalHistory>> ShowMedicalHistories(Guid patientId)
+        public async Task<DbResult<List<MedicalHistory>>> ShowMedicalHistories(Guid patientId)
         {
-            return await context.MedicalHistories
+            if (await patientRepository.GetPatient(patientId) == null)
+            {
+                return DbResult<List<MedicalHistory>>.CreateFail("Patient does not exist");
+            }
+
+            var result = await context.MedicalHistories
                 .Include(x => x.User.Role)
                 .Where(x => x.PatientId == patientId).ToListAsync();
+
+            return DbResult<List<MedicalHistory>>.CreateSuccess("Success", result);
         }
+
+        private async Task<MedicalHistory> GetMedicalHistory(Guid medicalHistoryId) => await context.MedicalHistories.FirstOrDefaultAsync(x => x.Id == medicalHistoryId);
     }
 }

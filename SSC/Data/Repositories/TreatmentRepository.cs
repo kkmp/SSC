@@ -45,7 +45,7 @@ namespace SSC.Data.Repositories
                 { () =>  treatmentToCheck == null, "Treatment does not exist"},
                 { () =>  treatmentToCheck.UserId != issuerId, "Only the user who added the treatment can edit"},
                 { () =>  treatmentToCheck.EndDate != null, "The treatment cannot be edited anymore - the treatment has been ended"},
-                { () =>  context.Treatments.AnyAsync(x => treatment.StartDate < x.EndDate && treatment.Id != x.Id && x.PatientId == treatmentToCheck.PatientId).Result, "The tratment date cannot be older than another tratment start date."},
+               // { () =>  context.Treatments.AnyAsync(x => treatment.StartDate < x.EndDate && treatment.Id != x.Id && x.PatientId == treatmentToCheck.PatientId).Result, "The tratment date cannot be older than another tratment start date."},
                 { () =>  context.Tests.AnyAsync(x => x.TreatmentId == treatment.Id && treatment.StartDate > x.TestDate).Result, "Date of treatment cannot be after existing test" },
                 { () =>  context.TreatmentDiseaseCourses.AnyAsync(x => x.TreatmentId == treatment.Id && treatment.StartDate > x.Date).Result, "Date of treatment cannot be after existing treatment disease course entry" },
             };

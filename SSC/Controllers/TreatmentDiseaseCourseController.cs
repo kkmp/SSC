@@ -49,8 +49,11 @@ namespace SSC.Controllers
             if (ModelState.IsValid)
             {
                 var result = await treatmentDiseaseCourseRepository.ShowTreatmentDiseaseCourses(patientId.Id);
-                //select się może popsuć gdy null
-                return Ok(mapper.Map<List<TreatmentDiseaseCourseDTO>>(result));
+                if (!result.Success)
+                {
+                    return BadRequest(new { message = result.Message });
+                }
+                return Ok(mapper.Map<List<TreatmentDiseaseCourseDTO>>(result.Data));
             }
             return BadRequest(new { message = "Invalid data" });
         }
@@ -62,13 +65,14 @@ namespace SSC.Controllers
             {
                 var issuerId = GetUserId();
                 var result = await treatmentDiseaseCourseRepository.EditTreatmentDiseaseCourse(treatmentDiseaseCourse, issuerId);
+                var msg = new { errors = new { Message = new string[] { result.Message } } };
                 if (result.Success)
                 {
-                    return Ok(result);
+                    return Ok(msg);
                 }
                 else
                 {
-                    return BadRequest(result);
+                    return BadRequest(msg);
                 }
             }
             return BadRequest(new { message = "Invalid data" });

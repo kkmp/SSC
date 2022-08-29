@@ -22,38 +22,28 @@ namespace SSC.Data.Repositories
 
         public async Task<DbResult<Test>> AddTest(TestViewModel test, Guid issuerId)
         {
-            //sprawdzenie czy poszczególne wartości istnieją
-            //!!!
-            if (await GetTestByOrderNumber(test.OrderNumber) != null)
+            Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
-                return DbResult<Test>.CreateFail("Test has already been added");
-            }
-
-            //!!!
-            if (await patientRepository.GetPatient(test.PatientId.Value) == null)
-            {
-                return DbResult<Test>.CreateFail("Patient does not exist");
-            }
-
-            /*
-            var newTest = new Test
-            {
-                TestDate = test.TestDate,
-                OrderNumber = test.OrderNumber,
-                ResultDate = test.ResultDate,
-                Result = test.Result,
-                TestType = await context.TestTypes.FirstOrDefaultAsync(x => x.Name == test.TestType),
-                UserId = issuerId,
-                PlaceId = test.Place
+               { () => GetTestByOrderNumber(test.OrderNumber).Result != null, "Test has already been added" },
+               { () => patientRepository.GetPatient(test.PatientId.Value).Result == null, "Patient does not exist" },
+               { () => !context.TestTypes.Any(x => x.Name == test.TestTypeName), "Test type does not exist" },
+               { () => !context.Places.Any(x => x.Id == test.PlaceId), "Place does not exist" },
+               { () => test.TestDate > test.ResultDate, "Test result date cannot be earlier than the test date" }
             };
-            */
+
+            var result = Validate(conditions);
+            if (result != null)
+            {
+                return result;
+            }
+
             var newTest = mapper.Map<Test>(test);
 
             newTest.TestType = await context.TestTypes.FirstOrDefaultAsync(x => x.Name == test.TestTypeName);
             newTest.UserId = issuerId;
 
             var treatment = await treatmentRepository.TreatmentLasts(test.PatientId.Value);
-           
+
             if (treatment == null)
             {
                 var newTreatment = new TreatmentViewModel
@@ -66,15 +56,19 @@ namespace SSC.Data.Repositories
                 treatment = info.Data;
             }
 
-            //!!!
-            if(test.TestDate < treatment.StartDate)
+            conditions.Clear();
+            conditions.Add(() => test.TestDate < treatment.StartDate, "Cannot add entry before treatment start date");
+            conditions.Add(() => context.Tests.Any(x => test.TestDate <= x.TestDate && x.TreatmentId == treatment.Id), "Cannot add entry before another test");
+
+            result = Validate(conditions);
+            if (result != null)
             {
-                return DbResult<Test>.CreateFail("Test date cannot be older than treatment start date");
+                return result;
             }
 
             newTest.TreatmentId = treatment.Id;
 
-            switch(newTest.Result)
+            switch (newTest.Result)
             {
                 case 'P':
                     treatment.IsCovid = true;
@@ -105,20 +99,22 @@ namespace SSC.Data.Repositories
             var testToCheck = await GetTestByOrderNumber(test.OrderNumber);
             var treatment = await treatmentRepository.GetTreatment(testToCheck.TreatmentId.Value);
 
+            //możliwość edycji tylko najnowszego
+            //brak możliwości dodania kilku z tą samą datą
+
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
                 { () => testToCheck == null, "Test does not exist"},
                 { () => testToCheck.UserId != issuerId, "Only the user who added the test can edit"},
                 { () => treatment.EndDate != null, "The test cannot be edited anymore - the treatment has been ended"},
-                { () => test.TestDate < treatment.StartDate, "Test date cannot be older than the treatment start date" },
-                { () => test.TestDate > test.ResultDate,  "The test result date cannot be earlier than the test date"},
+                { () => test.TestDate > test.ResultDate,  "Test result date cannot be earlier than the test date"},
                 { () => !context.Places.AnyAsync(x => x.Id == test.PlaceId).Result, "Place does not exist" },
-                { () => test.TestDate < treatment.StartDate || test.ResultDate < treatment.StartDate, "Cannot add entry before treatment start date" },
+                { () => test.TestDate < treatment.StartDate, "Cannot add entry before treatment start date" },
                 { () => context.Tests.Any(x => x.Id != testToCheck.Id && test.TestDate < x.TestDate && x.TreatmentId == testToCheck.TreatmentId) , "Cannot add entry before another test" }
             };
 
             var result = Validate(conditions);
-            if(result != null)
+            if (result != null)
             {
                 return result;
             }
@@ -128,6 +124,7 @@ namespace SSC.Data.Repositories
 
             context.Update(testToCheck);
             await context.SaveChangesAsync();
+
             return DbResult<Test>.CreateSuccess("Test has been edited", testToCheck);
         }
 
@@ -148,16 +145,31 @@ namespace SSC.Data.Repositories
             return DbResult<List<Test>>.CreateSuccess("Success", result);
         }
 
-        public async Task<Test> TestDetails(Guid testId)
+        public async Task<DbResult<Test>> TestDetails(Guid testId)
         {
-            return await context.Tests
+            Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
+            {
+                { () => GetTest(testId).Result == null, "Test does not exist" }
+            };
+
+            var result = Validate(conditions);
+            if (result != null)
+            {
+                return result;
+            }
+
+            var data = await context.Tests
                 .Include(x => x.TestType)
                 .Include(x => x.Treatment)
                 .Include(x => x.Place)
                 .Include(x => x.User.Role)
                 .FirstOrDefaultAsync(x => x.Id == testId);
+
+            return DbResult<Test>.CreateSuccess("Success", data);
         }
 
         private async Task<Test> GetTestByOrderNumber(string orderNumber) => await context.Tests.FirstOrDefaultAsync(x => x.OrderNumber == orderNumber);
+
+        private async Task<Test> GetTest(Guid testId) => await context.Tests.FirstOrDefaultAsync(x => x.Id == testId);
     }
 }

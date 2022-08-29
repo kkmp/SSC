@@ -69,7 +69,13 @@ namespace SSC.Controllers
             if (ModelState.IsValid)
             {
                 var result = await medicalHistoryRepository.ShowMedicalHistories(patientId.Id);
-                return Ok(mapper.Map<List<MedicalHistoryDTO>>(result));
+
+                if (!result.Success)
+                {
+                    return BadRequest(new { message = result.Message });
+                }
+
+                return Ok(mapper.Map<List<MedicalHistoryDTO>>(result.Data));
             }
             return BadRequest(new { message = "Invalid data" });
         }

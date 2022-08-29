@@ -22,22 +22,22 @@ namespace SSC.Data.Repositories
 
         public async Task<List<TreatmentDiseaseCourse>> GetTreatmentDiseaseCourses(Guid provinceId, DateTime dateFrom, DateTime dateTo)
         {
-                return await context.TreatmentDiseaseCourses
-                .Include(x => x.DiseaseCourse)
-                .Include(x => x.Treatment)
-                .ThenInclude(x => x.Patient.City)
-                .Where(x => x.Treatment.Patient.City.ProvinceId == provinceId && x.Date >= dateFrom && x.Date <= dateTo)
-               .ToListAsync();      
+            return await context.TreatmentDiseaseCourses
+            .Include(x => x.DiseaseCourse)
+            .Include(x => x.Treatment)
+            .ThenInclude(x => x.Patient.City)
+            .Where(x => x.Treatment.Patient.City.ProvinceId == provinceId && x.Date >= dateFrom && x.Date <= dateTo)
+           .ToListAsync();
         }
 
         public async Task<DbResult<TreatmentDiseaseCourse>> AddTreatmentDiseaseCourse(TreatmentDiseaseCourseViewModel treatmentDiseaseCourse, Guid issuerId)
         {
-            var patient = await patientRepository.GetPatient(treatmentDiseaseCourse.PatientId.Value);
             var diseaseCourse = await context.DiseaseCourses.FirstOrDefaultAsync(x => x.Name == treatmentDiseaseCourse.DiseaseCourseName);
+
             var conditions = new Dictionary<Func<bool>, string>
             {
-                { () => patient == null, "Patient not found" },
-                { () => diseaseCourse == null, "Disease Course not found" }
+                { () => patientRepository.GetPatient(treatmentDiseaseCourse.PatientId.Value).Result == null, "Patient does not exist" },
+                { () => diseaseCourse == null, "Disease course does not exist" }
             };
 
             var result = Validate(conditions);
@@ -53,49 +53,71 @@ namespace SSC.Data.Repositories
                 {
                     StartDate = DateTime.Now,
                     PatientId = treatmentDiseaseCourse.PatientId.Value,
-                    TreatmentStatusName = "Rozpoczęto"
+                    TreatmentStatusName = "Rozpoczęto" //z seedera
                 };
                 var info = await treatmentRepository.AddTreatment(newTreatment, issuerId);
                 treatment = info.Data;
             }
 
-            if (treatmentDiseaseCourse.Date < treatment.StartDate)
+            conditions.Clear();
+            conditions.Add(() => treatmentDiseaseCourse.Date < treatment.StartDate, "Cannot add entry before treatment start date");
+            conditions.Add(() => context.TreatmentDiseaseCourses.Any(x => treatmentDiseaseCourse.Date <= x.Date && x.TreatmentId == treatment.Id), "Cannot add entry before another treatment disease course");
+
+            result = Validate(conditions);
+            if (result != null)
             {
-                return DbResult<TreatmentDiseaseCourse>.CreateFail("Test date cannot be older than treatment start date");
+                return result;
             }
 
             var newTreatmentDiseaseCourse = mapper.Map<TreatmentDiseaseCourse>(treatmentDiseaseCourse);
+
             newTreatmentDiseaseCourse.TreatmentId = treatment.Id;
             newTreatmentDiseaseCourse.DiseaseCourse = diseaseCourse;
             newTreatmentDiseaseCourse.UserId = issuerId;
+
             await context.TreatmentDiseaseCourses.AddAsync(newTreatmentDiseaseCourse);
             await context.SaveChangesAsync();
 
             return DbResult<TreatmentDiseaseCourse>.CreateSuccess("Treatment disease course added", newTreatmentDiseaseCourse);
         }
 
-        public async Task<List<TreatmentDiseaseCourse>> ShowTreatmentDiseaseCourses(Guid patientId)
+        public async Task<DbResult<List<TreatmentDiseaseCourse>>> ShowTreatmentDiseaseCourses(Guid patientId)
         {
-            return await context.TreatmentDiseaseCourses
+            if (await patientRepository.GetPatient(patientId) == null)
+            {
+                return DbResult<List<TreatmentDiseaseCourse>>.CreateFail("Patient does not exist");
+            }
+
+            var data =  await context.TreatmentDiseaseCourses
                 .Include(x => x.DiseaseCourse)
                 .Where(x => x.Treatment.PatientId == patientId)
                 .ToListAsync();
+
+            return DbResult<List<TreatmentDiseaseCourse>>.CreateSuccess("Success", data);
         }
 
         public async Task<DbResult<TreatmentDiseaseCourse>> EditTreatmentDiseaseCourse(TreatmentDiseaseCourseEditViewModel treatmentDiseaseCourse, Guid issuerId)
         {
-            var chekTreatmentDiseaseCourse = await context.TreatmentDiseaseCourses.FirstOrDefaultAsync(x => treatmentDiseaseCourse.Id == x.Id);
-            var treatment = await context.Treatments.FirstOrDefaultAsync(x => x.Id == chekTreatmentDiseaseCourse.TreatmentId);
+            var checkTreatmentDiseaseCourse = await GetTreatmentDiseaseCourse(treatmentDiseaseCourse.Id);
+
+            if (checkTreatmentDiseaseCourse == null)
+            {
+                return DbResult<TreatmentDiseaseCourse>.CreateFail("Treatment disease course entry does not exist");
+            }
+
+            var treatment = await treatmentRepository.GetTreatment(checkTreatmentDiseaseCourse.TreatmentId.Value);
             var diseaseCourse = await context.DiseaseCourses.FirstOrDefaultAsync(x => x.Name == treatmentDiseaseCourse.DiseaseCourseName);
 
+            //możliwość edycji tylko najnowszego
+            //brak możliwości dodania kilku z tą samą datą
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
-                { () =>  treatmentDiseaseCourse == null, "Treatment disease course entry does not exist"},
-                { () =>  chekTreatmentDiseaseCourse.UserId != issuerId, "Only the user who added the treatment disease course can edit"},
-                { () =>  treatment.EndDate != null, "The treatment disease course cannot be edited anymore - the treatment has been ended"},
-                { () =>  treatmentDiseaseCourse.Date < treatment.StartDate, "The test date and result date cannot be earlier than the treatment start date"},
-                { () =>  context.TreatmentDiseaseCourses.OrderByDescending(x => x.Date).FirstOrDefaultAsync().Result.Date > treatmentDiseaseCourse.Date, "Cannot add entry before another treatment disease course" },
-                { () => diseaseCourse == null, "Disease course not found" }
+                { () => checkTreatmentDiseaseCourse.UserId != issuerId, "Only the user who added the treatment disease course entry can edit"},
+                { () => treatment.EndDate != null, "The treatment disease course entry cannot be edited anymore - the treatment has been ended"},
+                { () => treatmentDiseaseCourse.Date < treatment.StartDate, "The treatment disease course entry date cannot be earlier than the treatment start date"},
+                //{ () => context.TreatmentDiseaseCourses.OrderByDescending(x => x.Date).FirstOrDefaultAsync().Result.Date > treatmentDiseaseCourse.Date, "Cannot add entry before another treatment disease course" },
+                { () => context.TreatmentDiseaseCourses.Any(x => x.Id != treatmentDiseaseCourse.Id && treatmentDiseaseCourse.Date <= x.Date && x.TreatmentId == checkTreatmentDiseaseCourse.TreatmentId) , "Cannot edit entry before another treatment disease course" },
+                { () => diseaseCourse == null, "Disease course not found" },
             };
 
             var result = Validate(conditions);
@@ -104,12 +126,16 @@ namespace SSC.Data.Repositories
                 return result;
             }
 
-            mapper.Map(treatmentDiseaseCourse, chekTreatmentDiseaseCourse);
-            chekTreatmentDiseaseCourse.DiseaseCourse = diseaseCourse;
+            mapper.Map(treatmentDiseaseCourse, checkTreatmentDiseaseCourse);
 
-            context.Update(chekTreatmentDiseaseCourse);
+            checkTreatmentDiseaseCourse.DiseaseCourse = diseaseCourse;
+
+            context.Update(checkTreatmentDiseaseCourse);
             await context.SaveChangesAsync();
-            return DbResult<TreatmentDiseaseCourse>.CreateSuccess("Test has been edited", chekTreatmentDiseaseCourse);
+
+            return DbResult<TreatmentDiseaseCourse>.CreateSuccess("Treatment disease course entry has been edited", checkTreatmentDiseaseCourse);
         }
+
+        private async Task<TreatmentDiseaseCourse> GetTreatmentDiseaseCourse(Guid treatmentDiseaseCourseId) => await context.TreatmentDiseaseCourses.FirstOrDefaultAsync(x => x.Id == treatmentDiseaseCourseId);
     }
 }

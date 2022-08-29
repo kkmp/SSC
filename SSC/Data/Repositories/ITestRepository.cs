@@ -9,6 +9,6 @@ namespace SSC.Data.Repositories
         Task<DbResult<Test>> AddTest(TestViewModel test, Guid issuerId);
         Task<DbResult<Test>> EditTest(TestEditViewModel test, Guid issuerId);
         Task<DbResult<List<Test>>> ShowTests(Guid patientId);
-        Task<Test> TestDetails(Guid testId);
+        Task<DbResult<Test>> TestDetails(Guid testId);
     }
 }

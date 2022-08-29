@@ -73,7 +73,13 @@ namespace SSC.Controllers
             if (ModelState.IsValid)
             {
                 var result = await patientRepository.PatientDetails(patientId.Id);
-                return Ok(mapper.Map<PatientDTO>(result));
+
+                if (!result.Success)
+                {
+                    return BadRequest(new { message = result.Message });
+                }
+
+                return Ok(mapper.Map<PatientDTO>(result.Data));
             }
             return BadRequest(new { message = "Invalid data" });
         }

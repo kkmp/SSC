@@ -19,70 +19,18 @@ namespace SSC.Data.Repositories
             this.mapper = mapper;
         }
 
-        public async Task<DbResult<Patient>> AddPatient(PatientViewModel p, Guid issuerId)
+        public async Task<DbResult<Patient>> AddPatient(PatientViewModel patient, Guid issuerId)
         {
-            if (await GetPatientByPesel(p.Pesel) != null)
-            {
-                return DbResult<Patient>.CreateFail("Patient has already been added");
-            }
+            var peselValidator = new PeselValidator(patient.Pesel);
 
-            var user = await context.Users.FirstOrDefaultAsync(x => x.Id == issuerId);
-            if(user == null)
-            {
-                return DbResult<Patient>.CreateFail("Invalid issuer id");
-            }
-
-            var peselValidator = new PeselValidator(p.Pesel);
-            if(!peselValidator.Valid)
-            {
-                return DbResult<Patient>.CreateFail("Invalid pesel");
-            }
-            if(peselValidator.Date != p.BirthDate)
-            {
-                return DbResult<Patient>.CreateFail("Birthdate is not associated with pesel");
-            }
-            if(peselValidator.Sex != p.Sex.ToString())
-            {
-                return DbResult<Patient>.CreateFail("Sex is not associated with pesel");
-            }
-
-            /*
-            var patient = new Patient
-            {
-                Pesel = p.Pesel,
-                Name = p.Name,
-                Surname = p.Surname,
-                Sex = p.Sex,
-                BirthDate = p.BirthDate,
-                Street = p.Street,
-                Address = p.Address,
-                PhoneNumber = p.PhoneNumber,
-                User = user,
-            };
-            */
-
-            Patient patient = mapper.Map<Patient>(p);
-
-            var city = await context.Cities.FirstOrDefaultAsync(x => x.Name == p.CityName); //dopisywanie miasta do województwa
-
-            patient.City = city;
-            patient.Citizenship = await context.Citizenships.FirstOrDefaultAsync(x => x.Name == p.CitizenshipName);
-            patient.UserId = issuerId;
-
-            await context.AddAsync(patient);
-            await context.SaveChangesAsync();
-
-            return DbResult<Patient>.CreateSuccess("Patient added", patient);
-        }
-
-        public async Task<DbResult<Patient>> EditPatient(PatientUpdateDTO patient, Guid issuerId)
-        {
-            var patientToCheck = await GetPatient(patient.Id);
-
-            /*
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
-               //dodać sprawdzenie czy istnieją elementy
+                { () => GetPatientByPesel(patient.Pesel).Result != null, "Patient has already been added" },
+                { () => !peselValidator.Valid, "Invalid pesel" },
+                { () => peselValidator.Date != patient.BirthDate, "Birthdate is not associated with pesel" },
+                { () => peselValidator.Sex != patient.Sex.ToString(), "Sex is not associated with pesel" },
+                { () => !context.Cities.Any(x => x.Name == patient.CityName), "City does not exist" },
+                { () => !context.Citizenships.Any(x => x.Name == patient.CitizenshipName), "Citizenship does not exist" }
             };
 
             var result = Validate(conditions);
@@ -90,9 +38,40 @@ namespace SSC.Data.Repositories
             {
                 return result;
             }
-            */
+
+            Patient newPatient = mapper.Map<Patient>(patient);
+
+            var city = await context.Cities.FirstOrDefaultAsync(x => x.Name == patient.CityName); //dopisywanie miasta do województwa
+
+            newPatient.City = city;
+            newPatient.Citizenship = await context.Citizenships.FirstOrDefaultAsync(x => x.Name == patient.CitizenshipName);
+            newPatient.UserId = issuerId;
+
+            await context.AddAsync(newPatient);
+            await context.SaveChangesAsync();
+
+            return DbResult<Patient>.CreateSuccess("Patient added", newPatient);
+        }
+
+        public async Task<DbResult<Patient>> EditPatient(PatientUpdateDTO patient, Guid issuerId)
+        {
+            var patientToCheck = await GetPatient(patient.Id);
+
+            Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
+            {
+               { () => GetPatient(patient.Id).Result == null, "Patient does not exist" },
+               { () => !context.Cities.Any(x => x.Name == patient.CityName), "City does not exist" },
+               { () => !context.Citizenships.Any(x => x.Name == patient.CitizenshipName), "Citizenship does not exist" }
+            };
+
+            var result = Validate(conditions);
+            if (result != null)
+            {
+                return result;
+            }
 
             mapper.Map(patient, patientToCheck);
+
             patientToCheck.City = await context.Cities.FirstOrDefaultAsync(x => x.Name == patient.CityName);
             patientToCheck.Citizenship = await context.Citizenships.FirstOrDefaultAsync(x => x.Name == patient.CitizenshipName);
 
@@ -117,13 +96,26 @@ namespace SSC.Data.Repositories
             return await context.Patients.Where(condition).ToListAsync();
         }
 
-        public async Task<Patient> PatientDetails(Guid patientId)
+        public async Task<DbResult<Patient>> PatientDetails(Guid patientId)
         {
-            return await context.Patients
+            Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
+            {
+               { () => GetPatient(patientId).Result == null, "Patient does not exist" },
+            };
+
+            var result = Validate(conditions);
+            if (result != null)
+            {
+                return result;
+            }
+
+            var data = await context.Patients
                 .Include(x => x.City)
                 .Include(x => x.Citizenship)
                 .Include(x => x.City.Province)
                 .FirstOrDefaultAsync(x => x.Id == patientId);
+
+            return DbResult<Patient>.CreateSuccess("Success", data);
         }
 
         private async Task<Patient> GetPatientByPesel(string pesel) => await context.Patients.FirstOrDefaultAsync(x => x.Pesel == pesel);
