@@ -9,8 +9,9 @@ namespace SSC.Data.Repositories
         Task<DbResult<User>> AddUser(UserViewModel user);
         Task<List<User>> GetUsers();
         Task<DbResult<User>> ChangeActivity(Guid userId, Guid issuerId, bool activation);
-        Task<User> UserDetails(Guid userId);
+        Task<DbResult<User>> UserDetails(Guid userId);
         Task<DbResult<User>> EditUser(UserEditViewModel user, Guid issuerId);
         Task<User> GetUser(Guid userId);
+        Task<User> GetUserByEmail(string email);
     }
 }

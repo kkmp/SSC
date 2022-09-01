@@ -3,7 +3,7 @@ using SSC.Data.Models;
 
 namespace SSC.Data.Repositories
 {
-    public class RoleRepository : IRoleRepository
+    public class RoleRepository : BaseRepository<Role>, IRoleRepository
     {
         private readonly DataContext context;
 
@@ -12,9 +12,22 @@ namespace SSC.Data.Repositories
             this.context = context;
         }
 
-        public async Task<Role> GetRole(Guid roleId)
+        public async Task<DbResult<Role>> GetRole(Guid roleId)
         {
-            return await context.Roles.FirstOrDefaultAsync(x => x.Id == roleId);
+            var data = await context.Roles.FirstOrDefaultAsync(x => x.Id == roleId);
+
+            Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
+            {
+                { () => data == null, "Role does not exist" }
+            };
+
+            var result = Validate(conditions);
+            if (result != null)
+            {
+                return result;
+            }
+
+            return DbResult<Role>.CreateSuccess("Success", data);
         }
     }
 }

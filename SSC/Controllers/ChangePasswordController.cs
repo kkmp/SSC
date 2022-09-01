@@ -1,12 +1,67 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SSC.Data.Repositories;
+using SSC.DTO;
+using SSC.Models;
+using SSC.Services;
 
 namespace SSC.Controllers
 {
-    [AllowAnonymous]
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class ChangePasswordController : Controller
+    public class ChangePasswordController : CommonController
     {
+        private readonly IUserRepository userRepository;
+        private readonly IChangePasswordRepository changePasswordRepository;
+        private readonly IMailService mailService;
+
+        public ChangePasswordController(IUserRepository userRepository, IChangePasswordRepository changePasswordRepository, IMailService mailService)
+        {
+            this.userRepository = userRepository;
+            this.changePasswordRepository = changePasswordRepository;
+            this.mailService = mailService;
+        }
+
+        [AllowAnonymous]
+        [HttpPost("getCode")]
+        public async Task<IActionResult> GetCode(EmailDTO model)
+        {
+            var user = await userRepository.GetUserByEmail(model.Email);
+            if(user == null)
+            {
+                return NotFound("User's email not found");
+            }
+            var result = await changePasswordRepository.AddCode(user.Id);
+            if(!result.Success)
+            {
+                return BadRequest(result.Message);
+            }
+
+            await mailService.SendEmailAsync(new MailRequest(model.Email, "Zmiana hasła", "Twój link do zmiany hasła: http://localhost:7090/api/ChangePassword/code/" + result.Data.Code));
+
+            return Ok("Sent");
+        }
+
+        [HttpPut("changePassword")]
+        public async Task<IActionResult> ChangePassword(string password)
+        {
+            if (ModelState.IsValid)
+            {
+                var issuerId = GetUserId();
+                var result = await changePasswordRepository.ChangePassword(password, issuerId);
+
+                var msg = new { message = result.Message };
+                if (result.Success)
+                {
+                    return Ok(msg);
+                }
+                else
+                {
+                    return BadRequest(msg);
+                }
+            }
+            return BadRequest(new { message = "Invalid data" });
+        }
     }
 }

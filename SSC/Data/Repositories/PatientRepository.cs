@@ -29,8 +29,8 @@ namespace SSC.Data.Repositories
                 { () => !peselValidator.Valid, "Invalid pesel" },
                 { () => peselValidator.Date != patient.BirthDate, "Birthdate is not associated with pesel" },
                 { () => peselValidator.Sex != patient.Sex.ToString(), "Sex is not associated with pesel" },
-                { () => !context.Cities.Any(x => x.Name == patient.CityName), "City does not exist" },
-                { () => !context.Citizenships.Any(x => x.Name == patient.CitizenshipName), "Citizenship does not exist" }
+                { () => !context.Cities.AnyAsync(x => x.Name == patient.CityName).Result, "City does not exist" },
+                { () => !context.Citizenships.AnyAsync(x => x.Name == patient.CitizenshipName).Result, "Citizenship does not exist" }
             };
 
             var result = Validate(conditions);
@@ -60,8 +60,8 @@ namespace SSC.Data.Repositories
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
                { () => GetPatient(patient.Id).Result == null, "Patient does not exist" },
-               { () => !context.Cities.Any(x => x.Name == patient.CityName), "City does not exist" },
-               { () => !context.Citizenships.Any(x => x.Name == patient.CitizenshipName), "Citizenship does not exist" }
+               { () => !context.Cities.AnyAsync(x => x.Name == patient.CityName).Result, "City does not exist" },
+               { () => !context.Citizenships.AnyAsync(x => x.Name == patient.CitizenshipName).Result, "Citizenship does not exist" }
             };
 
             var result = Validate(conditions);

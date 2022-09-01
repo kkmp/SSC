@@ -9,30 +9,41 @@ namespace SSC.Data.Repositories
     {
         private readonly DataContext context;
         private readonly IMapper mapper;
+        private readonly IPatientRepository patientRepository;
 
-        public TreatmentRepository(DataContext context, IMapper mapper)
+        public TreatmentRepository(DataContext context, IMapper mapper, IPatientRepository patientRepository)
         {
             this.context = context;
             this.mapper = mapper;
+            this.patientRepository = patientRepository;
         }
 
         public async Task<DbResult<Treatment>> AddTreatment(TreatmentViewModel treatment, Guid issuerId)
         {
-            if (await context.Treatments.AnyAsync(x => x.PatientId == treatment.PatientId && x.EndDate == null))
-            {
-                return DbResult<Treatment>.CreateFail("Last treatment is not ended");
-            }
+            var treatmentStatus = await context.TreatmentStatuses.FirstOrDefaultAsync(x => x.Name == treatment.TreatmentStatusName); //osobna metoda?
 
-            if(await context.Treatments.AnyAsync(x => treatment.StartDate > x.StartDate && treatment.StartDate < x.EndDate && x.PatientId == treatment.PatientId))
+            Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
-                return DbResult<Treatment>.CreateFail("Incorrect treatment start date");
+                { () => patientRepository.GetPatient(treatment.PatientId.Value).Result == null, "Patient does not exist" },
+                { () => treatmentStatus == null, "Treatment status does not exist" },
+                { () => context.Treatments.AnyAsync(x => x.PatientId == treatment.PatientId && x.EndDate == null).Result, "Last treatment is not ended"},
+                { () => context.Treatments.AnyAsync(x => treatment.StartDate > x.StartDate && treatment.StartDate < x.EndDate && x.PatientId == treatment.PatientId).Result, "Incorrect treatment start date" }
+            };
+
+            var result = Validate(conditions);
+            if (result != null)
+            {
+                return result;
             }
 
             var newTreatment = mapper.Map<Treatment>(treatment);
+
             newTreatment.UserId = issuerId;
-            newTreatment.TreatmentStatus = await context.TreatmentStatuses.FirstOrDefaultAsync(x => x.Name == treatment.TreatmentStatusName);
+            newTreatment.TreatmentStatus = treatmentStatus;
+
             await context.Treatments.AddAsync(newTreatment);
             await context.SaveChangesAsync();
+
             return DbResult<Treatment>.CreateSuccess("Treatment added", newTreatment);
         }
 
@@ -45,7 +56,8 @@ namespace SSC.Data.Repositories
                 { () =>  treatmentToCheck == null, "Treatment does not exist"},
                 { () =>  treatmentToCheck.UserId != issuerId, "Only the user who added the treatment can edit"},
                 { () =>  treatmentToCheck.EndDate != null, "The treatment cannot be edited anymore - the treatment has been ended"},
-               // { () =>  context.Treatments.AnyAsync(x => treatment.StartDate < x.EndDate && treatment.Id != x.Id && x.PatientId == treatmentToCheck.PatientId).Result, "The tratment date cannot be older than another tratment start date."},
+                { () =>  treatment.StartDate > treatment.EndDate, "Treatment start date cannot be earlier than the end date"},
+                { () =>  context.Treatments.AnyAsync(x => treatment.StartDate < x.EndDate && treatment.Id != x.Id && x.PatientId == treatmentToCheck.PatientId).Result, "The tratment start date cannot be older than another tratment end date."},
                 { () =>  context.Tests.AnyAsync(x => x.TreatmentId == treatment.Id && treatment.StartDate > x.TestDate).Result, "Date of treatment cannot be after existing test" },
                 { () =>  context.TreatmentDiseaseCourses.AnyAsync(x => x.TreatmentId == treatment.Id && treatment.StartDate > x.Date).Result, "Date of treatment cannot be after existing treatment disease course entry" },
             };
@@ -57,10 +69,12 @@ namespace SSC.Data.Repositories
             }
 
             mapper.Map(treatment, treatmentToCheck);
+
             treatmentToCheck.TreatmentStatus = await context.TreatmentStatuses.FirstOrDefaultAsync(x => x.Name == treatment.TreatmentStatusName);
 
             context.Update(treatmentToCheck);
             await context.SaveChangesAsync();
+
             return DbResult<Treatment>.CreateSuccess("Treatment has been edited", treatmentToCheck);
         }
 
@@ -79,12 +93,19 @@ namespace SSC.Data.Repositories
               .ToListAsync();
         }
 
-        public async Task<List<Treatment>> ShowTreatments(Guid patientId)
+        public async Task<DbResult<List<Treatment>>> ShowTreatments(Guid patientId)
         {
-            return await context.Treatments
+            if (await patientRepository.GetPatient(patientId) == null)
+            {
+                return DbResult<List<Treatment>>.CreateFail("Patient does not exist");
+            }
+
+            var result = await context.Treatments
                 .Include(x => x.User.Role)
                 .Include(x => x.TreatmentStatus)
                 .Where(x => x.PatientId == patientId).ToListAsync();
+
+            return DbResult<List<Treatment>>.CreateSuccess("Success", result);
         }
 
         public async Task<Treatment> TreatmentLasts(Guid patientId)

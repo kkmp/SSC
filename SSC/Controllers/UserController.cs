@@ -55,11 +55,19 @@ namespace SSC.Controllers
         public async Task<IActionResult> Login(UserLoginViewModel login)
         {
             IActionResult response;
+
             var result = await userRepository.AuthenticateUser(login.Email, login.Password);
             
             if (result.Success)
             {
-                result.Data.Role = await roleRepository.GetRole(result.Data.RoleId.Value);
+                var role = await roleRepository.GetRole(result.Data.RoleId.Value);
+                if (!role.Success)
+                {
+                    return BadRequest(new { message = role.Message });
+                }
+
+                result.Data.Role = role.Data;
+
                 var tokenString = GenerateJSONWebToken(result.Data);
                 response = Ok(new { token = tokenString });
             }
@@ -114,7 +122,13 @@ namespace SSC.Controllers
             if (ModelState.IsValid)
             {
                 var result = await userRepository.UserDetails(userid.Id);
-                return Ok(mapper.Map<UserDTO>(result));
+
+                if (!result.Success)
+                {
+                    return BadRequest(new { message = result.Message });
+                }
+
+                return Ok(mapper.Map<UserDTO>(result.Data));
             }
             return BadRequest(new { message = "Invalid data" });
         }

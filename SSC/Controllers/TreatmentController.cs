@@ -50,8 +50,13 @@ namespace SSC.Controllers
             if (ModelState.IsValid)
             {
                 var result = await treatmentRepository.ShowTreatments(patientId.Id);
-                //select się może popsuć gdy null
-                return Ok(mapper.Map<List<TreatmentDTO>>(result));
+
+                if (!result.Success)
+                {
+                    return BadRequest(new { message = result.Message });
+                }
+
+                return Ok(mapper.Map<List<TreatmentDTO>>(result.Data));
             }
             return BadRequest(new { message = "Invalid data" });
         }

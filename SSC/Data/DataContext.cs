@@ -31,6 +31,7 @@ namespace SSC.Data
         public DbSet<TreatmentDiseaseCourse> TreatmentDiseaseCourses { get; set; }
         public DbSet<TreatmentStatus> TreatmentStatuses { get; set; }
         public DbSet<Patient> Patients { get; set; }
+        public DbSet<ChangePasswordCode> ChangePasswordCodes { get; set; }
 
     }
 }

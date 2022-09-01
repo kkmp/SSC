@@ -10,11 +10,6 @@ namespace SSC.Models
         [Required]
         public DateTime? TestDate { get; set; }
 
-        [Required]
-        [MinLength(12)]
-        [MaxLength(12)]
-        public string? OrderNumber { get; set; }
-
         public DateTime? ResultDate { get; set; }
 
         [RegularExpression(@"^(P|N|I)$", ErrorMessage = $"Test result does not exist")]

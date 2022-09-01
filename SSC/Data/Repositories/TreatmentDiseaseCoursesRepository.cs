@@ -61,7 +61,7 @@ namespace SSC.Data.Repositories
 
             conditions.Clear();
             conditions.Add(() => treatmentDiseaseCourse.Date < treatment.StartDate, "Cannot add entry before treatment start date");
-            conditions.Add(() => context.TreatmentDiseaseCourses.Any(x => treatmentDiseaseCourse.Date <= x.Date && x.TreatmentId == treatment.Id), "Cannot add entry before another treatment disease course");
+            conditions.Add(() => context.TreatmentDiseaseCourses.AnyAsync(x => treatmentDiseaseCourse.Date < x.Date && x.TreatmentId == treatment.Id).Result, "Cannot add entry before another treatment disease course");
 
             result = Validate(conditions);
             if (result != null)
@@ -107,16 +107,15 @@ namespace SSC.Data.Repositories
 
             var treatment = await treatmentRepository.GetTreatment(checkTreatmentDiseaseCourse.TreatmentId.Value);
             var diseaseCourse = await context.DiseaseCourses.FirstOrDefaultAsync(x => x.Name == treatmentDiseaseCourse.DiseaseCourseName);
+            var newest = await context.TreatmentDiseaseCourses.OrderByDescending(x => x.Date).FirstOrDefaultAsync(x => x.TreatmentId == checkTreatmentDiseaseCourse.TreatmentId);
 
-            //możliwość edycji tylko najnowszego
-            //brak możliwości dodania kilku z tą samą datą
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
                 { () => checkTreatmentDiseaseCourse.UserId != issuerId, "Only the user who added the treatment disease course entry can edit"},
                 { () => treatment.EndDate != null, "The treatment disease course entry cannot be edited anymore - the treatment has been ended"},
+                { () => checkTreatmentDiseaseCourse.Id != newest.Id,  "The treatment disease course cannot be edited anymore" },
                 { () => treatmentDiseaseCourse.Date < treatment.StartDate, "The treatment disease course entry date cannot be earlier than the treatment start date"},
-                //{ () => context.TreatmentDiseaseCourses.OrderByDescending(x => x.Date).FirstOrDefaultAsync().Result.Date > treatmentDiseaseCourse.Date, "Cannot add entry before another treatment disease course" },
-                { () => context.TreatmentDiseaseCourses.Any(x => x.Id != treatmentDiseaseCourse.Id && treatmentDiseaseCourse.Date <= x.Date && x.TreatmentId == checkTreatmentDiseaseCourse.TreatmentId) , "Cannot edit entry before another treatment disease course" },
+                { () => context.TreatmentDiseaseCourses.AnyAsync(x => x.Id != treatmentDiseaseCourse.Id && treatmentDiseaseCourse.Date < x.Date && x.TreatmentId == checkTreatmentDiseaseCourse.TreatmentId).Result, "Cannot edit entry before another treatment disease course" },
                 { () => diseaseCourse == null, "Disease course not found" },
             };
 

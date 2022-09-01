@@ -23,7 +23,7 @@ namespace SSC.Data.Repositories
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
                 { () => patientRepository.GetPatient(medicalHistory.PatientId.Value).Result == null, "Patient does not exist" },
-                { () => context.MedicalHistories.Any(x => x.PatientId == medicalHistory.PatientId && x.Date >= medicalHistory.Date), "Cannot add medical history. There is already an entry before the given date" }
+                { () => context.MedicalHistories.AnyAsync(x => x.PatientId == medicalHistory.PatientId && x.Date >= medicalHistory.Date).Result, "Cannot add medical history. There is already an entry before the given date" }
             };
 
             var result = Validate(conditions);
@@ -33,6 +33,7 @@ namespace SSC.Data.Repositories
             }
 
             var newMedicalHistory = mapper.Map<MedicalHistory>(medicalHistory);
+
             newMedicalHistory.UserId = issuerId;
 
             await context.AddAsync(newMedicalHistory);
@@ -56,7 +57,7 @@ namespace SSC.Data.Repositories
             {
                 { () => medicalHistoryUpdate.UserId != issuerId, "Only the user who added the medical history entry can edit" },
                 { () => newest.Id != medicalHistoryUpdate.Id, "This medical history cannot be edited anymore" },
-                { () => context.MedicalHistories.Any(x => x.PatientId == medicalHistoryUpdate.PatientId && x.Date >= medicalHistory.Date && x.Id != medicalHistory.Id), "Cannot edit medical history. There is already an entry before the given date" },
+                { () => context.MedicalHistories.AnyAsync(x => x.PatientId == medicalHistoryUpdate.PatientId && x.Date >= medicalHistory.Date && x.Id != medicalHistory.Id).Result, "Cannot edit medical history. There is already an entry before the given date" },
             };
 
             var result = Validate(conditions);

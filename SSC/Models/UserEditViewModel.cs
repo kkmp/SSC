@@ -28,6 +28,7 @@ namespace SSC.Models
         public bool IsActive { get; set; }
 
         [Required]
-        public string? Role { get; set; }
+        [RegularExpression(@"^(Lekarz|Laborant|Administrator)$", ErrorMessage = $"Role does not exist")]
+        public string? RoleName { get; set; }
     }
 }

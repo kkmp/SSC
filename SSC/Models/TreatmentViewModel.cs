@@ -7,8 +7,6 @@ namespace SSC.Models
         [Required]
         public DateTime? StartDate { get; set; }
 
-        public DateTime? EndDate { get; set; }
-
         public bool? IsCovid { get; set; }
 
         [Required]

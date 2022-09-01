@@ -50,6 +50,8 @@ namespace SSC.Services
             CreateMap<TestViewModel, Test>();
             CreateMap<PatientViewModel, Patient>();
             CreateMap<PatientUpdateDTO, Patient>();
+            CreateMap<UserViewModel, User>();
+            CreateMap<UserEditViewModel, User>();
         }
     }
 }

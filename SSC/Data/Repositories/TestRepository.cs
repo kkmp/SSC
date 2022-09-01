@@ -26,8 +26,8 @@ namespace SSC.Data.Repositories
             {
                { () => GetTestByOrderNumber(test.OrderNumber).Result != null, "Test has already been added" },
                { () => patientRepository.GetPatient(test.PatientId.Value).Result == null, "Patient does not exist" },
-               { () => !context.TestTypes.Any(x => x.Name == test.TestTypeName), "Test type does not exist" },
-               { () => !context.Places.Any(x => x.Id == test.PlaceId), "Place does not exist" },
+               { () => !context.TestTypes.AnyAsync(x => x.Name == test.TestTypeName).Result, "Test type does not exist" },
+               { () => !context.Places.AnyAsync(x => x.Id == test.PlaceId).Result, "Place does not exist" },
                { () => test.TestDate > test.ResultDate, "Test result date cannot be earlier than the test date" }
             };
 
@@ -58,7 +58,7 @@ namespace SSC.Data.Repositories
 
             conditions.Clear();
             conditions.Add(() => test.TestDate < treatment.StartDate, "Cannot add entry before treatment start date");
-            conditions.Add(() => context.Tests.Any(x => test.TestDate <= x.TestDate && x.TreatmentId == treatment.Id), "Cannot add entry before another test");
+            conditions.Add(() => context.Tests.AnyAsync(x => test.TestDate < x.TestDate && x.TreatmentId == treatment.Id).Result, "Cannot add entry before another test");
 
             result = Validate(conditions);
             if (result != null)
@@ -96,21 +96,27 @@ namespace SSC.Data.Repositories
 
         public async Task<DbResult<Test>> EditTest(TestEditViewModel test, Guid issuerId)
         {
-            var testToCheck = await GetTestByOrderNumber(test.OrderNumber);
-            var treatment = await treatmentRepository.GetTreatment(testToCheck.TreatmentId.Value);
+            var testToCheck = await GetTest(test.Id);
 
-            //możliwość edycji tylko najnowszego
-            //brak możliwości dodania kilku z tą samą datą
+            if (testToCheck == null)
+            {
+                return DbResult<Test>.CreateFail("Test does not exist");
+            }
+
+            var treatment = await treatmentRepository.GetTreatment(testToCheck.TreatmentId.Value);
+            var newest = await context.Tests.OrderByDescending(x => x.TestDate).FirstOrDefaultAsync(x => x.TreatmentId == testToCheck.TreatmentId);
+            var testType = await context.TestTypes.FirstOrDefaultAsync(x => x.Name == test.TestTypeName);
 
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
-                { () => testToCheck == null, "Test does not exist"},
+                { () => testToCheck.Id != newest.Id,  "Test cannot be edited anymore" },
                 { () => testToCheck.UserId != issuerId, "Only the user who added the test can edit"},
                 { () => treatment.EndDate != null, "The test cannot be edited anymore - the treatment has been ended"},
                 { () => test.TestDate > test.ResultDate,  "Test result date cannot be earlier than the test date"},
                 { () => !context.Places.AnyAsync(x => x.Id == test.PlaceId).Result, "Place does not exist" },
+                { () => testType == null, "Test type does not exist"},
                 { () => test.TestDate < treatment.StartDate, "Cannot add entry before treatment start date" },
-                { () => context.Tests.Any(x => x.Id != testToCheck.Id && test.TestDate < x.TestDate && x.TreatmentId == testToCheck.TreatmentId) , "Cannot add entry before another test" }
+                { () => context.Tests.AnyAsync(x => x.Id != testToCheck.Id && test.TestDate < x.TestDate && x.TreatmentId == testToCheck.TreatmentId).Result, "Cannot add entry before another test" }
             };
 
             var result = Validate(conditions);
@@ -120,7 +126,8 @@ namespace SSC.Data.Repositories
             }
 
             mapper.Map(test, testToCheck);
-            testToCheck.TestType = await context.TestTypes.FirstOrDefaultAsync(x => x.Name == test.TestTypeName);
+
+            testToCheck.TestType = testType;
 
             context.Update(testToCheck);
             await context.SaveChangesAsync();

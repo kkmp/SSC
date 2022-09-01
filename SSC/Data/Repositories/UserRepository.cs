@@ -1,67 +1,84 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using SSC.Data.Models;
 using SSC.Models;
+using SSC.Tools;
 using System.Security.Cryptography;
 using System.Text;
 
 namespace SSC.Data.Repositories
 {
-    public class UserRepository : IUserRepository
+    public class UserRepository : BaseRepository<User>, IUserRepository
     {
         private readonly DataContext context;
+        private readonly IMapper mapper;
 
-        public UserRepository(DataContext context)
+        public UserRepository(DataContext context, IMapper mapper)
         {
             this.context = context;
+            this.mapper = mapper;
         }
 
         public async Task<DbResult<User>> AuthenticateUser(string email, string password)
         {
-            var user = await GetUserEmail(email);
-            if (user == null)
-            {
-                return DbResult<User>.CreateFail("User does not exist");
-            }
+            var user = await GetUserByEmail(email);
 
-            if (!user.IsActive)
+            var conditions = new Dictionary<Func<bool>, string>
             {
-                return DbResult<User>.CreateFail("User account is not active");
+                { () => user == null, "User does not exist" },
+                { () => !user.IsActive, "User account is not active" }
+            };
+
+            var result = Validate(conditions);
+            if (result != null)
+            {
+                return result;
             }
 
             HMACSHA512 hmac = new HMACSHA512(user.PasswordSalt);
             byte[] computedHash = hmac.ComputeHash(System.Text.ASCIIEncoding.UTF8.GetBytes(password));
-            if (!CompareHash(computedHash, user.PasswordHash))
+
+            conditions.Clear();
+            conditions.Add(() => !CompareHash(computedHash, user.PasswordHash), "Password is not correct");
+
+            result = Validate(conditions);
+            if (result != null)
             {
-                return DbResult<User>.CreateFail("Password is not correct");
+                return result;
             }
 
             return DbResult<User>.CreateSuccess("Authentication success", user);
         }
 
-        public async Task<DbResult<User>> AddUser(UserViewModel u)
+        public async Task<DbResult<User>> AddUser(UserViewModel user)
         {
-            if (await GetUserEmail(u.Email) != null)
+            var conditions = new Dictionary<Func<bool>, string>
             {
-                return DbResult<User>.CreateFail("Email has already been used");
+                { () => GetUserByEmail(user.Email).Result != null, "Email has already been used" }
+            };
+
+            var result = Validate(conditions);
+            if (result != null)
+            {
+                return result;
             }
 
-            var user = new User();
-            user.Name = u.Name;
-            user.Surname = u.Surname;
-            user.Email = u.Email;
-            user.PhoneNumber = u.PhoneNumber;
+            var newUser = mapper.Map<User>(user);
 
-            var password = CreatePassword(5);
+            var password = PasswordGenerator.CreatePassword(5);
             HMACSHA512 hmac = new HMACSHA512();
-            user.PasswordSalt = hmac.Key;
-            user.PasswordHash = hmac.ComputeHash(System.Text.ASCIIEncoding.UTF8.GetBytes(password));
+            newUser.PasswordSalt = hmac.Key;
+            newUser.PasswordHash = hmac.ComputeHash(System.Text.ASCIIEncoding.UTF8.GetBytes(password));
 
-            user.IsActive = true;
-            user.Role = await context.Roles.FirstOrDefaultAsync(x => x.Name == u.Role);
+            newUser.IsActive = true;
+            newUser.Role = await context.Roles.FirstOrDefaultAsync(x => x.Name == user.RoleName);
 
-            await context.AddAsync(user);
+            await context.AddAsync(newUser);
             await context.SaveChangesAsync();
-            return DbResult<User>.CreateSuccess("User created with password " + password, user);
+
+            return DbResult<User>.CreateSuccess("User created with password " + password, newUser);
+
+            //wysyłanie maila
         }
 
         public async Task<List<User>> GetUsers()
@@ -72,72 +89,76 @@ namespace SSC.Data.Repositories
         public async Task<DbResult<User>> ChangeActivity(Guid userId, Guid issuerId, bool activation)
         {
             var user = await GetUser(userId);
-            if (user == null)
+
+            var conditions = new Dictionary<Func<bool>, string>
             {
-                return DbResult<User>.CreateFail("User does not exist");
-            }
-            if (user.Id == issuerId)
+                { () => user == null, "User does not exist" },
+                { () => user.Id == issuerId, "Cannot deactivate own account" }
+            };
+
+            var result = Validate(conditions);
+            if (result != null)
             {
-                return DbResult<User>.CreateFail("Cannot deactivate own account");
+                return result;
             }
-            /*
-            var test = await context.Roles.FirstOrDefaultAsync(x => x.Name == Roles.Admin);
-            if (user.Role == test)
-            {
-                return DbResult<User>.CreateFail("Cannot deactivate admin's account");
-            }
-            */
+
             user.IsActive = activation;
+
             context.Update(user);
             await context.SaveChangesAsync();
+
             return DbResult<User>.CreateSuccess("User activity has been changed", user);
         }
 
-        public async Task<User> UserDetails(Guid userId)
+        public async Task<DbResult<User>> UserDetails(Guid userId)
         {
-            return await context.Users
+            Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
+            {
+               { () => GetUser(userId).Result == null, "User does not exist" }
+            };
+
+            var result = Validate(conditions);
+            if (result != null)
+            {
+                return result;
+            }
+
+            var data = await context.Users
                 .Include(x => x.Role)
                 .FirstOrDefaultAsync(x => x.Id == userId);
+
+            return DbResult<User>.CreateSuccess("Success", data);
         }
 
         public async Task<DbResult<User>> EditUser(UserEditViewModel user, Guid issuerId)
         {
-            var u = await context.Users.FirstOrDefaultAsync(x => x.Id == user.Id);
-            if (u == null)
+            var userToCheck = await GetUser(user.Id);
+            var role = await context.Roles.FirstOrDefaultAsync(x => x.Name == Roles.Admin); //get Role
+
+            Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
-                return DbResult<User>.CreateFail("User does not exist");
-            }
-            var test = await context.Roles.FirstOrDefaultAsync(x => x.Name == Roles.Admin);
-            if (u.Role == test && user.Id != issuerId)
+               { () => userToCheck == null, "User does not exist" }
+            };
+
+            var result = Validate(conditions);
+            if (result != null)
             {
-                return DbResult<User>.CreateFail("Cannot edit admin's account");
+                return result;
             }
-            u.Name = user.Name;
-            u.Surname = user.Surname;
-            u.Email = user.Email;
-            u.PhoneNumber = user.PhoneNumber;
-            u.IsActive = user.IsActive;
-            u.Role = await context.Roles.FirstOrDefaultAsync(x => x.Name == user.Role);
-            context.Update(u);
+
+            mapper.Map(user, userToCheck);
+
+            userToCheck.Role = role;
+
+            context.Update(userToCheck);
             await context.SaveChangesAsync();
-            return DbResult<User>.CreateSuccess("User has been edited", u);
+
+            return DbResult<User>.CreateSuccess("User has been edited", userToCheck);
         }
 
-        private async Task<User> GetUserEmail(string useremail) => await context.Users.FirstOrDefaultAsync(x => x.Email == useremail);
+        public async Task<User> GetUserByEmail(string email) => await context.Users.FirstOrDefaultAsync(x => x.Email == email);
 
         public async Task<User> GetUser(Guid userId) => await context.Users.FirstOrDefaultAsync(x => x.Id == userId);
-
-        private string CreatePassword(int length)
-        {
-            const string valid = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
-            StringBuilder res = new StringBuilder();
-            Random rnd = new Random();
-            while (0 < length--)
-            {
-                res.Append(valid[rnd.Next(valid.Length)]);
-            }
-            return res.ToString();
-        }
 
         private static bool CompareHash(byte[] h1, byte[] h2)
         {

@@ -4,6 +4,6 @@ namespace SSC.Data.Repositories
 {
     public interface IRoleRepository
     {
-        Task<Role> GetRole(Guid roleId);
+        Task<DbResult<Role>> GetRole(Guid roleId);
     }
 }

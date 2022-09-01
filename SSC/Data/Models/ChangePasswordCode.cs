@@ -18,5 +18,8 @@ namespace SSC.Data.Models
         [MaxLength(100)]
         [MinLength(100)]
         public string? Code { get; set; }
+
+        [Required]
+        public DateTime? ExpiredDate { get; set; }
     }
 }
