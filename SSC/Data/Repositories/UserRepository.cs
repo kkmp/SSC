@@ -11,11 +11,13 @@ namespace SSC.Data.Repositories
     public class UserRepository : BaseRepository<User>, IUserRepository
     {
         private readonly DataContext context;
+        private readonly IRoleRepository roleRepository;
         private readonly IMapper mapper;
 
-        public UserRepository(DataContext context, IMapper mapper)
+        public UserRepository(DataContext context, IRoleRepository roleRepository, IMapper mapper)
         {
             this.context = context;
+            this.roleRepository = roleRepository;
             this.mapper = mapper;
         }
 
@@ -71,7 +73,7 @@ namespace SSC.Data.Repositories
             newUser.PasswordHash = hmac.ComputeHash(System.Text.ASCIIEncoding.UTF8.GetBytes(password));
 
             newUser.IsActive = true;
-            newUser.Role = await context.Roles.FirstOrDefaultAsync(x => x.Name == user.RoleName);
+            newUser.Role = await roleRepository.GetRoleByName(user.RoleName);
 
             await context.AddAsync(newUser);
             await context.SaveChangesAsync();
@@ -133,7 +135,6 @@ namespace SSC.Data.Repositories
         public async Task<DbResult<User>> EditUser(UserEditViewModel user, Guid issuerId)
         {
             var userToCheck = await GetUser(user.Id);
-            var role = await context.Roles.FirstOrDefaultAsync(x => x.Name == Roles.Admin); //get Role
 
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
@@ -148,7 +149,7 @@ namespace SSC.Data.Repositories
 
             mapper.Map(user, userToCheck);
 
-            userToCheck.Role = role;
+            userToCheck.Role = await roleRepository.GetRoleByName(Roles.Admin);
 
             context.Update(userToCheck);
             await context.SaveChangesAsync();

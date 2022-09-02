@@ -29,5 +29,10 @@ namespace SSC.Data.Repositories
 
             return DbResult<Role>.CreateSuccess("Success", data);
         }
+
+        public async Task<Role> GetRoleByName(string roleName)
+        {
+            return await context.Roles.FirstOrDefaultAsync(x => x.Name == roleName);
+        }
     }
 }

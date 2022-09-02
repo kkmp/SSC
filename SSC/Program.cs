@@ -23,11 +23,12 @@ builder.Services.AddScoped<ITreatmentDiseaseCourseRepository, TreatmentDiseaseCo
 builder.Services.AddScoped<ITreatmentRepository, TreatmentRepository>();
 builder.Services.AddScoped<IMedicalHistoryRepository, MedicalHistoryRepository>();
 builder.Services.AddScoped<IChangePasswordRepository, ChangePasswordRepository>();
-
-int MedicalHistoryRepository()
-{
-    throw new NotImplementedException();
-}
+builder.Services.AddScoped<ICitizenshipRepository, CitizenshipRepository>();
+builder.Services.AddScoped<ICityRepository, CityRepository>();
+builder.Services.AddScoped<IPlaceRepository, PlaceRepository>();
+builder.Services.AddScoped<ITestTypeRepository, TestTypeRepository>();
+builder.Services.AddScoped<IDiseaseCourseRepository, DiseaseCourseRepository>();
+builder.Services.AddScoped<ITreatmentStatusRepository, TreatmentStatusRepository>();
 
 builder.Services.AddAutoMapper(typeof(AutoMapping));
 

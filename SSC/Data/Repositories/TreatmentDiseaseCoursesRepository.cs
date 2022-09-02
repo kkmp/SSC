@@ -11,13 +11,15 @@ namespace SSC.Data.Repositories
         private readonly IMapper mapper;
         private readonly IPatientRepository patientRepository;
         private readonly ITreatmentRepository treatmentRepository;
+        private readonly IDiseaseCourseRepository diseaseCourseRepository;
 
-        public TreatmentDiseaseCoursesRepository(DataContext context, IMapper mapper, IPatientRepository patientRepository, ITreatmentRepository treatmentRepository)
+        public TreatmentDiseaseCoursesRepository(DataContext context, IMapper mapper, IPatientRepository patientRepository, ITreatmentRepository treatmentRepository, IDiseaseCourseRepository diseaseCourseRepository)
         {
             this.context = context;
             this.mapper = mapper;
             this.patientRepository = patientRepository;
             this.treatmentRepository = treatmentRepository;
+            this.diseaseCourseRepository = diseaseCourseRepository;
         }
 
         public async Task<List<TreatmentDiseaseCourse>> GetTreatmentDiseaseCourses(Guid provinceId, DateTime dateFrom, DateTime dateTo)
@@ -32,7 +34,7 @@ namespace SSC.Data.Repositories
 
         public async Task<DbResult<TreatmentDiseaseCourse>> AddTreatmentDiseaseCourse(TreatmentDiseaseCourseViewModel treatmentDiseaseCourse, Guid issuerId)
         {
-            var diseaseCourse = await context.DiseaseCourses.FirstOrDefaultAsync(x => x.Name == treatmentDiseaseCourse.DiseaseCourseName);
+            var diseaseCourse = await diseaseCourseRepository.GetDiseaseCourseByName(treatmentDiseaseCourse.DiseaseCourseName);
 
             var conditions = new Dictionary<Func<bool>, string>
             {
@@ -106,7 +108,7 @@ namespace SSC.Data.Repositories
             }
 
             var treatment = await treatmentRepository.GetTreatment(checkTreatmentDiseaseCourse.TreatmentId.Value);
-            var diseaseCourse = await context.DiseaseCourses.FirstOrDefaultAsync(x => x.Name == treatmentDiseaseCourse.DiseaseCourseName);
+            var diseaseCourse = await diseaseCourseRepository.GetDiseaseCourseByName(treatmentDiseaseCourse.DiseaseCourseName);
             var newest = await context.TreatmentDiseaseCourses.OrderByDescending(x => x.Date).FirstOrDefaultAsync(x => x.TreatmentId == checkTreatmentDiseaseCourse.TreatmentId);
 
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>

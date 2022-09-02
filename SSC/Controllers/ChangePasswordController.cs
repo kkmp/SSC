@@ -44,12 +44,12 @@ namespace SSC.Controllers
         }
 
         [HttpPut("changePassword")]
-        public async Task<IActionResult> ChangePassword(string password)
+        public async Task<IActionResult> ChangePassword(PasswordUpdateDTO password)
         {
             if (ModelState.IsValid)
             {
                 var issuerId = GetUserId();
-                var result = await changePasswordRepository.ChangePassword(password, issuerId);
+                var result = await changePasswordRepository.ChangePassword(password.Password, issuerId);
 
                 var msg = new { message = result.Message };
                 if (result.Success)

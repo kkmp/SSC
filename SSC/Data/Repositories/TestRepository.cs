@@ -10,13 +10,17 @@ namespace SSC.Data.Repositories
         private readonly DataContext context;
         private readonly ITreatmentRepository treatmentRepository;
         private readonly IPatientRepository patientRepository;
+        private readonly ITestTypeRepository testTypeRepository;
+        private readonly IPlaceRepository placeRepository;
         private readonly IMapper mapper;
 
-        public TestRepository(DataContext context, ITreatmentRepository treatmentRepository, IPatientRepository patientRepository, IMapper mapper)
+        public TestRepository(DataContext context, ITreatmentRepository treatmentRepository, IPatientRepository patientRepository, ITestTypeRepository testTypeRepository, IPlaceRepository placeRepository, IMapper mapper)
         {
             this.context = context;
             this.treatmentRepository = treatmentRepository;
             this.patientRepository = patientRepository;
+            this.testTypeRepository = testTypeRepository;
+            this.placeRepository = placeRepository;
             this.mapper = mapper;
         }
 
@@ -26,8 +30,8 @@ namespace SSC.Data.Repositories
             {
                { () => GetTestByOrderNumber(test.OrderNumber).Result != null, "Test has already been added" },
                { () => patientRepository.GetPatient(test.PatientId.Value).Result == null, "Patient does not exist" },
-               { () => !context.TestTypes.AnyAsync(x => x.Name == test.TestTypeName).Result, "Test type does not exist" },
-               { () => !context.Places.AnyAsync(x => x.Id == test.PlaceId).Result, "Place does not exist" },
+               { () => !testTypeRepository.AnyTestType(test.TestTypeName).Result, "Test type does not exist" },
+               { () => !placeRepository.AnyPlace(test.PlaceId.Value).Result, "Place does not exist" },
                { () => test.TestDate > test.ResultDate, "Test result date cannot be earlier than the test date" }
             };
 
@@ -39,7 +43,7 @@ namespace SSC.Data.Repositories
 
             var newTest = mapper.Map<Test>(test);
 
-            newTest.TestType = await context.TestTypes.FirstOrDefaultAsync(x => x.Name == test.TestTypeName);
+            newTest.TestType = await testTypeRepository.GetTestTypeByName(test.TestTypeName);
             newTest.UserId = issuerId;
 
             var treatment = await treatmentRepository.TreatmentLasts(test.PatientId.Value);
@@ -105,7 +109,7 @@ namespace SSC.Data.Repositories
 
             var treatment = await treatmentRepository.GetTreatment(testToCheck.TreatmentId.Value);
             var newest = await context.Tests.OrderByDescending(x => x.TestDate).FirstOrDefaultAsync(x => x.TreatmentId == testToCheck.TreatmentId);
-            var testType = await context.TestTypes.FirstOrDefaultAsync(x => x.Name == test.TestTypeName);
+            var testType = await testTypeRepository.GetTestTypeByName(test.TestTypeName);
 
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
@@ -113,7 +117,7 @@ namespace SSC.Data.Repositories
                 { () => testToCheck.UserId != issuerId, "Only the user who added the test can edit"},
                 { () => treatment.EndDate != null, "The test cannot be edited anymore - the treatment has been ended"},
                 { () => test.TestDate > test.ResultDate,  "Test result date cannot be earlier than the test date"},
-                { () => !context.Places.AnyAsync(x => x.Id == test.PlaceId).Result, "Place does not exist" },
+                { () => !placeRepository.AnyPlace(test.PlaceId.Value).Result, "Place does not exist" },
                 { () => testType == null, "Test type does not exist"},
                 { () => test.TestDate < treatment.StartDate, "Cannot add entry before treatment start date" },
                 { () => context.Tests.AnyAsync(x => x.Id != testToCheck.Id && test.TestDate < x.TestDate && x.TreatmentId == testToCheck.TreatmentId).Result, "Cannot add entry before another test" }

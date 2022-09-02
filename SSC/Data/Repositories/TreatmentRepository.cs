@@ -10,17 +10,19 @@ namespace SSC.Data.Repositories
         private readonly DataContext context;
         private readonly IMapper mapper;
         private readonly IPatientRepository patientRepository;
+        private readonly ITreatmentStatusRepository treatmentStatusRepository;
 
-        public TreatmentRepository(DataContext context, IMapper mapper, IPatientRepository patientRepository)
+        public TreatmentRepository(DataContext context, IMapper mapper, IPatientRepository patientRepository, ITreatmentStatusRepository treatmentStatusRepository)
         {
             this.context = context;
             this.mapper = mapper;
             this.patientRepository = patientRepository;
+            this.treatmentStatusRepository = treatmentStatusRepository;
         }
 
         public async Task<DbResult<Treatment>> AddTreatment(TreatmentViewModel treatment, Guid issuerId)
         {
-            var treatmentStatus = await context.TreatmentStatuses.FirstOrDefaultAsync(x => x.Name == treatment.TreatmentStatusName); //osobna metoda?
+            var treatmentStatus = await treatmentStatusRepository.GetTreatmentStatusByName(treatment.TreatmentStatusName);
 
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
@@ -70,7 +72,7 @@ namespace SSC.Data.Repositories
 
             mapper.Map(treatment, treatmentToCheck);
 
-            treatmentToCheck.TreatmentStatus = await context.TreatmentStatuses.FirstOrDefaultAsync(x => x.Name == treatment.TreatmentStatusName);
+            treatmentToCheck.TreatmentStatus = await treatmentStatusRepository.GetTreatmentStatusByName(treatment.TreatmentStatusName);
 
             context.Update(treatmentToCheck);
             await context.SaveChangesAsync();

@@ -13,5 +13,6 @@ namespace SSC.Data.Repositories
         Task<Patient> GetPatient(Guid patientId);
         Task<List<Patient>> GetPatients(Expression<Func<Patient, bool>> condition);
         Task<DbResult<Patient>> PatientDetails(Guid patientId);
+        Task<List<Patient>> RecentlyAddedPatients(int quantity, Guid issuerId);
     }
 }

@@ -129,5 +129,20 @@ namespace SSC.Controllers
             }
             return Ok(mapper.Map<List<PatientOverallDTO>>(result));
         }
+
+        [Authorize]
+        [HttpGet("recentlyAddedPatients")]
+        public async Task<IActionResult> RecentlyAddedPatients()
+        {
+            if (ModelState.IsValid)
+            {
+                var issuerId = GetUserId();
+
+                var result = await patientRepository.RecentlyAddedPatients(0, issuerId);
+
+                return Ok(mapper.Map<List<PatientOverallDTO>>(result));
+            }
+            return BadRequest(new { message = "Invalid data" });
+        }
     }
 }

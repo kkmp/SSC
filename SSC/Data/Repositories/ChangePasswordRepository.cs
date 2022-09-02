@@ -23,8 +23,10 @@ namespace SSC.Data.Repositories
                 Code = PasswordGenerator.CreatePassword(100),
                 ExpiredDate = DateTime.Now.AddMinutes(60)
             };
+
             await context.AddAsync(code);
             await context.SaveChangesAsync();
+
             return DbResult<ChangePasswordCode>.CreateSuccess("Success", code);
         }
 
