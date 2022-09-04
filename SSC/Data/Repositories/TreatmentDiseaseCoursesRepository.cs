@@ -32,7 +32,7 @@ namespace SSC.Data.Repositories
            .ToListAsync();
         }
 
-        public async Task<DbResult<TreatmentDiseaseCourse>> AddTreatmentDiseaseCourse(TreatmentDiseaseCourseViewModel treatmentDiseaseCourse, Guid issuerId)
+        public async Task<DbResult<TreatmentDiseaseCourse>> AddTreatmentDiseaseCourse(TreatmentDiseaseCourseCreateDTO treatmentDiseaseCourse, Guid issuerId)
         {
             var diseaseCourse = await diseaseCourseRepository.GetDiseaseCourseByName(treatmentDiseaseCourse.DiseaseCourseName);
 
@@ -51,7 +51,7 @@ namespace SSC.Data.Repositories
             var treatment = await treatmentRepository.TreatmentLasts(treatmentDiseaseCourse.PatientId.Value);
             if (treatment == null)
             {
-                var newTreatment = new TreatmentViewModel
+                var newTreatment = new TreatmentCreateDTO
                 {
                     StartDate = DateTime.Now,
                     PatientId = treatmentDiseaseCourse.PatientId.Value,
@@ -98,7 +98,7 @@ namespace SSC.Data.Repositories
             return DbResult<List<TreatmentDiseaseCourse>>.CreateSuccess("Success", data);
         }
 
-        public async Task<DbResult<TreatmentDiseaseCourse>> EditTreatmentDiseaseCourse(TreatmentDiseaseCourseEditViewModel treatmentDiseaseCourse, Guid issuerId)
+        public async Task<DbResult<TreatmentDiseaseCourse>> EditTreatmentDiseaseCourse(TreatmentDiseaseCourseUpdateDTO treatmentDiseaseCourse, Guid issuerId)
         {
             var checkTreatmentDiseaseCourse = await GetTreatmentDiseaseCourse(treatmentDiseaseCourse.Id);
 

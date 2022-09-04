@@ -1,6 +1,6 @@
 ﻿namespace SSC.DTO
 {
-    public class PatientOverallDTO
+    public class PatientOverallGetDTO
     {
         public Guid Id { get; set; }
         public string? Pesel { get; set; }

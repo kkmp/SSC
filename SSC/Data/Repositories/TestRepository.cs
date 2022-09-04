@@ -24,7 +24,7 @@ namespace SSC.Data.Repositories
             this.mapper = mapper;
         }
 
-        public async Task<DbResult<Test>> AddTest(TestViewModel test, Guid issuerId)
+        public async Task<DbResult<Test>> AddTest(TestCreateDTO test, Guid issuerId)
         {
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
@@ -50,7 +50,7 @@ namespace SSC.Data.Repositories
 
             if (treatment == null)
             {
-                var newTreatment = new TreatmentViewModel
+                var newTreatment = new TreatmentCreateDTO
                 {
                     StartDate = DateTime.Now,
                     PatientId = test.PatientId.Value,
@@ -98,7 +98,7 @@ namespace SSC.Data.Repositories
                 .ToListAsync();
         }
 
-        public async Task<DbResult<Test>> EditTest(TestEditViewModel test, Guid issuerId)
+        public async Task<DbResult<Test>> EditTest(TestUpdateDTO test, Guid issuerId)
         {
             var testToCheck = await GetTest(test.Id);
 

@@ -1,6 +1,6 @@
 ﻿namespace SSC.DTO
 {
-    public class MedicalHistoryDTO
+    public class MedicalHistoryGetDTO
     {
         public Guid Id { get; set; }
         public string? Date { get; set; }

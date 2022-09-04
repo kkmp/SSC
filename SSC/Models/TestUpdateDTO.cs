@@ -2,7 +2,7 @@
 
 namespace SSC.Models
 {
-    public class TestEditViewModel
+    public class TestUpdateDTO
     {
         [Required]
         public Guid Id { get; set; }

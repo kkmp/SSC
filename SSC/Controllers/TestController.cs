@@ -14,19 +14,17 @@ namespace SSC.Controllers
     [Route("api/[controller]")]
     public class TestController : CommonController
     {
-        private IConfiguration _config;
         private readonly ITestRepository testRepository;
         private readonly IMapper mapper;
 
-        public TestController(IConfiguration config, ITestRepository testRepository, IMapper mapper)
+        public TestController(ITestRepository testRepository, IMapper mapper)
         {
-            _config = config;
             this.testRepository = testRepository;
             this.mapper = mapper;
         }
 
         [HttpPost("addTest")]
-        public async Task<IActionResult> AddTest(TestViewModel test)
+        public async Task<IActionResult> AddTest(TestCreateDTO test)
         {
             if (ModelState.IsValid)
             {
@@ -46,7 +44,7 @@ namespace SSC.Controllers
         }
 
         [HttpPut("editTest")]
-        public async Task<IActionResult> EditTest(TestEditViewModel test)
+        public async Task<IActionResult> EditTest(TestUpdateDTO test)
         {
             if (ModelState.IsValid)
             {
@@ -66,7 +64,7 @@ namespace SSC.Controllers
         }
 
         [HttpGet("showTests")]
-        public async Task<IActionResult> ShowTests(IdViewModel patientId)
+        public async Task<IActionResult> ShowTests(IdCreateDTO patientId)
         {
             if (ModelState.IsValid)
             {
@@ -75,13 +73,13 @@ namespace SSC.Controllers
                 {
                     return BadRequest(new { message = result.Message });
                 }
-                return Ok(mapper.Map<List<TestOverallDTO>>(result.Data));
+                return Ok(mapper.Map<List<TestOverallGetDTO>>(result.Data));
             }
             return BadRequest(new { message = "Invalid data" });
         }
 
         [HttpGet("testDetails")]
-        public async Task<IActionResult> TestDetails(IdViewModel testId)
+        public async Task<IActionResult> TestDetails(IdCreateDTO testId)
         {
             if (ModelState.IsValid)
             {
@@ -90,7 +88,7 @@ namespace SSC.Controllers
                 {
                     return BadRequest(new { message = result.Message });
                 }
-                return Ok(mapper.Map<TestDTO>(result.Data));
+                return Ok(mapper.Map<TestGetDTO>(result.Data));
             }
             return BadRequest(new { message = "Invalid data" });
         }

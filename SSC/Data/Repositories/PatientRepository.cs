@@ -23,7 +23,7 @@ namespace SSC.Data.Repositories
             this.mapper = mapper;
         }
 
-        public async Task<DbResult<Patient>> AddPatient(PatientViewModel patient, Guid issuerId)
+        public async Task<DbResult<Patient>> AddPatient(PatientCreateDTO patient, Guid issuerId)
         {
             var peselValidator = new PeselValidator(patient.Pesel);
 

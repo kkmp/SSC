@@ -2,7 +2,7 @@
 
 namespace SSC.Models
 {
-    public class MedicalHistoryEditViewModel
+    public class MedicalHistoryUpdateDTO
     {
         [Required]
         public Guid Id { get; set; }

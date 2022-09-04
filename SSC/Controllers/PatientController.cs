@@ -13,20 +13,18 @@ namespace SSC.Controllers
     [Route("api/[controller]")]
     public class PatientController : CommonController
     {
-        private IConfiguration _config;
         private readonly IPatientRepository patientRepository;
         private readonly IMapper mapper;
 
-        public PatientController(IConfiguration config, IPatientRepository patientRepository, IMapper mapper)
+        public PatientController(IPatientRepository patientRepository, IMapper mapper)
         {
-            _config = config;
             this.patientRepository = patientRepository;
             this.mapper = mapper;
         }
 
         [Authorize]
         [HttpPost("addPatient")]
-        public async Task<IActionResult> AddPatient(PatientViewModel patient)
+        public async Task<IActionResult> AddPatient(PatientCreateDTO patient)
         {
             if (ModelState.IsValid)
             {
@@ -68,7 +66,7 @@ namespace SSC.Controllers
 
         [Authorize]
         [HttpGet("patientDetails")]
-        public async Task<IActionResult> PatientDetails(IdViewModel patientId)
+        public async Task<IActionResult> PatientDetails(IdCreateDTO patientId)
         {
             if (ModelState.IsValid)
             {
@@ -79,7 +77,7 @@ namespace SSC.Controllers
                     return BadRequest(new { message = result.Message });
                 }
 
-                return Ok(mapper.Map<PatientDTO>(result.Data));
+                return Ok(mapper.Map<PatientGetDTO>(result.Data));
             }
             return BadRequest(new { message = "Invalid data" });
         }
@@ -127,7 +125,7 @@ namespace SSC.Controllers
                     || (x.Name + " " + x.Surname).ToLower().Contains(searchName))
                     .ToList();
             }
-            return Ok(mapper.Map<List<PatientOverallDTO>>(result));
+            return Ok(mapper.Map<List<PatientOverallGetDTO>>(result));
         }
 
         [Authorize]
@@ -140,7 +138,7 @@ namespace SSC.Controllers
 
                 var result = await patientRepository.RecentlyAddedPatients(0, issuerId);
 
-                return Ok(mapper.Map<List<PatientOverallDTO>>(result));
+                return Ok(mapper.Map<List<PatientOverallGetDTO>>(result));
             }
             return BadRequest(new { message = "Invalid data" });
         }

@@ -12,19 +12,17 @@ namespace SSC.Controllers
     [Route("api/[controller]")]
     public class MedicalHistoryController : CommonController
     {
-        private IConfiguration _config;
         private readonly IMedicalHistoryRepository medicalHistoryRepository;
         private readonly IMapper mapper;
 
-        public MedicalHistoryController(IConfiguration config, IMedicalHistoryRepository medicalHistoryRepository, IMapper mapper)
+        public MedicalHistoryController(IMedicalHistoryRepository medicalHistoryRepository, IMapper mapper)
         {
-            _config = config;
             this.medicalHistoryRepository = medicalHistoryRepository;
             this.mapper = mapper;
         }
 
         [HttpPost("addMedicalHistory")]
-        public async Task<IActionResult> AddMedicalHistory(MedicalHistoryViewModel medicalHistory)
+        public async Task<IActionResult> AddMedicalHistory(MedicalHistoryCreateDTO medicalHistory)
         {
             if (ModelState.IsValid)
             {
@@ -44,7 +42,7 @@ namespace SSC.Controllers
         }
 
         [HttpPut("editMedicalHistory")]
-        public async Task<IActionResult> EditMedicalHistory(MedicalHistoryEditViewModel medicalHistory)
+        public async Task<IActionResult> EditMedicalHistory(MedicalHistoryUpdateDTO medicalHistory)
         {
             if (ModelState.IsValid)
             {
@@ -64,7 +62,7 @@ namespace SSC.Controllers
         }
 
         [HttpGet("showMedicalHistories")]
-        public async Task<IActionResult> ShowMedicalHistories(IdViewModel patientId)
+        public async Task<IActionResult> ShowMedicalHistories(IdCreateDTO patientId)
         {
             if (ModelState.IsValid)
             {
@@ -75,7 +73,7 @@ namespace SSC.Controllers
                     return BadRequest(new { message = result.Message });
                 }
 
-                return Ok(mapper.Map<List<MedicalHistoryDTO>>(result.Data));
+                return Ok(mapper.Map<List<MedicalHistoryGetDTO>>(result.Data));
             }
             return BadRequest(new { message = "Invalid data" });
         }

@@ -1,13 +1,9 @@
-﻿using SSC.Data.Models;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace SSC.Models
 {
-    public class UserEditViewModel
+    public class UserCreateDTO
     {
-        [Required]
-        public Guid Id { get; set; }
-
         [Required]
         [MaxLength(50)]
         public string? Name { get; set; }
@@ -23,9 +19,6 @@ namespace SSC.Models
         [Required]
         [MaxLength(9)]
         public string? PhoneNumber { get; set; }
-
-        [Required]
-        public bool IsActive { get; set; }
 
         [Required]
         [RegularExpression(@"^(Lekarz|Laborant|Administrator)$", ErrorMessage = $"Role does not exist")]

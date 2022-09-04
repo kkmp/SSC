@@ -18,7 +18,7 @@ namespace SSC.Data.Repositories
             this.patientRepository = patientRepository;
         }
 
-        public async Task<DbResult<MedicalHistory>> AddMedicalHistory(MedicalHistoryViewModel medicalHistory, Guid issuerId)
+        public async Task<DbResult<MedicalHistory>> AddMedicalHistory(MedicalHistoryCreateDTO medicalHistory, Guid issuerId)
         {
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
@@ -42,7 +42,7 @@ namespace SSC.Data.Repositories
             return DbResult<MedicalHistory>.CreateSuccess("Medical history added", newMedicalHistory);
         }
 
-        public async Task<DbResult<MedicalHistory>> EditMedicalHistory(MedicalHistoryEditViewModel medicalHistory, Guid issuerId)
+        public async Task<DbResult<MedicalHistory>> EditMedicalHistory(MedicalHistoryUpdateDTO medicalHistory, Guid issuerId)
         {
             var medicalHistoryUpdate = await GetMedicalHistory(medicalHistory.Id);
 

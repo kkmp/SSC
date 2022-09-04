@@ -20,7 +20,7 @@ namespace SSC.Data.Repositories
             this.treatmentStatusRepository = treatmentStatusRepository;
         }
 
-        public async Task<DbResult<Treatment>> AddTreatment(TreatmentViewModel treatment, Guid issuerId)
+        public async Task<DbResult<Treatment>> AddTreatment(TreatmentCreateDTO treatment, Guid issuerId)
         {
             var treatmentStatus = await treatmentStatusRepository.GetTreatmentStatusByName(treatment.TreatmentStatusName);
 
@@ -49,7 +49,7 @@ namespace SSC.Data.Repositories
             return DbResult<Treatment>.CreateSuccess("Treatment added", newTreatment);
         }
 
-        public async Task<DbResult<Treatment>> EditTreatment(TreatmentEditViewModel treatment, Guid issuerId)
+        public async Task<DbResult<Treatment>> EditTreatment(TreatmentUpdateDTO treatment, Guid issuerId)
         {
             var treatmentToCheck = await context.Treatments.FirstOrDefaultAsync(x => x.Id == treatment.Id);
 

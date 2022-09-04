@@ -25,7 +25,7 @@ namespace SSC.Controllers
 
         [AllowAnonymous]
         [HttpPost("getCode")]
-        public async Task<IActionResult> GetCode(EmailDTO model)
+        public async Task<IActionResult> GetCode(EmailCreateDTO model)
         {
             var user = await userRepository.GetUserByEmail(model.Email);
             if(user == null)
@@ -40,7 +40,7 @@ namespace SSC.Controllers
 
             await mailService.SendEmailAsync(new MailRequest(model.Email, "Zmiana hasła", "Twój link do zmiany hasła: http://localhost:7090/api/ChangePassword/code/" + result.Data.Code));
 
-            return Ok("Sent");
+            return Ok("Email has been sent");
         }
 
         [HttpPut("changePassword")]

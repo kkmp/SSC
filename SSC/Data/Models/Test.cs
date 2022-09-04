@@ -50,12 +50,12 @@ namespace SSC.Data.Models
 
         public string Header()
         {
-            return "TestDate;Result;Place";
+            return "OrderNumber;TestDate;TestType;Result;Place";
         }
 
         public string ToCSV()
         {
-            return $"{TestDate};{Result};{Place?.Name}";
+            return $"{OrderNumber};{TestDate};{TestType?.Name};{Result};{Place?.Name}";
         }
     }
 }

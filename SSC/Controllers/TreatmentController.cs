@@ -12,20 +12,18 @@ namespace SSC.Controllers
     [Route("api/[controller]")]
     public class TreatmentController : CommonController
     {
-        private IConfiguration _config;
         private readonly ITreatmentRepository treatmentRepository;
         private readonly IMapper mapper;
 
-        public TreatmentController(IConfiguration config, ITreatmentRepository treatmentRepository, IMapper mapper)
+        public TreatmentController(ITreatmentRepository treatmentRepository, IMapper mapper)
         {
-            _config = config;
             this.treatmentRepository = treatmentRepository;
             this.mapper = mapper;
         }
 
         [Authorize]
         [HttpPost("addTreatment")]
-        public async Task<IActionResult> AddTreatment(TreatmentViewModel treatment)
+        public async Task<IActionResult> AddTreatment(TreatmentCreateDTO treatment)
         {
             if (ModelState.IsValid)
             {
@@ -45,7 +43,7 @@ namespace SSC.Controllers
         }
 
         [HttpGet("showTreatments")]
-        public async Task<IActionResult> ShowTreatments(IdViewModel patientId)
+        public async Task<IActionResult> ShowTreatments(IdCreateDTO patientId)
         {
             if (ModelState.IsValid)
             {
@@ -56,13 +54,13 @@ namespace SSC.Controllers
                     return BadRequest(new { message = result.Message });
                 }
 
-                return Ok(mapper.Map<List<TreatmentDTO>>(result.Data));
+                return Ok(mapper.Map<List<TreatmentGetDTO>>(result.Data));
             }
             return BadRequest(new { message = "Invalid data" });
         }
 
         [HttpPut("editTreatment")]
-        public async Task<IActionResult> EditTreatment(TreatmentEditViewModel treatment)
+        public async Task<IActionResult> EditTreatment(TreatmentUpdateDTO treatment)
         {
             if (ModelState.IsValid)
             {

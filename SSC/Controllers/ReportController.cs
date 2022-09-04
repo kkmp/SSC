@@ -9,7 +9,7 @@ namespace SSC.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = "Lekarz,Administrator")]
     public class ReportController : CommonController
     {
         private readonly ITestRepository testRepository;
@@ -29,16 +29,18 @@ namespace SSC.Controllers
             {
                 package.Workbook.Worksheets.Add("results");
                 ExcelWorksheet ws = package.Workbook.Worksheets[0];
-                string[] columns = { "TestDate", "Result", "Place" };
+                string[] columns = { "OrderNumber", "TestDate", "TestType", "Result", "Place" };
                 for (int i = 1; i <= columns.Length; i++)
                 {
                     ws.Cells[1, i].Value = columns[i - 1];
                 }
                 for (int i = 0; i < tests.Count; i++)
                 {
-                    ws.Cells[i + 2, 1].Value = tests[i].TestDate;
-                    ws.Cells[i + 2, 2].Value = tests[i].Result;
-                    ws.Cells[i + 2, 3].Value = tests[i].Place.Name;
+                    ws.Cells[i + 2, 1].Value = tests[i].OrderNumber;
+                    ws.Cells[i + 2, 2].Value = tests[i].TestDate;
+                    ws.Cells[i + 2, 3].Value = tests[i].TestType.Name;
+                    ws.Cells[i + 2, 4].Value = tests[i].Result;
+                    ws.Cells[i + 2, 5].Value = tests[i].Place.Name;
                 }
                 return package.GetAsByteArray();
             }
@@ -57,6 +59,8 @@ namespace SSC.Controllers
                     break;
                 case "csv":
                     return File(System.Text.Encoding.UTF8.GetBytes(ICSV.CreateCSV(tests.Cast<ICSV>().ToList())), "application/csv", "results.csv");
+                    break;
+                case null:
                     break;
                 default:
                     return BadRequest(new { message = "Incorrect filetype option" });

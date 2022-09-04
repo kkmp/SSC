@@ -2,7 +2,7 @@
 
 namespace SSC.Models
 {
-    public class UserLoginViewModel
+    public class UserLoginDTO
     {
         [Required]
         public string? Email { get; set; }

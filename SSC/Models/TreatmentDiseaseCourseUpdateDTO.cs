@@ -2,7 +2,7 @@
 
 namespace SSC.Models
 {
-    public class TreatmentDiseaseCourseEditViewModel
+    public class TreatmentDiseaseCourseUpdateDTO
     {
         [Required]
         public Guid Id { get; set; }

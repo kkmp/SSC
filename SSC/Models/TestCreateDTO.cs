@@ -2,7 +2,7 @@
 
 namespace SSC.Models
 {
-    public class TestViewModel
+    public class TestCreateDTO
     {
         [Required]
         public DateTime? TestDate { get; set; }

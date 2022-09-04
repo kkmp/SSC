@@ -7,7 +7,7 @@ namespace SSC.Data.Repositories
 {
     public interface IPatientRepository
     {
-        Task<DbResult<Patient>> AddPatient(PatientViewModel patient, Guid issuerId);
+        Task<DbResult<Patient>> AddPatient(PatientCreateDTO patient, Guid issuerId);
         Task<DbResult<Patient>> EditPatient(PatientUpdateDTO patient, Guid issuerId);
         Task<List<Patient>> GetPatients();
         Task<Patient> GetPatient(Guid patientId);

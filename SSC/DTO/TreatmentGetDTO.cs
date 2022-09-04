@@ -1,6 +1,6 @@
 ﻿namespace SSC.DTO
 {
-    public class TreatmentDTO
+    public class TreatmentGetDTO
     {
         public string? StartDate { get; set; }
         public string? EndDate { get; set; }

@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SSC.Models
 {
-    public class PatientViewModel
+    public class PatientCreateDTO
     {
         [Required]
         [MinLength(11)]

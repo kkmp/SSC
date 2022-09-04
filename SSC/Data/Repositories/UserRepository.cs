@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using SSC.Data.Models;
 using SSC.Models;
+using SSC.Services;
 using SSC.Tools;
 using System.Security.Cryptography;
 using System.Text;
@@ -12,12 +13,14 @@ namespace SSC.Data.Repositories
     {
         private readonly DataContext context;
         private readonly IRoleRepository roleRepository;
+        private readonly IMailService mailService;
         private readonly IMapper mapper;
 
-        public UserRepository(DataContext context, IRoleRepository roleRepository, IMapper mapper)
+        public UserRepository(DataContext context, IRoleRepository roleRepository, IMailService mailService, IMapper mapper)
         {
             this.context = context;
             this.roleRepository = roleRepository;
+            this.mailService = mailService;
             this.mapper = mapper;
         }
 
@@ -52,7 +55,7 @@ namespace SSC.Data.Repositories
             return DbResult<User>.CreateSuccess("Authentication success", user);
         }
 
-        public async Task<DbResult<User>> AddUser(UserViewModel user)
+        public async Task<DbResult<User>> AddUser(UserCreateDTO user)
         {
             var conditions = new Dictionary<Func<bool>, string>
             {
@@ -78,9 +81,9 @@ namespace SSC.Data.Repositories
             await context.AddAsync(newUser);
             await context.SaveChangesAsync();
 
-            return DbResult<User>.CreateSuccess("User created with password " + password, newUser);
+            await mailService.SendEmailAsync(new MailRequest(user.Email, "Dostęp do nowego konta", "Tymczasowe hasło logowania do nowego konta: " + password));
 
-            //wysyłanie maila
+            return DbResult<User>.CreateSuccess("User created with password " + password, newUser);
         }
 
         public async Task<List<User>> GetUsers()
@@ -132,7 +135,7 @@ namespace SSC.Data.Repositories
             return DbResult<User>.CreateSuccess("Success", data);
         }
 
-        public async Task<DbResult<User>> EditUser(UserEditViewModel user, Guid issuerId)
+        public async Task<DbResult<User>> EditUser(UserUpdateDTO user, Guid issuerId)
         {
             var userToCheck = await GetUser(user.Id);
 

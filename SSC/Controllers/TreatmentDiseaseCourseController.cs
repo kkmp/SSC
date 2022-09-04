@@ -12,19 +12,17 @@ namespace SSC.Controllers
     [Route("api/[controller]")]
     public class TreatmentDiseaseCourseController : CommonController
     {
-        private IConfiguration _config;
         private readonly ITreatmentDiseaseCourseRepository treatmentDiseaseCourseRepository;
         private readonly IMapper mapper;
 
-        public TreatmentDiseaseCourseController(IConfiguration config, ITreatmentDiseaseCourseRepository treatmentDiseaseCourseRepository, IMapper mapper)
+        public TreatmentDiseaseCourseController(ITreatmentDiseaseCourseRepository treatmentDiseaseCourseRepository, IMapper mapper)
         {
-            _config = config;
             this.treatmentDiseaseCourseRepository = treatmentDiseaseCourseRepository;
             this.mapper = mapper;
         }
 
         [HttpPost("addTreatmentDiseaseCourse")]
-        public async Task<IActionResult> AddTreatmentDiseaseCourse(TreatmentDiseaseCourseViewModel treatmentDiseaseCourse)
+        public async Task<IActionResult> AddTreatmentDiseaseCourse(TreatmentDiseaseCourseCreateDTO treatmentDiseaseCourse)
         {
             if (ModelState.IsValid)
             {
@@ -44,7 +42,7 @@ namespace SSC.Controllers
         }
 
         [HttpGet("showTreatmentDiseaseCourses")]
-        public async Task<IActionResult> ShowTreatmentDiseaseCourses(IdViewModel patientId)
+        public async Task<IActionResult> ShowTreatmentDiseaseCourses(IdCreateDTO patientId)
         {
             if (ModelState.IsValid)
             {
@@ -53,13 +51,13 @@ namespace SSC.Controllers
                 {
                     return BadRequest(new { message = result.Message });
                 }
-                return Ok(mapper.Map<List<TreatmentDiseaseCourseDTO>>(result.Data));
+                return Ok(mapper.Map<List<TreatmentDiseaseCourseGetDTO>>(result.Data));
             }
             return BadRequest(new { message = "Invalid data" });
         }
 
         [HttpPut("editTreatmentDiseaseCourse")]
-        public async Task<IActionResult> EditTreatmentDiseaseCourse(TreatmentDiseaseCourseEditViewModel treatmentDiseaseCourse)
+        public async Task<IActionResult> EditTreatmentDiseaseCourse(TreatmentDiseaseCourseUpdateDTO treatmentDiseaseCourse)
         {
             if (ModelState.IsValid)
             {

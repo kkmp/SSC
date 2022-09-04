@@ -2,7 +2,7 @@
 
 namespace SSC.Models
 {
-    public class TreatmentDiseaseCourseViewModel
+    public class TreatmentDiseaseCourseCreateDTO
     {
         [Required]
         public DateTime? Date { get; set; }

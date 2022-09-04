@@ -2,7 +2,7 @@
 
 namespace SSC.Models
 {
-    public class MedicalHistoryViewModel
+    public class MedicalHistoryCreateDTO
     {
         [Required]
         public DateTime? Date { get; set; }

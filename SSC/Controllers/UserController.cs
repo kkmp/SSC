@@ -6,6 +6,7 @@ using SSC.Data.Models;
 using SSC.Data.Repositories;
 using SSC.DTO;
 using SSC.Models;
+using SSC.Services;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -32,7 +33,7 @@ namespace SSC.Controllers
 
         [Authorize(Roles = "Administrator")]
         [HttpPost("addUser")]
-        public async Task<IActionResult> AddUser(UserViewModel user)
+        public async Task<IActionResult> AddUser(UserCreateDTO user)
         {
             if (ModelState.IsValid)
             {
@@ -52,12 +53,12 @@ namespace SSC.Controllers
 
         [AllowAnonymous]
         [HttpPost("login")]
-        public async Task<IActionResult> Login(UserLoginViewModel login)
+        public async Task<IActionResult> Login(UserLoginDTO login)
         {
             IActionResult response;
 
             var result = await userRepository.AuthenticateUser(login.Email, login.Password);
-            
+
             if (result.Success)
             {
                 var role = await roleRepository.GetRole(result.Data.RoleId.Value);
@@ -82,7 +83,7 @@ namespace SSC.Controllers
 
         [Authorize(Roles = "Administrator")]
         [HttpPut("changeActivity/{option}")]
-        public async Task<IActionResult> ChangeActivity(string option, IdViewModel userId)
+        public async Task<IActionResult> ChangeActivity(string option, IdCreateDTO userId)
         {
             if (ModelState.IsValid)
             {
@@ -101,23 +102,23 @@ namespace SSC.Controllers
 
                 var issuer = GetUserId();
                 var result = await userRepository.ChangeActivity(userId.Id, issuer, activation);
-                    var msg = new { message = result.Message };
+                var msg = new { message = result.Message };
 
-                    if (result.Success)
-                    {
-                        return Ok(msg);
-                    }
-                    else
-                    {
-                        return BadRequest(msg);
-                    }
+                if (result.Success)
+                {
+                    return Ok(msg);
+                }
+                else
+                {
+                    return BadRequest(msg);
+                }
             }
             return BadRequest(new { message = "Invalid data" });
         }
 
         [Authorize(Roles = "Administrator")]
         [HttpGet("userDetails")]
-        public async Task<IActionResult> UserDetails(IdViewModel userid)
+        public async Task<IActionResult> UserDetails(IdCreateDTO userid)
         {
             if (ModelState.IsValid)
             {
@@ -135,7 +136,7 @@ namespace SSC.Controllers
 
         [Authorize(Roles = "Administrator")]
         [HttpPut("editUser")]
-        public async Task<IActionResult> EditUser(UserEditViewModel user)
+        public async Task<IActionResult> EditUser(UserUpdateDTO user)
         {
             if (ModelState.IsValid)
             {

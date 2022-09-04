@@ -2,7 +2,7 @@
 
 namespace SSC.Models
 {
-    public class IdViewModel
+    public class IdCreateDTO
     {
         [Required]
         public Guid Id { get; set; }
