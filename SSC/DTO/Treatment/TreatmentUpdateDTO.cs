@@ -1,16 +1,18 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace SSC.Models
+namespace SSC.DTO.Treatment
 {
-    public class TreatmentCreateDTO
+    public class TreatmentUpdateDTO
     {
+        [Required]
+        public Guid Id { get; set; }
+
         [Required]
         public DateTime? StartDate { get; set; }
 
-        public bool? IsCovid { get; set; }
+        public DateTime? EndDate { get; set; }
 
-        [Required]
-        public Guid? PatientId { get; set; }
+        public bool? IsCovid { get; set; }
 
         [Required]
         public string? TreatmentStatusName { get; set; }

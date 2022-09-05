@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using SSC.Data.Models;
+using SSC.DTO.Treatment;
 using SSC.Models;
 
 namespace SSC.Data.Repositories
@@ -52,16 +53,19 @@ namespace SSC.Data.Repositories
         public async Task<DbResult<Treatment>> EditTreatment(TreatmentUpdateDTO treatment, Guid issuerId)
         {
             var treatmentToCheck = await context.Treatments.FirstOrDefaultAsync(x => x.Id == treatment.Id);
+            var treatmentStatus = await treatmentStatusRepository.GetTreatmentStatusByName(treatment.TreatmentStatusName);
 
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
                 { () =>  treatmentToCheck == null, "Treatment does not exist"},
                 { () =>  treatmentToCheck.UserId != issuerId, "Only the user who added the treatment can edit"},
+                { () =>  treatmentStatus == null, "Treatment status does not exist" },
                 { () =>  treatmentToCheck.EndDate != null, "The treatment cannot be edited anymore - the treatment has been ended"},
                 { () =>  treatment.StartDate > treatment.EndDate, "Treatment start date cannot be earlier than the end date"},
                 { () =>  context.Treatments.AnyAsync(x => treatment.StartDate < x.EndDate && treatment.Id != x.Id && x.PatientId == treatmentToCheck.PatientId).Result, "The tratment start date cannot be older than another tratment end date."},
                 { () =>  context.Tests.AnyAsync(x => x.TreatmentId == treatment.Id && treatment.StartDate > x.TestDate).Result, "Date of treatment cannot be after existing test" },
                 { () =>  context.TreatmentDiseaseCourses.AnyAsync(x => x.TreatmentId == treatment.Id && treatment.StartDate > x.Date).Result, "Date of treatment cannot be after existing treatment disease course entry" },
+                { () =>  context.Tests.AnyAsync(x => x.TreatmentId == treatment.Id && x.ResultDate == null).Result, "Some tests in treatment have no result date"}
             };
 
             var result = Validate(conditions);
@@ -72,7 +76,7 @@ namespace SSC.Data.Repositories
 
             mapper.Map(treatment, treatmentToCheck);
 
-            treatmentToCheck.TreatmentStatus = await treatmentStatusRepository.GetTreatmentStatusByName(treatment.TreatmentStatusName);
+            treatmentToCheck.TreatmentStatus = treatmentStatus;
 
             context.Update(treatmentToCheck);
             await context.SaveChangesAsync();

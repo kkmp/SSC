@@ -26,6 +26,8 @@ namespace SSC.Data.Repositories
         public async Task<DbResult<Patient>> AddPatient(PatientCreateDTO patient, Guid issuerId)
         {
             var peselValidator = new PeselValidator(patient.Pesel);
+            var citizenship = await citizenshipRepository.GetCitizenshipByName(patient.CitizenshipName);
+            var city = await cityRepository.GetCityByName(patient.CityName);
 
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
@@ -33,8 +35,8 @@ namespace SSC.Data.Repositories
                 { () => !peselValidator.Valid, "Invalid pesel" },
                 { () => peselValidator.Date != patient.BirthDate, "Birthdate is not associated with pesel" },
                 { () => peselValidator.Sex != patient.Sex.ToString(), "Sex is not associated with pesel" },
-                { () => !cityRepository.AnyCity(patient.CityName).Result, "City does not exist" },
-                { () => !citizenshipRepository.AnyCitizenship(patient.CitizenshipName).Result, "Citizenship does not exist" }
+                { () => city == null, "City does not exist" },
+                { () => citizenship == null, "Citizenship does not exist" }
             };
 
             var result = Validate(conditions);
@@ -45,10 +47,8 @@ namespace SSC.Data.Repositories
 
             Patient newPatient = mapper.Map<Patient>(patient);
 
-            var city = await cityRepository.GetCityByName(patient.CityName); //dopisywanie miasta do województwa
-
             newPatient.City = city;
-            newPatient.Citizenship = await citizenshipRepository.GetCitizenshipByName(patient.CitizenshipName);
+            newPatient.Citizenship = citizenship;
             newPatient.UserId = issuerId;
 
             await context.AddAsync(newPatient);
@@ -60,12 +60,14 @@ namespace SSC.Data.Repositories
         public async Task<DbResult<Patient>> EditPatient(PatientUpdateDTO patient, Guid issuerId)
         {
             var patientToCheck = await GetPatient(patient.Id);
+            var citizenship = await citizenshipRepository.GetCitizenshipByName(patient.CitizenshipName);
+            var city = await cityRepository.GetCityByName(patient.CityName);
 
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
                { () => GetPatient(patient.Id).Result == null, "Patient does not exist" },
-               { () => !cityRepository.AnyCity(patient.CityName).Result, "City does not exist" },
-               { () => !citizenshipRepository.AnyCitizenship(patient.CitizenshipName).Result, "Citizenship does not exist" }
+               { () => city == null, "City does not exist" },
+               { () => citizenship == null, "Citizenship does not exist" }
             };
 
             var result = Validate(conditions);
@@ -76,8 +78,8 @@ namespace SSC.Data.Repositories
 
             mapper.Map(patient, patientToCheck);
 
-            patientToCheck.City = await cityRepository.GetCityByName(patient.CityName);
-            patientToCheck.Citizenship = await citizenshipRepository.GetCitizenshipByName(patient.CitizenshipName);
+            patientToCheck.City = city;
+            patientToCheck.Citizenship = citizenship;
 
             context.Update(patientToCheck);
             await context.SaveChangesAsync();

@@ -1,14 +1,16 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace SSC.Models
+namespace SSC.DTO.Test
 {
-    public class TestUpdateDTO
+    public class TestCreateDTO
     {
         [Required]
-        public Guid Id { get; set; }
+        public DateTime? TestDate { get; set; }
 
         [Required]
-        public DateTime? TestDate { get; set; }
+        [MinLength(12)]
+        [MaxLength(12)]
+        public string? OrderNumber { get; set; }
 
         public DateTime? ResultDate { get; set; }
 
@@ -20,5 +22,8 @@ namespace SSC.Models
 
         [Required]
         public Guid? PlaceId { get; set; }
+
+        [Required]
+        public Guid? PatientId { get; set; }
     }
 }

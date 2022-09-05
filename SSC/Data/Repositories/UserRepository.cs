@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using SSC.Data.Models;
+using SSC.DTO.User;
 using SSC.Models;
 using SSC.Services;
 using SSC.Tools;
@@ -164,7 +165,7 @@ namespace SSC.Data.Repositories
 
         public async Task<User> GetUser(Guid userId) => await context.Users.FirstOrDefaultAsync(x => x.Id == userId);
 
-        private static bool CompareHash(byte[] h1, byte[] h2)
+        public bool CompareHash(byte[] h1, byte[] h2)
         {
             return h1.Select((x, i) => h1[i] == h2[i]).All(x => x);
         }

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace SSC.Models
+namespace SSC.DTO.TreatmentDiseaseCourse
 {
     public class TreatmentDiseaseCourseCreateDTO
     {

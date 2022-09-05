@@ -5,6 +5,9 @@ namespace SSC.DTO
     public class PasswordUpdateDTO
     {
         [Required]
-        public string? Password { get; set; }
+        public string? OldPassword { get; set; }
+
+        [Required]
+        public string? NewPassword { get; set; }
     }
 }

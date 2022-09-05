@@ -5,8 +5,11 @@ using Microsoft.IdentityModel.Tokens;
 using SSC.Data.Models;
 using SSC.Data.Repositories;
 using SSC.DTO;
+using SSC.DTO.User;
 using SSC.Models;
 using SSC.Services;
+using SSC.Tools;
+using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -18,16 +21,12 @@ namespace SSC.Controllers
     [Route("api/[controller]")]
     public class UserController : CommonController
     {
-        private IConfiguration _config;
         private readonly IUserRepository userRepository;
-        private readonly IRoleRepository roleRepository;
         private readonly IMapper mapper;
 
-        public UserController(IConfiguration config, IUserRepository userRepository, IRoleRepository roleRepository, IMapper mapper)
+        public UserController(IUserRepository userRepository, IMapper mapper)
         {
-            _config = config;
             this.userRepository = userRepository;
-            this.roleRepository = roleRepository;
             this.mapper = mapper;
         }
 
@@ -50,36 +49,6 @@ namespace SSC.Controllers
             }
             return BadRequest(new { message = "Invalid data" });
         }
-
-        [AllowAnonymous]
-        [HttpPost("login")]
-        public async Task<IActionResult> Login(UserLoginDTO login)
-        {
-            IActionResult response;
-
-            var result = await userRepository.AuthenticateUser(login.Email, login.Password);
-
-            if (result.Success)
-            {
-                var role = await roleRepository.GetRole(result.Data.RoleId.Value);
-                if (!role.Success)
-                {
-                    return BadRequest(new { message = role.Message });
-                }
-
-                result.Data.Role = role.Data;
-
-                var tokenString = GenerateJSONWebToken(result.Data);
-                response = Ok(new { token = tokenString });
-            }
-            else
-            {
-                var msg = new { errors = new { Email = new string[] { result.Message } } };
-                response = BadRequest(msg);
-            }
-            return response;
-        }
-
 
         [Authorize(Roles = "Administrator")]
         [HttpPut("changeActivity/{option}")]
@@ -156,32 +125,12 @@ namespace SSC.Controllers
             return BadRequest(new { message = "Invalid data" });
         }
 
-        private string GenerateJSONWebToken(User userInfo)
-        {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
-            var claims = new[] {
-            new Claim(JwtRegisteredClaimNames.NameId, userInfo.Id.ToString()),
-            new Claim(ClaimTypes.Role, userInfo.Role.Name),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-        };
-
-            var token = new JwtSecurityToken(_config["Jwt:Issuer"],
-                _config["Jwt:Issuer"],
-                claims,
-                expires: DateTime.Now.AddMinutes(120),
-                signingCredentials: credentials);
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
-
         [Authorize(Roles = "Administrator")]
-        [HttpGet("filterUsers/{option}/{orderType}")]
-        [HttpGet("filterUsers/{option}/{orderType}/{searchName}")]
-        public async Task<IActionResult> FilterUsers(string option, string orderType, string? searchName)
+        [HttpGet("filterUsers/{pageNr}/{option}/{orderType}")]
+        [HttpGet("filterUsers/{pageNr}/{option}/{orderType}/{searchName}")]
+        public async Task<IActionResult> FilterUsers([Range(1, 100000000)]int pageNr, string option, string orderType, string? searchName)
         {
-            List<User> result = await userRepository.GetUsers();
+            IEnumerable<User> result = await userRepository.GetUsers();
 
             switch (option)
             {
@@ -205,9 +154,10 @@ namespace SSC.Controllers
                     .Where(x => x.Name.ToLower().Contains(searchName)
                     || x.Surname.ToLower().Contains(searchName)
                     || x.Email.ToLower().Contains(searchName)
-                    || (x.Name + " " + x.Surname).ToLower().Contains(searchName))
-                    .ToList();
+                    || (x.Name + " " + x.Surname).ToLower().Contains(searchName));
             }
+
+            result = result.GetPage(pageNr, 3).ToList();
 
             return Ok(mapper.Map<List<UserOverallDTO>>(result));
         }

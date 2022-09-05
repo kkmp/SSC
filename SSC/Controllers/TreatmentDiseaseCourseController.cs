@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SSC.Data.Repositories;
 using SSC.DTO;
+using SSC.DTO.TreatmentDiseaseCourse;
 using SSC.Models;
 
 namespace SSC.Controllers

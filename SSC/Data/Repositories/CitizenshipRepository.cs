@@ -12,11 +12,6 @@ namespace SSC.Data.Repositories
             this.context = context;
         }
 
-        public async Task<bool> AnyCitizenship(string citizenshipName)
-        {
-            return await context.Citizenships.AnyAsync(x => x.Name == citizenshipName);
-        }
-
         public async Task<Citizenship> GetCitizenshipByName(string citizenshipName)
         {
             return await context.Citizenships.FirstOrDefaultAsync(x => x.Name == citizenshipName);

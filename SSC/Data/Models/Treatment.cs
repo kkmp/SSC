@@ -1,9 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using SSC.Tools;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SSC.Data.Models
 {
-    public class Treatment
+    public class Treatment : ICSV
     {
         [Key]
         public Guid Id { get; set; }
@@ -32,5 +33,15 @@ namespace SSC.Data.Models
 
         [ForeignKey("TreatmentStatus")]
         public Guid? TreatmentStatusId { get; set; }
+
+        public string Header()
+        {
+            return "StartDate;EndDate;IsCovid;TreatmentStatus";
+        }
+
+        public string ToCSV()
+        {
+            return $"{StartDate};{EndDate?.ToString()};{IsCovid};{TreatmentStatus.Name}";
+        }
     }
 }

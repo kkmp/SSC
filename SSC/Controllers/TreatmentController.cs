@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SSC.Data.Repositories;
 using SSC.DTO;
+using SSC.DTO.Treatment;
 using SSC.Models;
 using System.Web.Http.Cors;
 

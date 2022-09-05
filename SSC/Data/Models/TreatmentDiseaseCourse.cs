@@ -1,9 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using SSC.Tools;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SSC.Data.Models
 {
-    public class TreatmentDiseaseCourse
+    public class TreatmentDiseaseCourse : ICSV
     {
         [Key]
         public Guid Id { get; set; }
@@ -32,5 +33,15 @@ namespace SSC.Data.Models
 
         [ForeignKey("User")]
         public Guid? UserId { get; set; }
+
+        public string Header()
+        {
+            return "Date;Description;DiseaseCourse;DiseaseCourseDescription";
+        }
+
+        public string ToCSV()
+        {
+            return $"{Date};{Description};{DiseaseCourse?.Name};{DiseaseCourse?.Description}";
+        }
     }
 }

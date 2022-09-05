@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using SSC.Data.Models;
+using SSC.DTO.MedicalHistory;
 using SSC.Models;
 
 namespace SSC.Data.Repositories

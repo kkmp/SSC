@@ -1,4 +1,4 @@
-﻿namespace SSC.DTO
+﻿namespace SSC.DTO.Test
 {
     public class TestGetDTO
     {

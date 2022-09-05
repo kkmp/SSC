@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using SSC.Data.Models;
+using SSC.DTO.Test;
+using SSC.DTO.Treatment;
 using SSC.Models;
 
 namespace SSC.Data.Repositories
@@ -26,11 +28,13 @@ namespace SSC.Data.Repositories
 
         public async Task<DbResult<Test>> AddTest(TestCreateDTO test, Guid issuerId)
         {
+            var testType = await testTypeRepository.GetTestTypeByName(test.TestTypeName);
+
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
                { () => GetTestByOrderNumber(test.OrderNumber).Result != null, "Test has already been added" },
                { () => patientRepository.GetPatient(test.PatientId.Value).Result == null, "Patient does not exist" },
-               { () => !testTypeRepository.AnyTestType(test.TestTypeName).Result, "Test type does not exist" },
+               { () => testType == null, "Test type does not exist" },
                { () => !placeRepository.AnyPlace(test.PlaceId.Value).Result, "Place does not exist" },
                { () => test.TestDate > test.ResultDate, "Test result date cannot be earlier than the test date" }
             };
@@ -43,7 +47,7 @@ namespace SSC.Data.Repositories
 
             var newTest = mapper.Map<Test>(test);
 
-            newTest.TestType = await testTypeRepository.GetTestTypeByName(test.TestTypeName);
+            newTest.TestType = testType;
             newTest.UserId = issuerId;
 
             var treatment = await treatmentRepository.TreatmentLasts(test.PatientId.Value);

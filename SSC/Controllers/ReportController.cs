@@ -22,30 +22,6 @@ namespace SSC.Controllers
             this.treatmentRepository = treatmentRepository;
         }
 
-        private byte[] CreateExcel(List<Test> tests)
-        {
-            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-            using (ExcelPackage package = new ExcelPackage())
-            {
-                package.Workbook.Worksheets.Add("results");
-                ExcelWorksheet ws = package.Workbook.Worksheets[0];
-                string[] columns = { "OrderNumber", "TestDate", "TestType", "Result", "Place" };
-                for (int i = 1; i <= columns.Length; i++)
-                {
-                    ws.Cells[1, i].Value = columns[i - 1];
-                }
-                for (int i = 0; i < tests.Count; i++)
-                {
-                    ws.Cells[i + 2, 1].Value = tests[i].OrderNumber;
-                    ws.Cells[i + 2, 2].Value = tests[i].TestDate;
-                    ws.Cells[i + 2, 3].Value = tests[i].TestType.Name;
-                    ws.Cells[i + 2, 4].Value = tests[i].Result;
-                    ws.Cells[i + 2, 5].Value = tests[i].Place.Name;
-                }
-                return package.GetAsByteArray();
-            }
-        }
-
         [HttpGet("tests/{category}/{provinceId}/{dateFrom}/{dateTo}/")]
         [HttpGet("tests/{category}/{provinceId}/{dateFrom}/{dateTo}/{type}")]
         public async Task<IActionResult> GetTestsReport(string category, Guid provinceId, DateTime dateFrom, DateTime dateTo, string? type)
@@ -55,11 +31,10 @@ namespace SSC.Controllers
             switch (type)
             {
                 case "xlsx":
-                    return File(CreateExcel(tests), "application/xlsx", "results.xlsx");
-                    break;
+                    return File(ExcelExtension.CreateExcel(tests, new[] { "OrderNumber", "TestDate", "TestType", "Result", "Place" },
+                        x => new object[] {x.OrderNumber, x.TestDate.ToString(), x.TestType.Name, x.Result, x.Place.Name}), "application/xlsx", "results.xlsx");
                 case "csv":
                     return File(System.Text.Encoding.UTF8.GetBytes(ICSV.CreateCSV(tests.Cast<ICSV>().ToList())), "application/csv", "results.csv");
-                    break;
                 case null:
                     break;
                 default:
@@ -90,9 +65,23 @@ namespace SSC.Controllers
         }
 
         [HttpGet("diseaseCourses/{provinceId}/{dateFrom}/{dateTo}")]
-        public async Task<IActionResult> GetTestsReport(Guid provinceId, DateTime dateFrom, DateTime dateTo)
+        [HttpGet("diseaseCourses/{provinceId}/{dateFrom}/{dateTo}/{type}")]
+        public async Task<IActionResult> GetTestsReport(Guid provinceId, DateTime dateFrom, DateTime dateTo, string? type)
         {
             var diseaseCourses = await treatmentDiseaseCoursesRepository.GetTreatmentDiseaseCourses(provinceId, dateFrom, dateTo);
+
+            switch (type)
+            {
+                case "xlsx":
+                    return File(ExcelExtension.CreateExcel(diseaseCourses, new[] { "Date", "Description", "DiseaseCourse", "DiseaseCourseDescription" },
+                        x => new object[] { x.Date.ToString(), x.Description, x.DiseaseCourse.Name, x.DiseaseCourse.Description}), "application/xlsx", "results.xlsx");
+                case "csv":
+                    return File(System.Text.Encoding.UTF8.GetBytes(ICSV.CreateCSV(diseaseCourses.Cast<ICSV>().ToList())), "application/csv", "results.csv");
+                case null:
+                    break;
+                default:
+                    return BadRequest(new { message = "Incorrect filetype option" });
+            }
 
             if (diseaseCourses.Count() == 0)
             {
@@ -107,9 +96,23 @@ namespace SSC.Controllers
         }
 
         [HttpGet("treatments/{provinceId}/{dateFrom}/{dateTo}")]
-        public async Task<IActionResult> GetTreatment(Guid provinceId, DateTime dateFrom, DateTime dateTo)
+        [HttpGet("treatments/{provinceId}/{dateFrom}/{dateTo}/{type}")]
+        public async Task<IActionResult> GetTreatment(Guid provinceId, DateTime dateFrom, DateTime dateTo, string? type)
         {
             var treatments = await treatmentRepository.GetTreatments(provinceId, dateFrom, dateTo);
+
+            switch (type)
+            {
+                case "xlsx":
+                    return File(ExcelExtension.CreateExcel(treatments, new[] { "StartDate", "EndDate", "IsCovid", "TreatmentStatus" },
+                        x => new object[] { x.StartDate.ToString(), x.EndDate?.ToString(), x.IsCovid, x.TreatmentStatus.Name }), "application/xlsx", "results.xlsx");
+                case "csv":
+                    return File(System.Text.Encoding.UTF8.GetBytes(ICSV.CreateCSV(treatments.Cast<ICSV>().ToList())), "application/csv", "results.csv");
+                case null:
+                    break;
+                default:
+                    return BadRequest(new { message = "Incorrect filetype option" });
+            }
 
             if (treatments.Count() == 0)
             {

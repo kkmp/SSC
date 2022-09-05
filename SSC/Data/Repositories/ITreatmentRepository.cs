@@ -1,4 +1,5 @@
 ﻿using SSC.Data.Models;
+using SSC.DTO.Treatment;
 using SSC.Models;
 
 namespace SSC.Data.Repositories

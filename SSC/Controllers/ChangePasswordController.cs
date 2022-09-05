@@ -49,7 +49,28 @@ namespace SSC.Controllers
             if (ModelState.IsValid)
             {
                 var issuerId = GetUserId();
-                var result = await changePasswordRepository.ChangePassword(password.Password, issuerId);
+                var result = await changePasswordRepository.ChangePassword(password.OldPassword, password.NewPassword, issuerId);
+
+                var msg = new { message = result.Message };
+                if (result.Success)
+                {
+                    return Ok(msg);
+                }
+                else
+                {
+                    return BadRequest(msg);
+                }
+            }
+            return BadRequest(new { message = "Invalid data" });
+        }
+
+        [AllowAnonymous]
+        [HttpPost("byCode")]
+        public async Task<IActionResult> ChangeCode(ChangePasswordUpdateDTO password)
+        {
+            if (ModelState.IsValid)
+            {
+                var result = await changePasswordRepository.ChangeCode(password.Password, password.Code);
 
                 var msg = new { message = result.Message };
                 if (result.Success)

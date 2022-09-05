@@ -13,11 +13,6 @@ namespace SSC.Data.Repositories
             this.context = context;
         }
 
-        public async Task<bool> AnyCity(string cityName)
-        {
-            return await context.Cities.AnyAsync(x => x.Name == cityName);
-        }
-
         public async Task<City> GetCityByName(string cityName)
         {
             return await context.Cities.FirstOrDefaultAsync(x => x.Name == cityName);

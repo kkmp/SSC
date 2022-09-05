@@ -1,4 +1,5 @@
 ﻿using SSC.Data.Models;
+using SSC.DTO.User;
 using SSC.Models;
 
 namespace SSC.Data.Repositories
@@ -13,5 +14,6 @@ namespace SSC.Data.Repositories
         Task<DbResult<User>> EditUser(UserUpdateDTO user, Guid issuerId);
         Task<User> GetUser(Guid userId);
         Task<User> GetUserByEmail(string email);
+        bool CompareHash(byte[] h1, byte[] h2);
     }
 }

@@ -6,6 +6,8 @@ using SSC.Data.Repositories;
 using SSC.DTO;
 using SSC.DTO.Patient;
 using SSC.Models;
+using SSC.Tools;
+using System.ComponentModel.DataAnnotations;
 
 namespace SSC.Controllers
 {
@@ -83,11 +85,11 @@ namespace SSC.Controllers
         }
 
         [Authorize]
-        [HttpGet("filterPatients/{option}/{orderType}/{sex}")]
-        [HttpGet("filterPatients/{option}/{orderType}/{sex}/{searchName}")]
-        public async Task<IActionResult> FilterPatients(string option, string orderType, string sex, string? searchName)
+        [HttpGet("filterPatients/{pageNr}/{option}/{orderType}/{sex}")]
+        [HttpGet("filterPatients/{pageNr}/{option}/{orderType}/{sex}/{searchName}")]
+        public async Task<IActionResult> FilterPatients([Range(1, 100000000)] int pageNr, string option, string orderType, string sex, string? searchName)
         {
-            List<Patient> result = new List<Patient>(); 
+            IEnumerable<Patient> result = new List<Patient>(); 
             switch(sex)
             {
                 case "both":
@@ -119,12 +121,14 @@ namespace SSC.Controllers
             {
                 searchName = searchName.ToLower();
                 result = result
-                    .Where(x => x.Name.ToLower().Contains(searchName) 
-                    || x.Surname.ToLower().Contains(searchName) 
+                    .Where(x => x.Name.ToLower().Contains(searchName)
+                    || x.Surname.ToLower().Contains(searchName)
                     || x.Pesel.ToLower().Contains(searchName)
-                    || (x.Name + " " + x.Surname).ToLower().Contains(searchName))
-                    .ToList();
+                    || (x.Name + " " + x.Surname).ToLower().Contains(searchName));
             }
+
+            result = result.GetPage(pageNr, 3).ToList();
+
             return Ok(mapper.Map<List<PatientOverallGetDTO>>(result));
         }
 
