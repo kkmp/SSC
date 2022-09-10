@@ -85,13 +85,16 @@ namespace SSC.Controllers
             return BadRequest(new { message = "Invalid data" });
         }
 
+        //!!!!!!!!
         [Authorize(Roles = "Administrator")]
-        [HttpGet("userDetails")]
-        public async Task<IActionResult> UserDetails(IdCreateDTO userid)
+        [HttpGet("userDetails/{userid}")]
+        //[HttpGet("userDetails")]
+        //public async Task<IActionResult> UserDetails(IdCreateDTO userid)
+        public async Task<IActionResult> UserDetails(Guid userid)
         {
             if (ModelState.IsValid)
             {
-                var result = await userRepository.UserDetails(userid.Id);
+                var result = await userRepository.UserDetails(userid);
 
                 if (!result.Success)
                 {

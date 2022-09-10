@@ -67,12 +67,14 @@ namespace SSC.Controllers
         }
 
         [Authorize]
-        [HttpGet("patientDetails")]
-        public async Task<IActionResult> PatientDetails(IdCreateDTO patientId)
+        [HttpGet("patientDetails/{patientId}")]
+        //[HttpGet("patientDetails")]
+        //public async Task<IActionResult> PatientDetails(IdCreateDTO patientId)
+        public async Task<IActionResult> PatientDetails(Guid patientId)
         {
             if (ModelState.IsValid)
             {
-                var result = await patientRepository.PatientDetails(patientId.Id);
+                var result = await patientRepository.PatientDetails(patientId);
 
                 if (!result.Success)
                 {
@@ -140,7 +142,7 @@ namespace SSC.Controllers
             {
                 var issuerId = GetUserId();
 
-                var result = await patientRepository.RecentlyAddedPatients(0, issuerId);
+                var result = await patientRepository.RecentlyAddedPatients(3, issuerId);
 
                 return Ok(mapper.Map<List<PatientOverallGetDTO>>(result));
             }
