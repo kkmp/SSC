@@ -61,6 +61,8 @@ namespace SSC.Controllers
 
             var claims = new[] {
             new Claim(JwtRegisteredClaimNames.NameId, userInfo.Id.ToString()),
+            new Claim(JwtRegisteredClaimNames.Name, userInfo.Name),
+            new Claim(ClaimTypes.Surname, userInfo.Surname),
             new Claim(ClaimTypes.Role, userInfo.Role.Name),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };

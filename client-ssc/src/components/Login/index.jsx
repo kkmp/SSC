@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Error from "../Error";
-import postRequest from "../RequestPost";
 import './signin.css'
+import request from "../Request";
 
 export default function Login() {
     const [email, setEmail] = useState("");
@@ -11,7 +11,7 @@ export default function Login() {
 
     const handleSubmit = async e => {
         e.preventDefault();
-        const url = 'https://localhost:7090/api/Login/login'
+        const url = '/api/Login/login'
         const data = {
             email, password
         }
@@ -23,7 +23,7 @@ export default function Login() {
             var newErrorArr = Object.keys(response.data.errors).map((key) => response.data.errors[key].join(" "));
             setError(newErrorArr)
         }
-        await postRequest(url, data, callback, errorCallback, false);
+        await request({url: url, data: data, type: "POST"}, callback, errorCallback, false);
     };
     
     return (

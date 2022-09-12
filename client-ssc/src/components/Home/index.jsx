@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import Error from "../Error";
-import getRequest from "../RequestGet";
+import request from "../Request";
 import jwt from "jwt-decode"
 
 export default function Home() {
@@ -14,20 +13,20 @@ export default function Home() {
                 window.location = '/login'
             }
             const decoded = jwt(tokenRead);
-            const urlUser = 'https://localhost:7090/api/User/userDetails/' + decoded["nameid"];
+            const urlUser = '/api/User/userDetails/' + decoded["nameid"];
             console.log(urlUser)
             const callbackUser = (response) => {
                 var newDataArr = Object.keys(response.data).map((key) => response.data[key]);
                 setUserData(newDataArr)
             }
-            await getRequest(urlUser, callbackUser);
+            await request({ url: urlUser, type: "GET" }, callbackUser);
 
-            const urlAddedPatients = "https://localhost:7090/api/Patient/recentlyAddedPatients";
+            const urlAddedPatients = "/api/Patient/recentlyAddedPatients";
             const callbackurlAddedPatients = (response) => {
                 var newDataArr = Object.keys(response.data).map((key) => response.data[key]);
                 setAddedPatients(newDataArr)
             }
-            await getRequest(urlAddedPatients, callbackurlAddedPatients);
+            await request({ url: urlAddedPatients, type: "GET" }, callbackurlAddedPatients);
         }
         handleChange()
     }, []);
@@ -37,9 +36,9 @@ export default function Home() {
         <div className="product-container">
             Tymczasowe wyświetlanie:
             <br></br>
-             Twoje dane: {userData.join(", ")}
-             <br></br>
-             Ostatnio dodani pacjenci: {addedPatients.join(", ")}
+            Twoje dane: {userData.join(", ")}
+            <br></br>
+            Ostatnio dodani pacjenci: {addedPatients.join(", ")}
         </div>
     </div>
     );

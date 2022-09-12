@@ -1,25 +1,41 @@
 import axios from "axios";
 
-const putRequest = async (url, data, callback, errorCallback = null, authorized = true) => {
+const request = async (params, callback = null, errorCallback = null, authorized = true) => {
     try {
-        var response = null
+        var config = {}
+        var response = null;
+
         if (authorized) {
             const tokenRead = localStorage.getItem("token");
             if (tokenRead == null || tokenRead === '') {
                 window.location = '/login'
             }
-            const config = {
+            config = {
                 headers: {
                     'Authorization': 'Bearer ' + tokenRead,
                 }
             }
-            response = await axios.put(url, data, config);
-        } else {
-            response = await axios.put(url, data);
+        }
+
+        const url = "https://localhost:7090" + params.url;
+        switch (params.type) {
+            case "GET":
+                response = await axios.get(url, config);
+                break
+            case "POST":
+                response = await axios.post(url, params.data, config);
+                break
+            case "PUT":
+                response = await axios.put(url, params.data, config);
+                break
+            default:
+                return
         }
 
         if (response.status === 200) {
-            callback(response);
+            if (callback != null) {
+                callback(response);
+            }
         }
     } catch (e) {
         if (e.response.status === 401) {
@@ -34,4 +50,4 @@ const putRequest = async (url, data, callback, errorCallback = null, authorized 
     }
 }
 
-export default putRequest;
+export default request;

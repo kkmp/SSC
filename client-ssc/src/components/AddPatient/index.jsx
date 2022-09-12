@@ -1,7 +1,7 @@
 import React, { Fragment, useState } from "react";
 import { toast } from 'react-toastify';
 import Error from "../Error";
-import postRequest from "../RequestPost";
+import request from "../Request";
 import Select from 'react-select';
 
 const AddProduct = () => {
@@ -30,7 +30,7 @@ const AddProduct = () => {
 
     const handleSubmit = async e => {
         e.preventDefault();
-        const url = 'https://localhost:7090/api/PAtient/addPatient'
+        const url = '/api/PAtient/addPatient'
         const data = {
             "pesel": pesel,
             "name": name,
@@ -51,7 +51,7 @@ const AddProduct = () => {
             var newErrorArr = Object.keys(response.data.errors).map((key) => response.data.errors[key].join(" "));
             setError(newErrorArr)
         }
-        await postRequest(url, data, callback, errorCallback);
+        await request({url: url, data: data, type: "POST"}, callback, errorCallback);
     }
 
     const handleChange = (event) => {

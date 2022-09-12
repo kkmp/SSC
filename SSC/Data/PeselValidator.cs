@@ -3,7 +3,7 @@
     public class PeselValidator
     {
         private readonly int[]? peselArray;
-
+        private bool PeselValidLength => peselArray != null && peselArray.Length == 11;
         public string? Pesel { get; }
         public bool Valid { get; }
         public int Day { get; }
@@ -34,6 +34,11 @@
 
         private int GetBirthYear()
         {
+            if(peselArray == null || peselArray.Length != 11)
+            {
+                return 0;
+            }
+
             int year;
             int month;
             year = 10 * peselArray[0];
@@ -65,6 +70,11 @@
 
         private int GetBirthMonth()
         {
+            if (peselArray == null || peselArray.Length != 11)
+            {
+                return 0;
+            }
+
             int month;
             month = 10 * peselArray[2];
             month += peselArray[3];
@@ -89,6 +99,11 @@
 
         private int GetBirthDay()
         {
+            if (peselArray == null || peselArray.Length != 11)
+            {
+                return 0;
+            }
+
             int day;
             day = 10 * peselArray[4];
             day += peselArray[5];
@@ -97,6 +112,11 @@
 
         private string GetSex()
         {
+            if (peselArray == null || peselArray.Length != 11)
+            {
+                return null;
+            }
+
             if (peselArray[9] % 2 == 1)
             {
                 return "M";
@@ -109,6 +129,11 @@
 
         private bool Checksum()
         {
+            if (peselArray == null || peselArray.Length != 11)
+            {
+                return false;
+            }
+
             int sum = 0;
             int[] wages = { 1, 3, 7, 9, 1, 3, 7, 9, 1, 3 };
             for(int i = 0; i < 10; i++)

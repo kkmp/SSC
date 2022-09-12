@@ -1,8 +1,7 @@
 import React, { Fragment, useState, useEffect } from "react";
 import { toast } from 'react-toastify';
 import Error from "../Error";
-import putRequest from "../RequestPut";
-import getRequest from "../RequestGet";
+import request from "../Request";
 import Select from 'react-select';
 
 const AddProduct = () => {
@@ -32,7 +31,7 @@ const AddProduct = () => {
 
     useEffect(() => {
         const handleChange = async () => {
-            const url = 'https://localhost:7090/api/Patient/patientDetails/' + id
+            const url = '/api/Patient/patientDetails/' + id
             const callback = (response) => {
                 setPesel(response.data.pesel)
                 setName(response.data.name)
@@ -45,14 +44,14 @@ const AddProduct = () => {
                 setCityName({ value: response.data.city, label: response.data.city })
                 setCitizenshipName({ value: response.data.citizenship, label: response.data.citizenship })
             }
-            await getRequest(url, callback);
+            await request({url: url, type: "GET"}, callback);
         }
         handleChange()
     }, []);
 
     const handleSubmit = async e => {
         e.preventDefault();
-        const url = 'https://localhost:7090/api/Patient/editPatient'
+        const url = '/api/Patient/editPatient'
         const data = {
             "id": id,
             "name": name,
@@ -71,7 +70,7 @@ const AddProduct = () => {
             var newErrorArr = Object.keys(response.data.errors).map((key) => response.data.errors[key].join(" "));
             setError(newErrorArr)
         }
-        await putRequest(url, data, callback, errorCallback);
+        await request({url: url, data: data, type: "PUT"}, callback, errorCallback);
     };
 
     return (<Fragment>

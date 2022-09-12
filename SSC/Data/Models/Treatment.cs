@@ -41,7 +41,7 @@ namespace SSC.Data.Models
 
         public string ToCSV()
         {
-            return $"{StartDate};{EndDate?.ToString()};{IsCovid};{TreatmentStatus.Name}";
+            return $"{StartDate};{EndDate?.ToString()};{IsCovid};{TreatmentStatus?.Name}";
         }
     }
 }

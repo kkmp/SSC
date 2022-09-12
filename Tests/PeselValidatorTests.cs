@@ -5,16 +5,17 @@ namespace Tests
 {
     public class PeselValidatorTests
     {
-        [Fact]
-        public void CorrectPeselTest()
+        [Theory]
+        [InlineData("F", 17, 4, 2000)]
+        public void CorrectPeselTest(string sex, int day, int month, int year)
         {
             var pesel = "00241734865";
             PeselValidator peselValidator = new PeselValidator(pesel);
-            Assert.True(peselValidator.Valid);
-            Assert.Equal(peselValidator.Sex, "F");
-            Assert.Equal(peselValidator.Day, 17);
-            Assert.Equal(peselValidator.Month, 4);
-            Assert.Equal(peselValidator.Year, 2000);
+            Assert.NotNull(peselValidator);
+            Assert.Equal(peselValidator.Sex, sex);
+            Assert.Equal(peselValidator.Day, day);
+            Assert.Equal(peselValidator.Month, month);
+            Assert.Equal(peselValidator.Year, year);
         }
     }
 }
