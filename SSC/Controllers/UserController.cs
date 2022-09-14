@@ -85,11 +85,8 @@ namespace SSC.Controllers
             return BadRequest(new { message = "Invalid data" });
         }
 
-        //!!!!!!!!
         [Authorize(Roles = "Administrator")]
         [HttpGet("userDetails/{userid}")]
-        //[HttpGet("userDetails")]
-        //public async Task<IActionResult> UserDetails(IdCreateDTO userid)
         public async Task<IActionResult> UserDetails(Guid userid)
         {
             if (ModelState.IsValid)

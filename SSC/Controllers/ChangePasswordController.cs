@@ -38,7 +38,7 @@ namespace SSC.Controllers
                 return BadRequest(result.Message);
             }
 
-            await mailService.SendEmailAsync(new MailRequest(model.Email, "Zmiana hasła", "Twój link do zmiany hasła: http://localhost:7090/api/ChangePassword/code/" + result.Data.Code));
+            await mailService.SendEmailAsync(new MailRequest(model.Email, "Zmiana hasła", "Twój link do zmiany hasła: http://localhost:3000/changePassword/useCode/" + result.Data.Code));
 
             return Ok("Email has been sent");
         }
