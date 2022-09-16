@@ -2,6 +2,7 @@
 {
     public class TreatmentGetDTO
     {
+        public Guid Id { get; set; }
         public string? StartDate { get; set; }
         public string? EndDate { get; set; }
         public bool? IsCovid { get; set; }

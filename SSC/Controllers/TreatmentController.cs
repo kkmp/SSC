@@ -43,12 +43,12 @@ namespace SSC.Controllers
             return BadRequest(new { message = "Invalid data" });
         }
 
-        [HttpGet("showTreatments")]
-        public async Task<IActionResult> ShowTreatments(IdCreateDTO patientId)
+        [HttpGet("showTreatments/{patientId}")]
+        public async Task<IActionResult> ShowTreatments(Guid patientId)
         {
             if (ModelState.IsValid)
             {
-                var result = await treatmentRepository.ShowTreatments(patientId.Id);
+                var result = await treatmentRepository.ShowTreatments(patientId);
 
                 if (!result.Success)
                 {
