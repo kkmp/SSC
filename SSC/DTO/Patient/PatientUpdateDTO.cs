@@ -27,9 +27,9 @@ namespace SSC.DTO.Patient
         public string? PhoneNumber { get; set; }
 
         [Required]
-        public string? CityName { get; set; }
+        public Guid CityId { get; set; }
 
         [Required]
-        public string? CitizenshipName { get; set; }
+        public Guid CitizenshipId { get; set; }
     }
 }

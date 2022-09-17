@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using SSC.Data.Models;
 using SSC.DTO;
+using SSC.DTO.Citizenship;
+using SSC.DTO.City;
 using SSC.DTO.MedicalHistory;
 using SSC.DTO.Patient;
 using SSC.DTO.Test;
@@ -45,6 +47,8 @@ namespace SSC.Services
                 .ForMember(x => x.Role, x => x.MapFrom(y => y.Role.Name));
             CreateMap<User, UserOverallDTO>()
                 .ForMember(x => x.Role, x => x.MapFrom(y => y.Role.Name));
+            CreateMap<City, CityGetDTO>();
+            CreateMap<Citizenship, CitizenshipGetDTO>();
 
             CreateMap<TreatmentCreateDTO, Treatment>();
             CreateMap<TestUpdateDTO, Test>();

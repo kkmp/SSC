@@ -4,6 +4,7 @@ namespace SSC.Data.Repositories
 {
     public interface ICitizenshipRepository
     {
-        Task<Citizenship> GetCitizenshipByName(string citizenshipName);
+        Task<List<Citizenship>> GetCitizenships();
+        Task<Citizenship> GetCitizenship(Guid citizenshipId);
     }
 }

@@ -4,6 +4,7 @@ namespace SSC.Data.Repositories
 {
     public interface ICityRepository
     {
-        Task<City> GetCityByName(string cityName);
+        Task<City> GetCity(Guid cityId);
+        Task<List<City>> GetCities();
     }
 }

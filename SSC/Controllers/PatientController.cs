@@ -68,8 +68,6 @@ namespace SSC.Controllers
 
         [Authorize]
         [HttpGet("patientDetails/{patientId}")]
-        //[HttpGet("patientDetails")]
-        //public async Task<IActionResult> PatientDetails(IdCreateDTO patientId)
         public async Task<IActionResult> PatientDetails(Guid patientId)
         {
             if (ModelState.IsValid)

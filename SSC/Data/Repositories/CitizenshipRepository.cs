@@ -11,10 +11,14 @@ namespace SSC.Data.Repositories
         {
             this.context = context;
         }
-
-        public async Task<Citizenship> GetCitizenshipByName(string citizenshipName)
+        public async Task<List<Citizenship>> GetCitizenships()
         {
-            return await context.Citizenships.FirstOrDefaultAsync(x => x.Name == citizenshipName);
+            return await context.Citizenships.ToListAsync();
+        }
+
+        public async Task<Citizenship> GetCitizenship(Guid citizenshipId)
+        {
+            return await context.Citizenships.FirstOrDefaultAsync(x => x.Id == citizenshipId);
         }
     }
 }

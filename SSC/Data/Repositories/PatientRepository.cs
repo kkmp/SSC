@@ -26,8 +26,8 @@ namespace SSC.Data.Repositories
         public async Task<DbResult<Patient>> AddPatient(PatientCreateDTO patient, Guid issuerId)
         {
             var peselValidator = new PeselValidator(patient.Pesel);
-            var citizenship = await citizenshipRepository.GetCitizenshipByName(patient.CitizenshipName);
-            var city = await cityRepository.GetCityByName(patient.CityName);
+            var citizenship = await citizenshipRepository.GetCitizenship(patient.CitizenshipId);
+            var city = await cityRepository.GetCity(patient.CityId);
 
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
@@ -60,8 +60,8 @@ namespace SSC.Data.Repositories
         public async Task<DbResult<Patient>> EditPatient(PatientUpdateDTO patient, Guid issuerId)
         {
             var patientToCheck = await GetPatient(patient.Id);
-            var citizenship = await citizenshipRepository.GetCitizenshipByName(patient.CitizenshipName);
-            var city = await cityRepository.GetCityByName(patient.CityName);
+            var citizenship = await citizenshipRepository.GetCitizenship(patient.CitizenshipId);
+            var city = await cityRepository.GetCity(patient.CityId);
 
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
@@ -77,9 +77,6 @@ namespace SSC.Data.Repositories
             }
 
             mapper.Map(patient, patientToCheck);
-
-            patientToCheck.City = city;
-            patientToCheck.Citizenship = citizenship;
 
             context.Update(patientToCheck);
             await context.SaveChangesAsync();

@@ -13,9 +13,14 @@ namespace SSC.Data.Repositories
             this.context = context;
         }
 
-        public async Task<City> GetCityByName(string cityName)
+        public async Task<List<City>> GetCities()
         {
-            return await context.Cities.FirstOrDefaultAsync(x => x.Name == cityName);
+            return await context.Cities.ToListAsync();
+        }
+
+        public async Task<City> GetCity(Guid cityId)
+        {
+            return await context.Cities.FirstOrDefaultAsync(x => x.Id == cityId);
         }
     }
 }
