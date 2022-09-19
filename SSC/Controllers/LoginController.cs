@@ -39,7 +39,7 @@ namespace SSC.Controllers
                 var role = await roleRepository.GetRole(result.Data.RoleId.Value);
                 if (!role.Success)
                 {
-                    return BadRequest(new { message = role.Message });
+                    return BadRequest(new { errors = new { Message = new string[] { result.Message } } });
                 }
 
                 result.Data.Role = role.Data;
@@ -49,8 +49,7 @@ namespace SSC.Controllers
             }
             else
             {
-                var msg = new { errors = new { Email = new string[] { result.Message } } };
-                response = BadRequest(msg);
+                response = BadRequest(new { errors = new { Message = new string[] { result.Message } } });
             }
             return response;
         }

@@ -75,8 +75,8 @@ namespace SSC.Data.Repositories
         {
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
-               { () => oldPassword == newPassword, "The old password cannot be the same as the new password" },
                { () => !CheckPassword(oldPassword, issuerId).Result, "Password not correct" },
+               { () => oldPassword == newPassword, "The old password cannot be the same as the new password" },
             };
 
             var result = Validate(conditions);

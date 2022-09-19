@@ -32,17 +32,17 @@ namespace SSC.Controllers
             {
                 var issuerId = GetUserId();
                 var result = await patientRepository.AddPatient(patient, issuerId);
-                var msg = new { errors = new { Message = new string[] { result.Message } } };
+
                 if (result.Success)
                 {
-                    return Ok(msg);
+                    return Ok(new { message = result.Message });
                 }
                 else
                 {
-                    return BadRequest(msg);
+                    return BadRequest(new { errors = new { Message = new string[] { result.Message } } });
                 }
             }
-            return BadRequest(new { message = "Invalid data" });
+            return BadRequest(new { errors = new { Message = new string[] { "Invalid data" } } });
         }
 
         [Authorize]
@@ -53,17 +53,16 @@ namespace SSC.Controllers
             {
                 var issuerId = GetUserId();
                 var result = await patientRepository.EditPatient(patient, issuerId);
-                var msg = new { errors = new { Message = new string[] { result.Message } } };
                 if (result.Success)
                 {
-                    return Ok(msg);
+                    return Ok(new { message = result.Message });
                 }
                 else
                 {
-                    return BadRequest(msg);
+                    return BadRequest(new { errors = new { Message = new string[] { result.Message } } });
                 }
             }
-            return BadRequest(new { message = "Invalid data" });
+            return BadRequest(new { errors = new { Message = new string[] { "Invalid data" } } });
         }
 
         [Authorize]
@@ -76,12 +75,12 @@ namespace SSC.Controllers
 
                 if (!result.Success)
                 {
-                    return BadRequest(new { message = result.Message });
+                    return BadRequest(new { errors = new { Message = new string[] { result.Message } } });
                 }
 
                 return Ok(mapper.Map<PatientGetDTO>(result.Data));
             }
-            return BadRequest(new { message = "Invalid data" });
+            return BadRequest(new { errors = new { Message = new string[] { "Invalid data" } } });
         }
 
         [Authorize]
@@ -89,8 +88,8 @@ namespace SSC.Controllers
         [HttpGet("filterPatients/{pageNr}/{option}/{orderType}/{sex}/{searchName}")]
         public async Task<IActionResult> FilterPatients([Range(1, 100000000)] int pageNr, string option, string orderType, string sex, string? searchName)
         {
-            IEnumerable<Patient> result = new List<Patient>(); 
-            switch(sex)
+            IEnumerable<Patient> result = new List<Patient>();
+            switch (sex)
             {
                 case "both":
                     result = await patientRepository.GetPatients();
@@ -102,7 +101,7 @@ namespace SSC.Controllers
                     result = await patientRepository.GetPatients(x => x.Sex == 'F');
                     break;
                 default:
-                    return BadRequest(new { message = "Incorrect sex option" });
+                    return BadRequest(new { errors = new { Message = new string[] { "Incorrect sex option" } } });
             }
 
             switch (option)
@@ -114,10 +113,11 @@ namespace SSC.Controllers
                     result = (orderType == "descending" ? result.OrderByDescending(x => x.BirthDate) : result.OrderBy(x => x.BirthDate)).ToList();
                     break;
                 default:
-                    return BadRequest(new { message = "Incorrect filter option" });
+                    return BadRequest(new { errors = new { Message = new string[] { "Incorrect filter option" } } });
+
             }
 
-            if(searchName != null)
+            if (searchName != null)
             {
                 searchName = searchName.ToLower();
                 result = result
@@ -136,15 +136,11 @@ namespace SSC.Controllers
         [HttpGet("recentlyAddedPatients")]
         public async Task<IActionResult> RecentlyAddedPatients()
         {
-            if (ModelState.IsValid)
-            {
-                var issuerId = GetUserId();
+            var issuerId = GetUserId();
 
-                var result = await patientRepository.RecentlyAddedPatients(3, issuerId);
+            var result = await patientRepository.RecentlyAddedPatients(3, issuerId);
 
-                return Ok(mapper.Map<List<PatientOverallGetDTO>>(result));
-            }
-            return BadRequest(new { message = "Invalid data" });
+            return Ok(mapper.Map<List<PatientOverallGetDTO>>(result));
         }
     }
 }

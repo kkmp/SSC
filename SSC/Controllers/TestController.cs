@@ -72,11 +72,11 @@ namespace SSC.Controllers
                 var result = await testRepository.ShowTests(patientId);
                 if(!result.Success)
                 {
-                    return BadRequest(new { message = result.Message });
+                    return BadRequest(new { errors = new { Message = new string[] { result.Message } } });
                 }
                 return Ok(mapper.Map<List<TestOverallGetDTO>>(result.Data));
             }
-            return BadRequest(new { message = "Invalid data" });
+            return BadRequest(new { errors = new { Message = new string[] { "Invalid data" } } });
         }
 
         [HttpGet("testDetails")]

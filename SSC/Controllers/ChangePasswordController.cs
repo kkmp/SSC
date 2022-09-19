@@ -28,19 +28,19 @@ namespace SSC.Controllers
         public async Task<IActionResult> GetCode(EmailCreateDTO model)
         {
             var user = await userRepository.GetUserByEmail(model.Email);
-            if(user == null)
+            if (user == null)
             {
-                return NotFound("User's email not found");
+                return NotFound(new { errors = new { Message = new string[] { "User's email not found" } } });
             }
             var result = await changePasswordRepository.AddCode(user.Id);
-            if(!result.Success)
+            if (!result.Success)
             {
-                return BadRequest(result.Message);
+                return BadRequest(new { errors = new { Message = new string[] { result.Message } } });
             }
 
             await mailService.SendEmailAsync(new MailRequest(model.Email, "Zmiana hasła", "Twój link do zmiany hasła: http://localhost:3000/changePassword/useCode/" + result.Data.Code));
 
-            return Ok("Email has been sent");
+            return Ok(new { message = "Email has been sent" });
         }
 
         [HttpPut("changePassword")]
@@ -51,17 +51,17 @@ namespace SSC.Controllers
                 var issuerId = GetUserId();
                 var result = await changePasswordRepository.ChangePassword(password.OldPassword, password.NewPassword, issuerId);
 
-                var msg = new { message = result.Message };
                 if (result.Success)
                 {
-                    return Ok(msg);
+                    return Ok(new { message = result.Message });
                 }
                 else
                 {
-                    return BadRequest(msg);
+                    return BadRequest(new { errors = new { Message = new string[] { result.Message } } });
                 }
             }
-            return BadRequest(new { message = "Invalid data" });
+            return BadRequest(new { errors = new { Message = new string[] { "Invalid data" } } });
+
         }
 
         [AllowAnonymous]
@@ -72,17 +72,16 @@ namespace SSC.Controllers
             {
                 var result = await changePasswordRepository.ChangeCode(password.Password, password.Code);
 
-                var msg = new { message = result.Message };
                 if (result.Success)
                 {
-                    return Ok(msg);
+                    return Ok(new { message = result.Message });
                 }
                 else
                 {
-                    return BadRequest(msg);
+                    return BadRequest(new { errors = new { Message = new string[] { result.Message } } });
                 }
             }
-            return BadRequest(new { message = "Invalid data" });
+            return BadRequest(new { errors = new { Message = new string[] { "Invalid data" } } });
         }
     }
 }

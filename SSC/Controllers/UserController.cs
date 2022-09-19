@@ -37,7 +37,7 @@ namespace SSC.Controllers
             if (ModelState.IsValid)
             {
                 var result = await userRepository.AddUser(user);
-                var msg = new { errors = new { Email = new string[] { result.Message } } };
+                var msg = new { message = result.Message };
                 if (result.Success)
                 {
                     return Ok(msg);
@@ -66,23 +66,23 @@ namespace SSC.Controllers
                         activation = false;
                         break;
                     default:
-                        return BadRequest(new { message = "Incorrect option" });
+                        return BadRequest(new { errors = new { Message = new string[] { "Incorrect option" } } });
                 }
 
                 var issuer = GetUserId();
                 var result = await userRepository.ChangeActivity(userId.Id, issuer, activation);
-                var msg = new { message = result.Message };
 
                 if (result.Success)
                 {
-                    return Ok(msg);
+                    return Ok(new { message = result.Message });
+
                 }
                 else
                 {
-                    return BadRequest(msg);
+                    return BadRequest(new { errors = new { Message = new string[] { result.Message } } });
                 }
             }
-            return BadRequest(new { message = "Invalid data" });
+            return BadRequest(new { errors = new { Message = new string[] { "Invalid data" } } });
         }
 
         [Authorize(Roles = "Administrator")]
@@ -95,12 +95,14 @@ namespace SSC.Controllers
 
                 if (!result.Success)
                 {
-                    return BadRequest(new { message = result.Message });
+                    return BadRequest(new { errors = new { Message = new string[] { result.Message } } });
+
                 }
 
                 return Ok(mapper.Map<UserDTO>(result.Data));
             }
-            return BadRequest(new { message = "Invalid data" });
+            return BadRequest(new { errors = new { Message = new string[] { "Invalid data" } } });
+
         }
 
         [Authorize(Roles = "Administrator")]
@@ -128,7 +130,7 @@ namespace SSC.Controllers
         [Authorize(Roles = "Administrator")]
         [HttpGet("filterUsers/{pageNr}/{option}/{orderType}")]
         [HttpGet("filterUsers/{pageNr}/{option}/{orderType}/{searchName}")]
-        public async Task<IActionResult> FilterUsers([Range(1, 100000000)]int pageNr, string option, string orderType, string? searchName)
+        public async Task<IActionResult> FilterUsers([Range(1, 100000000)] int pageNr, string option, string orderType, string? searchName)
         {
             IEnumerable<User> result = await userRepository.GetUsers();
 
@@ -144,7 +146,8 @@ namespace SSC.Controllers
                     result = (orderType == "descending" ? result.OrderByDescending(x => x.IsActive) : result.OrderBy(x => x.IsActive)).ToList();
                     break;
                 default:
-                    return BadRequest(new { message = "Incorrect filter option" });
+                    return BadRequest(new { errors = new { Message = new string[] { "Incorrect filter option" } } });
+
             }
 
             if (searchName != null)
