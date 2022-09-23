@@ -18,7 +18,7 @@ namespace SSC.Data.Repositories
 
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
-                { () => data == null, "Role does not exist" }
+                { () => data == null, "Rola nie istnieje" }
             };
 
             var result = Validate(conditions);
@@ -27,7 +27,7 @@ namespace SSC.Data.Repositories
                 return result;
             }
 
-            return DbResult<Role>.CreateSuccess("Success", data);
+            return DbResult<Role>.CreateSuccess("Powodzenie", data);
         }
 
         public async Task<Role> GetRoleByName(string roleName)

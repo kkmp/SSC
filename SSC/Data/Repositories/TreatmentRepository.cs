@@ -27,10 +27,10 @@ namespace SSC.Data.Repositories
 
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
-                { () => patientRepository.GetPatient(treatment.PatientId.Value).Result == null, "Patient does not exist" },
-                { () => treatmentStatus == null, "Treatment status does not exist" },
-                { () => context.Treatments.AnyAsync(x => x.PatientId == treatment.PatientId && x.EndDate == null).Result, "Last treatment is not ended"},
-                { () => context.Treatments.AnyAsync(x => treatment.StartDate > x.StartDate && treatment.StartDate < x.EndDate && x.PatientId == treatment.PatientId).Result, "Incorrect treatment start date" }
+                { () => patientRepository.GetPatient(treatment.PatientId.Value).Result == null, "Pacjent nie istnieje" },
+                { () => treatmentStatus == null, "Status leczenia nie istnieje" },
+                { () => context.Treatments.AnyAsync(x => x.PatientId == treatment.PatientId && x.EndDate == null).Result, "Ostatnie leczenie nie zostało jeszcze zakończone"},
+                { () => context.Treatments.AnyAsync(x => treatment.StartDate > x.StartDate && treatment.StartDate < x.EndDate && x.PatientId == treatment.PatientId).Result, "Niepoprawna data rozpoczęcia leczenia" }
             };
 
             var result = Validate(conditions);
@@ -47,7 +47,7 @@ namespace SSC.Data.Repositories
             await context.Treatments.AddAsync(newTreatment);
             await context.SaveChangesAsync();
 
-            return DbResult<Treatment>.CreateSuccess("Treatment added", newTreatment);
+            return DbResult<Treatment>.CreateSuccess("Leczenie zostało dodane", newTreatment);
         }
 
         public async Task<DbResult<Treatment>> EditTreatment(TreatmentUpdateDTO treatment, Guid issuerId)
@@ -57,15 +57,15 @@ namespace SSC.Data.Repositories
 
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
-                { () =>  treatmentToCheck == null, "Treatment does not exist"},
-                { () =>  treatmentToCheck.UserId != issuerId, "Only the user who added the treatment can edit"},
-                { () =>  treatmentStatus == null, "Treatment status does not exist" },
-                { () =>  treatmentToCheck.EndDate != null, "The treatment cannot be edited anymore - the treatment has been ended"},
-                { () =>  treatment.StartDate > treatment.EndDate, "Treatment start date cannot be earlier than the end date"},
-                { () =>  context.Treatments.AnyAsync(x => treatment.StartDate < x.EndDate && treatment.Id != x.Id && x.PatientId == treatmentToCheck.PatientId).Result, "The tratment start date cannot be older than another tratment end date."},
-                { () =>  context.Tests.AnyAsync(x => x.TreatmentId == treatment.Id && treatment.StartDate > x.TestDate).Result, "Date of treatment cannot be after existing test" },
-                { () =>  context.TreatmentDiseaseCourses.AnyAsync(x => x.TreatmentId == treatment.Id && treatment.StartDate > x.Date).Result, "Date of treatment cannot be after existing treatment disease course entry" },
-                { () =>  context.Tests.AnyAsync(x => x.TreatmentId == treatment.Id && x.ResultDate == null).Result, "Some tests in treatment have no result date"}
+                { () =>  treatmentToCheck == null, "Leczenie nie istnieje"},
+                { () =>  treatmentToCheck.UserId != issuerId, "Tylko użytkownik, który dodał leczenie może je edytować"},
+                { () =>  treatmentStatus == null, "Status leczenia nie istnieje" },
+                { () =>  treatmentToCheck.EndDate != null, "Tego leczenia nie można już edytować - leczenie zostało zakończone"},
+                { () =>  treatment.StartDate > treatment.EndDate, "Data rozpoczęcia leczenia nie może być wcześniejsza niż data jego zakończenia"},
+                { () =>  context.Treatments.AnyAsync(x => treatment.StartDate < x.EndDate && treatment.Id != x.Id && x.PatientId == treatmentToCheck.PatientId).Result, "Data rozpoczęcia leczenia nie może być starsza niż data zakończenia innego leczenia"},
+                { () =>  context.Tests.AnyAsync(x => x.TreatmentId == treatment.Id && treatment.StartDate > x.TestDate).Result, "Data rozpoczęcia leczenia nie może następować po istniejącym teście" },
+                { () =>  context.TreatmentDiseaseCourses.AnyAsync(x => x.TreatmentId == treatment.Id && treatment.StartDate > x.Date).Result, "Data rozpoczęcia leczenia nie może następować po istniejącym wpisie o powikłaniach" },
+                { () =>  context.Tests.AnyAsync(x => x.TreatmentId == treatment.Id && x.ResultDate == null).Result, "Niektóre testy powiązane z leczeniem nie posiadają daty wyniku"}
             };
 
             var result = Validate(conditions);
@@ -81,7 +81,7 @@ namespace SSC.Data.Repositories
             context.Update(treatmentToCheck);
             await context.SaveChangesAsync();
 
-            return DbResult<Treatment>.CreateSuccess("Treatment has been edited", treatmentToCheck);
+            return DbResult<Treatment>.CreateSuccess("Leczenie zostało zedytowane", treatmentToCheck);
         }
 
         public async Task<Treatment> GetTreatment(Guid treatmentId)
@@ -103,7 +103,7 @@ namespace SSC.Data.Repositories
         {
             if (await patientRepository.GetPatient(patientId) == null)
             {
-                return DbResult<List<Treatment>>.CreateFail("Patient does not exist");
+                return DbResult<List<Treatment>>.CreateFail("Pacjent nie istnieje");
             }
 
             var result = await context.Treatments
@@ -111,7 +111,7 @@ namespace SSC.Data.Repositories
                 .Include(x => x.TreatmentStatus)
                 .Where(x => x.PatientId == patientId).ToListAsync();
 
-            return DbResult<List<Treatment>>.CreateSuccess("Success", result);
+            return DbResult<List<Treatment>>.CreateSuccess("Powodzenie", result);
         }
 
         public async Task<Treatment> TreatmentLasts(Guid patientId)

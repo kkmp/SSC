@@ -17,6 +17,7 @@ namespace SSC.DTO.User
         public string? Email { get; set; }
 
         [Required]
+        [MinLength(9)]
         [MaxLength(9)]
         public string? PhoneNumber { get; set; }
 

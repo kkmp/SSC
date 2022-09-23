@@ -38,7 +38,7 @@ namespace SSC.Controllers
                 case null:
                     break;
                 default:
-                    return BadRequest(new { message = "Incorrect filetype option" });
+                    return BadRequest(new { message = "Niepoprawna opcja typu pliku" });
             }
 
             if (tests.Count() == 0)
@@ -80,7 +80,7 @@ namespace SSC.Controllers
                 case null:
                     break;
                 default:
-                    return BadRequest(new { message = "Incorrect filetype option" });
+                    return BadRequest(new { message = "Niepoprawna opcja typu pliku" });
             }
 
             if (diseaseCourses.Count() == 0)
@@ -111,7 +111,7 @@ namespace SSC.Controllers
                 case null:
                     break;
                 default:
-                    return BadRequest(new { message = "Incorrect filetype option" });
+                    return BadRequest(new { message = "Niepoprawna opcja typu pliku" });
             }
 
             if (treatments.Count() == 0)

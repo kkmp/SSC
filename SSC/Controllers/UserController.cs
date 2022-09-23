@@ -66,7 +66,7 @@ namespace SSC.Controllers
                         activation = false;
                         break;
                     default:
-                        return BadRequest(new { errors = new { Message = new string[] { "Incorrect option" } } });
+                        return BadRequest(new { errors = new { Message = new string[] { "Niepoprawna opcja" } } });
                 }
 
                 var issuer = GetUserId();
@@ -146,7 +146,7 @@ namespace SSC.Controllers
                     result = (orderType == "descending" ? result.OrderByDescending(x => x.IsActive) : result.OrderBy(x => x.IsActive)).ToList();
                     break;
                 default:
-                    return BadRequest(new { errors = new { Message = new string[] { "Incorrect filter option" } } });
+                    return BadRequest(new { errors = new { Message = new string[] { "Niepoprawna opcja filtrowania" } } });
 
             }
 

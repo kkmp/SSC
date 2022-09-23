@@ -31,8 +31,8 @@ namespace SSC.Data.Repositories
 
             var conditions = new Dictionary<Func<bool>, string>
             {
-                { () => user == null, "User does not exist" },
-                { () => !user.IsActive, "User account is not active" }
+                { () => user == null, "Użytkownik nie istnieje" },
+                { () => !user.IsActive, "Konto użytkownika nie jest aktywne" }
             };
 
             var result = Validate(conditions);
@@ -45,7 +45,7 @@ namespace SSC.Data.Repositories
             byte[] computedHash = hmac.ComputeHash(System.Text.ASCIIEncoding.UTF8.GetBytes(password));
 
             conditions.Clear();
-            conditions.Add(() => !CompareHash(computedHash, user.PasswordHash), "Password is not correct");
+            conditions.Add(() => !CompareHash(computedHash, user.PasswordHash), "Hasło nie jest poprawne");
 
             result = Validate(conditions);
             if (result != null)
@@ -53,14 +53,14 @@ namespace SSC.Data.Repositories
                 return result;
             }
 
-            return DbResult<User>.CreateSuccess("Authentication success", user);
+            return DbResult<User>.CreateSuccess("Powodzenie uwierzytelniania", user);
         }
 
         public async Task<DbResult<User>> AddUser(UserCreateDTO user)
         {
             var conditions = new Dictionary<Func<bool>, string>
             {
-                { () => GetUserByEmail(user.Email).Result != null, "Email has already been used" }
+                { () => GetUserByEmail(user.Email).Result != null, "Adres email został już wykorzystany" }
             };
 
             var result = Validate(conditions);
@@ -84,7 +84,7 @@ namespace SSC.Data.Repositories
 
             await mailService.SendEmailAsync(new MailRequest(user.Email, "Dostęp do nowego konta", "Tymczasowe hasło logowania do nowego konta: " + password));
 
-            return DbResult<User>.CreateSuccess("User created with password " + password, newUser);
+            return DbResult<User>.CreateSuccess("Utworzono użytkownika z następującym hasłem: " + password, newUser);
         }
 
         public async Task<List<User>> GetUsers()
@@ -98,8 +98,8 @@ namespace SSC.Data.Repositories
 
             var conditions = new Dictionary<Func<bool>, string>
             {
-                { () => user == null, "User does not exist" },
-                { () => user.Id == issuerId, "Cannot deactivate own account" }
+                { () => user == null, "Użytkownik nie istnieje" },
+                { () => user.Id == issuerId, "Nie można dezaktywować własnego konta" }
             };
 
             var result = Validate(conditions);
@@ -113,14 +113,14 @@ namespace SSC.Data.Repositories
             context.Update(user);
             await context.SaveChangesAsync();
 
-            return DbResult<User>.CreateSuccess("User activity has been changed", user);
+            return DbResult<User>.CreateSuccess("Aktywność konta użytkownika została zmieniona", user);
         }
 
         public async Task<DbResult<User>> UserDetails(Guid userId)
         {
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
-               { () => GetUser(userId).Result == null, "User does not exist" }
+               { () => GetUser(userId).Result == null, "Użytkownik nie istnieje" }
             };
 
             var result = Validate(conditions);
@@ -133,7 +133,7 @@ namespace SSC.Data.Repositories
                 .Include(x => x.Role)
                 .FirstOrDefaultAsync(x => x.Id == userId);
 
-            return DbResult<User>.CreateSuccess("Success", data);
+            return DbResult<User>.CreateSuccess("Powodzenie", data);
         }
 
         public async Task<DbResult<User>> EditUser(UserUpdateDTO user, Guid issuerId)
@@ -142,7 +142,7 @@ namespace SSC.Data.Repositories
 
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
-               { () => userToCheck == null, "User does not exist" }
+               { () => userToCheck == null, "Użytkownik nie istnieje" }
             };
 
             var result = Validate(conditions);
@@ -158,7 +158,7 @@ namespace SSC.Data.Repositories
             context.Update(userToCheck);
             await context.SaveChangesAsync();
 
-            return DbResult<User>.CreateSuccess("User has been edited", userToCheck);
+            return DbResult<User>.CreateSuccess("Użytkownik został zedytowany", userToCheck);
         }
 
         public async Task<User> GetUserByEmail(string email) => await context.Users.FirstOrDefaultAsync(x => x.Email == email);

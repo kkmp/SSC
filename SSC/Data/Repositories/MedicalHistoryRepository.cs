@@ -23,8 +23,8 @@ namespace SSC.Data.Repositories
         {
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
-                { () => patientRepository.GetPatient(medicalHistory.PatientId.Value).Result == null, "Patient does not exist" },
-                { () => context.MedicalHistories.AnyAsync(x => x.PatientId == medicalHistory.PatientId && x.Date >= medicalHistory.Date).Result, "Cannot add medical history. There is already an entry before the given date" }
+                { () => patientRepository.GetPatient(medicalHistory.PatientId.Value).Result == null, "Pacjent nie istnieje" },
+                { () => context.MedicalHistories.AnyAsync(x => x.PatientId == medicalHistory.PatientId && x.Date >= medicalHistory.Date).Result, "Nie można dodać historii choroby. Istnieje już wpis przed podaną datą" }
             };
 
             var result = Validate(conditions);
@@ -40,7 +40,7 @@ namespace SSC.Data.Repositories
             await context.AddAsync(newMedicalHistory);
             await context.SaveChangesAsync();
 
-            return DbResult<MedicalHistory>.CreateSuccess("Medical history added", newMedicalHistory);
+            return DbResult<MedicalHistory>.CreateSuccess("Dodano historię choroby", newMedicalHistory);
         }
 
         public async Task<DbResult<MedicalHistory>> EditMedicalHistory(MedicalHistoryUpdateDTO medicalHistory, Guid issuerId)
@@ -49,16 +49,16 @@ namespace SSC.Data.Repositories
 
             if (medicalHistoryUpdate == null)
             {
-                return DbResult<MedicalHistory>.CreateFail("There is no such entry in the medical history");
+                return DbResult<MedicalHistory>.CreateFail("Nie ma takiego wpisu w historii choroby");
             }
 
             var newest = await context.MedicalHistories.Where(x => x.PatientId == medicalHistoryUpdate.PatientId).OrderByDescending(x => x.Date).FirstOrDefaultAsync();
 
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
-                { () => medicalHistoryUpdate.UserId != issuerId, "Only the user who added the medical history entry can edit" },
-                { () => newest.Id != medicalHistoryUpdate.Id, "This medical history cannot be edited anymore" },
-                { () => context.MedicalHistories.AnyAsync(x => x.PatientId == medicalHistoryUpdate.PatientId && x.Date >= medicalHistory.Date && x.Id != medicalHistory.Id).Result, "Cannot edit medical history. There is already an entry before the given date" },
+                { () => medicalHistoryUpdate.UserId != issuerId, "Tylko użytkownik, który dodał wpis do historii choroby może go edytować" },
+                { () => newest.Id != medicalHistoryUpdate.Id, "Tej historii choroby nie można już edytować" },
+                { () => context.MedicalHistories.AnyAsync(x => x.PatientId == medicalHistoryUpdate.PatientId && x.Date >= medicalHistory.Date && x.Id != medicalHistory.Id).Result, "Nie można dodać historii choroby. Istnieje już wpis przed podaną datą" },
             };
 
             var result = Validate(conditions);
@@ -73,21 +73,21 @@ namespace SSC.Data.Repositories
             context.Update(medicalHistoryUpdate);
             await context.SaveChangesAsync();
 
-            return DbResult<MedicalHistory>.CreateSuccess("Medical history has been edited", medicalHistoryUpdate);
+            return DbResult<MedicalHistory>.CreateSuccess("Historia choroby została zedytowana", medicalHistoryUpdate);
         }
 
         public async Task<DbResult<List<MedicalHistory>>> ShowMedicalHistories(Guid patientId)
         {
             if (await patientRepository.GetPatient(patientId) == null)
             {
-                return DbResult<List<MedicalHistory>>.CreateFail("Patient does not exist");
+                return DbResult<List<MedicalHistory>>.CreateFail("Pacjent nie istnieje");
             }
 
             var result = await context.MedicalHistories
                 .Include(x => x.User.Role)
                 .Where(x => x.PatientId == patientId).ToListAsync();
 
-            return DbResult<List<MedicalHistory>>.CreateSuccess("Success", result);
+            return DbResult<List<MedicalHistory>>.CreateSuccess("Powodzenie", result);
         }
 
         private async Task<MedicalHistory> GetMedicalHistory(Guid medicalHistoryId) => await context.MedicalHistories.FirstOrDefaultAsync(x => x.Id == medicalHistoryId);

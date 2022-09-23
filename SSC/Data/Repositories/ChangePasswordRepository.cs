@@ -28,7 +28,7 @@ namespace SSC.Data.Repositories
             await context.AddAsync(code);
             await context.SaveChangesAsync();
 
-            return DbResult<ChangePasswordCode>.CreateSuccess("Success", code);
+            return DbResult<ChangePasswordCode>.CreateSuccess("Powodzenie", code);
         }
 
         public async Task<DbResult> ChangeCode(string password, string code)
@@ -37,8 +37,8 @@ namespace SSC.Data.Repositories
 
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
-               { () => codeToCheck == null, "Code does not exist" },
-               { () => codeToCheck.ExpiredDate < DateTime.Now, "Code has been expired" },
+               { () => codeToCheck == null, "Kod nie istnieje" },
+               { () => codeToCheck.ExpiredDate < DateTime.Now, "Kod stracił ważność" },
             };
 
             var result = Validate(conditions);
@@ -68,15 +68,15 @@ namespace SSC.Data.Repositories
             context.Update(user);
             await context.SaveChangesAsync();
 
-            return DbResult.CreateSuccess("User password has been changed");
+            return DbResult.CreateSuccess("Hasło użytkownika zostało zmienione");
         }
 
         public async Task<DbResult> ChangePassword(string oldPassword, string newPassword, Guid issuerId)
         {
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
-               { () => !CheckPassword(oldPassword, issuerId).Result, "Password not correct" },
-               { () => oldPassword == newPassword, "The old password cannot be the same as the new password" },
+               { () => !CheckPassword(oldPassword, issuerId).Result, "Hasło niepoprawne" },
+               { () => oldPassword == newPassword, "Stare hasło nie może być takie samo jak nowe hasło" },
             };
 
             var result = Validate(conditions);

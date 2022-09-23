@@ -30,7 +30,7 @@ namespace SSC.Controllers
             var user = await userRepository.GetUserByEmail(model.Email);
             if (user == null)
             {
-                return NotFound(new { errors = new { Message = new string[] { "User's email not found" } } });
+                return NotFound(new { errors = new { Message = new string[] { "Nie znaleziono adresu email użytkownika" } } });
             }
             var result = await changePasswordRepository.AddCode(user.Id);
             if (!result.Success)
@@ -40,7 +40,7 @@ namespace SSC.Controllers
 
             await mailService.SendEmailAsync(new MailRequest(model.Email, "Zmiana hasła", "Twój link do zmiany hasła: http://localhost:3000/changePassword/useCode/" + result.Data.Code));
 
-            return Ok(new { message = "Email has been sent" });
+            return Ok(new { message = "Wiadomość została wysłana na wskazny adres email" });
         }
 
         [HttpPut("changePassword")]

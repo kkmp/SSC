@@ -101,7 +101,7 @@ namespace SSC.Controllers
                     result = await patientRepository.GetPatients(x => x.Sex == 'F');
                     break;
                 default:
-                    return BadRequest(new { errors = new { Message = new string[] { "Incorrect sex option" } } });
+                    return BadRequest(new { errors = new { Message = new string[] { "Niepoprawna opcja wyboru płci" } } });
             }
 
             switch (option)
@@ -113,7 +113,7 @@ namespace SSC.Controllers
                     result = (orderType == "descending" ? result.OrderByDescending(x => x.BirthDate) : result.OrderBy(x => x.BirthDate)).ToList();
                     break;
                 default:
-                    return BadRequest(new { errors = new { Message = new string[] { "Incorrect filter option" } } });
+                    return BadRequest(new { errors = new { Message = new string[] { "Niepoprawna opcja filtrowania" } } });
 
             }
 

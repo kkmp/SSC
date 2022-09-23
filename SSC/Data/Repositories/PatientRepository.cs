@@ -31,12 +31,12 @@ namespace SSC.Data.Repositories
 
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
-                { () => GetPatientByPesel(patient.Pesel).Result != null, "Patient has already been added" },
-                { () => !peselValidator.Valid, "Invalid pesel" },
-                { () => peselValidator.Date != patient.BirthDate, "Birthdate is not associated with pesel" },
-                { () => peselValidator.Sex != patient.Sex.ToString(), "Sex is not associated with pesel" },
-                { () => city == null, "City does not exist" },
-                { () => citizenship == null, "Citizenship does not exist" }
+                { () => GetPatientByPesel(patient.Pesel).Result != null, "Pacjent został już dodany" },
+                { () => !peselValidator.Valid, "Niepoprawny numer PESEL" },
+                { () => peselValidator.Date != patient.BirthDate, "Data urodzenia nie jest powiązana z numerem PESEL" },
+                { () => peselValidator.Sex != patient.Sex.ToString(), "Płeć nie jest powiązana z numerem PESEL" },
+                { () => city == null, "Miasto nie istnieje" },
+                { () => citizenship == null, "Obywatelstwo nie istnieje" }
             };
 
             var result = Validate(conditions);
@@ -54,7 +54,7 @@ namespace SSC.Data.Repositories
             await context.AddAsync(newPatient);
             await context.SaveChangesAsync();
 
-            return DbResult<Patient>.CreateSuccess("Patient added", newPatient);
+            return DbResult<Patient>.CreateSuccess("Pacjent został dodany", newPatient);
         }
 
         public async Task<DbResult<Patient>> EditPatient(PatientUpdateDTO patient, Guid issuerId)
@@ -65,9 +65,9 @@ namespace SSC.Data.Repositories
 
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
-               { () => GetPatient(patient.Id).Result == null, "Patient does not exist" },
-               { () => city == null, "City does not exist" },
-               { () => citizenship == null, "Citizenship does not exist" }
+               { () => GetPatient(patient.Id).Result == null, "Pacjent nie istnieje" },
+               { () => city == null, "Miasto nie istnieje" },
+               { () => citizenship == null, "Obywatelstwo nie istnieje" }
             };
 
             var result = Validate(conditions);
@@ -81,7 +81,7 @@ namespace SSC.Data.Repositories
             context.Update(patientToCheck);
             await context.SaveChangesAsync();
 
-            return DbResult<Patient>.CreateSuccess("Patient has been edited", patientToCheck);
+            return DbResult<Patient>.CreateSuccess("Pacjent został zedytowany", patientToCheck);
         }
 
         public async Task<Patient> GetPatient(Guid patientId)
@@ -103,7 +103,7 @@ namespace SSC.Data.Repositories
         {
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
-               { () => GetPatient(patientId).Result == null, "Patient does not exist" },
+               { () => GetPatient(patientId).Result == null, "Pacjent nie istnieje" },
             };
 
             var result = Validate(conditions);
@@ -118,7 +118,7 @@ namespace SSC.Data.Repositories
                 .Include(x => x.City.Province)
                 .FirstOrDefaultAsync(x => x.Id == patientId);
 
-            return DbResult<Patient>.CreateSuccess("Success", data);
+            return DbResult<Patient>.CreateSuccess("Powodzenie", data);
         }
 
         public async Task<List<Patient>> RecentlyAddedPatients(int quantity, Guid issuerId)
