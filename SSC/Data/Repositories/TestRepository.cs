@@ -113,7 +113,7 @@ namespace SSC.Data.Repositories
 
             var treatment = await treatmentRepository.GetTreatment(testToCheck.TreatmentId.Value);
             var newest = await context.Tests.OrderByDescending(x => x.TestDate).FirstOrDefaultAsync(x => x.TreatmentId == testToCheck.TreatmentId);
-            var testType = await testTypeRepository.GetTestTypeByName(test.TestTypeName);
+            var testType = await testTypeRepository.GetTestType(test.TestTypeId.Value);
 
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
@@ -134,8 +134,6 @@ namespace SSC.Data.Repositories
             }
 
             mapper.Map(test, testToCheck);
-
-            testToCheck.TestType = testType;
 
             context.Update(testToCheck);
             await context.SaveChangesAsync();

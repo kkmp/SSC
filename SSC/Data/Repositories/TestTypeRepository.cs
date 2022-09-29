@@ -12,9 +12,19 @@ namespace SSC.Data.Repositories
             this.context = context;
         }
 
+        public async Task<TestType> GetTestType(Guid testTypeId)
+        {
+            return await context.TestTypes.FirstOrDefaultAsync(x => x.Id == testTypeId);
+        }
+
         public async Task<TestType> GetTestTypeByName(string testTypeName)
         {
             return await context.TestTypes.FirstOrDefaultAsync(x => x.Name == testTypeName);
+        }
+
+        public async Task<List<TestType>> GetTestTypes()
+        {
+            return await context.TestTypes.ToListAsync();
         }
     }
 }

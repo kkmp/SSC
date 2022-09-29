@@ -52,7 +52,22 @@ namespace SSC.Controllers
                 {
                     return BadRequest(new { errors = new { Message = new string[] { result.Message } } });
                 }
-                return Ok(mapper.Map<List<TreatmentDiseaseCourseGetDTO>>(result.Data));
+                return Ok(mapper.Map<List<TreatmentDiseaseCourseOverallGetDTO>>(result.Data));
+            }
+            return BadRequest(new { errors = new { Message = new string[] { "Invalid data" } } });
+        }
+
+        [HttpGet("showTreatmentDiseaseCourseDetails/{treatmentDiseaseCourseId}")]
+        public async Task<IActionResult> ShowTreatmentDiseaseCourseDetails(Guid treatmentDiseaseCourseId)
+        {
+            if (ModelState.IsValid)
+            {
+                var result = await treatmentDiseaseCourseRepository.ShowTreatmentDiseaseCourseDetails(treatmentDiseaseCourseId);
+                if (!result.Success)
+                {
+                    return BadRequest(new { errors = new { Message = new string[] { result.Message } } });
+                }
+                return Ok(mapper.Map<TreatmentDiseaseCourseGetDTO>(result.Data));
             }
             return BadRequest(new { errors = new { Message = new string[] { "Invalid data" } } });
         }
@@ -64,17 +79,16 @@ namespace SSC.Controllers
             {
                 var issuerId = GetUserId();
                 var result = await treatmentDiseaseCourseRepository.EditTreatmentDiseaseCourse(treatmentDiseaseCourse, issuerId);
-                var msg = new { errors = new { Message = new string[] { result.Message } } };
                 if (result.Success)
                 {
-                    return Ok(msg);
+                    return Ok(new { message = result.Message });
                 }
                 else
                 {
-                    return BadRequest(msg);
+                    return BadRequest(new { errors = new { Message = new string[] { result.Message } } });
                 }
             }
-            return BadRequest(new { message = "Invalid data" });
+            return BadRequest(new { errors = new { Message = new string[] { "Invalid data" } } });
         }
     }
 }

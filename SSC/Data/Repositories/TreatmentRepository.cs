@@ -99,6 +99,21 @@ namespace SSC.Data.Repositories
               .ToListAsync();
         }
 
+        public async Task<DbResult<Treatment>> ShowTreatmentDetails(Guid treatmentId)
+        {
+            if (await GetTreatment(treatmentId) == null)
+            {
+                return DbResult<Treatment>.CreateFail("Leczenie nie istnieje");
+            }
+
+            var result = await context.Treatments
+                .Include(x => x.User.Role)
+                .Include(x => x.TreatmentStatus)
+                .FirstOrDefaultAsync(x => x.Id == treatmentId);
+
+            return DbResult<Treatment>.CreateSuccess("Powodzenie", result);
+        }
+
         public async Task<DbResult<List<Treatment>>> ShowTreatments(Guid patientId)
         {
             if (await patientRepository.GetPatient(patientId) == null)
@@ -107,7 +122,6 @@ namespace SSC.Data.Repositories
             }
 
             var result = await context.Treatments
-                .Include(x => x.User.Role)
                 .Include(x => x.TreatmentStatus)
                 .Where(x => x.PatientId == patientId).ToListAsync();
 

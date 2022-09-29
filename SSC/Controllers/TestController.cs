@@ -51,17 +51,17 @@ namespace SSC.Controllers
             {
                 var issuerId = GetUserId();
                 var result = await testRepository.EditTest(test, issuerId);
-                var msg = new { errors = new { Message = new string[] { result.Message } } };
                 if (result.Success)
                 {
-                    return Ok(msg);
+                    return Ok(new { message = result.Message });
                 }
                 else
                 {
-                    return BadRequest(msg);
+                    return BadRequest(new { errors = new { Message = new string[] { result.Message } } });
+
                 }
             }
-            return BadRequest(new { message = "Invalid data" });
+            return BadRequest(new { errors = new { Message = new string[] { "Invalid data" } } });
         }
 
         [HttpGet("showTests/{patientId}")]
@@ -79,19 +79,19 @@ namespace SSC.Controllers
             return BadRequest(new { errors = new { Message = new string[] { "Invalid data" } } });
         }
 
-        [HttpGet("testDetails")]
-        public async Task<IActionResult> TestDetails(IdCreateDTO testId)
+        [HttpGet("testDetails/{testId}")]
+        public async Task<IActionResult> TestDetails(Guid testId)
         {
             if (ModelState.IsValid)
             {
-                var result = await testRepository.TestDetails(testId.Id);
+                var result = await testRepository.TestDetails(testId);
                 if (!result.Success)
                 {
-                    return BadRequest(new { message = result.Message });
+                    return BadRequest(new { errors = new { Message = new string[] { result.Message } } });
                 }
                 return Ok(mapper.Map<TestGetDTO>(result.Data));
             }
-            return BadRequest(new { message = "Invalid data" });
+            return BadRequest(new { errors = new { Message = new string[] { "Invalid data" } } });
         }
     }
 }

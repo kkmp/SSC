@@ -21,7 +21,6 @@ namespace SSC.Data.Models
 
         public DateTime? ResultDate { get; set; }
 
-        [Required]
         public char? Result { get; set; }
 
         [Required]

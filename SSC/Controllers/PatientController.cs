@@ -119,12 +119,13 @@ namespace SSC.Controllers
 
             if (searchName != null)
             {
-                searchName = searchName.ToLower();
+                searchName = NormalizeWhiteSpaceExtension.NormalizeWhiteSpaceForLoop(searchName.ToLower().Trim());
                 result = result
                     .Where(x => x.Name.ToLower().Contains(searchName)
                     || x.Surname.ToLower().Contains(searchName)
                     || x.Pesel.ToLower().Contains(searchName)
-                    || (x.Name + " " + x.Surname).ToLower().Contains(searchName));
+                    || (x.Name + " " + x.Surname).ToLower().Contains(searchName)
+                    || (x.Surname + " " + x.Name).ToLower().Contains(searchName));
             }
 
             result = result.GetPage(pageNr, 3).ToList();

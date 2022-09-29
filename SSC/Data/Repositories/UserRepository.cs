@@ -84,7 +84,7 @@ namespace SSC.Data.Repositories
 
             await mailService.SendEmailAsync(new MailRequest(user.Email, "Dostęp do nowego konta", "Tymczasowe hasło logowania do nowego konta: " + password));
 
-            return DbResult<User>.CreateSuccess("Utworzono użytkownika z następującym hasłem: " + password, newUser);
+            return DbResult<User>.CreateSuccess(password, newUser);
         }
 
         public async Task<List<User>> GetUsers()
@@ -142,7 +142,8 @@ namespace SSC.Data.Repositories
 
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
-               { () => userToCheck == null, "Użytkownik nie istnieje" }
+               { () => userToCheck == null, "Użytkownik nie istnieje" },
+               { () => user.Email != userToCheck.Email && GetUserByEmail(user.Email).Result != null, "Adres email został już wykorzystany" }
             };
 
             var result = Validate(conditions);

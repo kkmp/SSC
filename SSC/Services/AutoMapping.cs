@@ -6,6 +6,7 @@ using SSC.DTO.City;
 using SSC.DTO.MedicalHistory;
 using SSC.DTO.Patient;
 using SSC.DTO.Test;
+using SSC.DTO.TestType;
 using SSC.DTO.Treatment;
 using SSC.DTO.TreatmentDiseaseCourse;
 using SSC.DTO.User;
@@ -19,8 +20,6 @@ namespace SSC.Services
         {
             CreateMap<Patient, PatientOverallGetDTO>();
             CreateMap<MedicalHistory, MedicalHistoryGetDTO>()
-                .ForMember(x => x.UserName, x => x.MapFrom(y => y.User.Name))
-                .ForMember(x => x.UserSurname, x => x.MapFrom(y => y.User.Surname))
                 .ForMember(x => x.UserRole, x => x.MapFrom(y => y.User.Role.Name));
             CreateMap<Patient, PatientOverallGetDTO>();
             CreateMap<Patient, PatientGetDTO>()
@@ -32,16 +31,14 @@ namespace SSC.Services
                 .ForMember(x => x.Place, x => x.MapFrom(y => y.Place.Name));
             CreateMap<Test, TestGetDTO>()
                 .ForMember(x => x.TestType, x => x.MapFrom(y => y.TestType.Name))
-                .ForMember(x => x.UserName, x => x.MapFrom(y => y.User.Name))
-                .ForMember(x => x.UserSurname, x => x.MapFrom(y => y.User.Surname))
                 .ForMember(x => x.UserRole, x => x.MapFrom(y => y.User.Role.Name))
                 .ForMember(x => x.Place, x => x.MapFrom(y => y.Place.Name));
-            CreateMap<Treatment, TreatmentGetDTO>()
-                .ForMember(x => x.UserName, x => x.MapFrom(y => y.User.Name))
-                .ForMember(x => x.UserSurname, x => x.MapFrom(y => y.User.Surname))
-                .ForMember(x => x.UserRole, x => x.MapFrom(y => y.User.Role.Name))
+            CreateMap<Treatment, TreatmentOverallGetDTO>()
                 .ForMember(x => x.TreatmentStatus, x => x.MapFrom(y => y.TreatmentStatus.Name));
-            CreateMap<TreatmentDiseaseCourse, TreatmentDiseaseCourseGetDTO>()
+            CreateMap<Treatment, TreatmentGetDTO>()
+               .ForMember(x => x.UserRole, x => x.MapFrom(y => y.User.Role.Name))
+               .ForMember(x => x.TreatmentStatus, x => x.MapFrom(y => y.TreatmentStatus.Name));
+            CreateMap<TreatmentDiseaseCourse, TreatmentDiseaseCourseOverallGetDTO>()
                 .ForMember(x => x.DiseaseCourse, x => x.MapFrom(y => y.DiseaseCourse.Name));
             CreateMap<User, UserDTO>()
                 .ForMember(x => x.Role, x => x.MapFrom(y => y.Role.Name));
@@ -49,6 +46,12 @@ namespace SSC.Services
                 .ForMember(x => x.Role, x => x.MapFrom(y => y.Role.Name));
             CreateMap<City, CityGetDTO>();
             CreateMap<Citizenship, CitizenshipGetDTO>();
+            CreateMap<TestType, TestTypeGetDTO>();
+            CreateMap<TreatmentDiseaseCourse, TreatmentDiseaseCourseGetDTO>()
+                .ForMember(x => x.DiseaseCourse, x => x.MapFrom(y => y.DiseaseCourse.Name))
+                .ForMember(x => x.DiseaseCourseDescription, x => x.MapFrom(y => y.DiseaseCourse.Description))
+                .ForMember(x => x.UserRole, x => x.MapFrom(y => y.User.Role.Name));
+            CreateMap<DiseaseCourse, DiseaseCourseGetDTO>();
 
             CreateMap<TreatmentCreateDTO, Treatment>();
             CreateMap<TestUpdateDTO, Test>();

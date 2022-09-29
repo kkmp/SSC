@@ -55,29 +55,46 @@ namespace SSC.Controllers
                     return BadRequest(new { errors = new { Message = new string[] { result.Message } } });
                 }
 
-                return Ok(mapper.Map<List<TreatmentGetDTO>>(result.Data));
+                return Ok(mapper.Map<List<TreatmentOverallGetDTO>>(result.Data));
             }
             return BadRequest(new { errors = new { Message = new string[] { "Invalid data" } } });
         }
 
-        [HttpPut("editTreatment")]
-        public async Task<IActionResult> EditTreatment(TreatmentUpdateDTO treatment)
+        [HttpGet("showTreatmentDetails/{treatmentId}")]
+        public async Task<IActionResult> ShowTreatmentDetails(Guid treatmentId)
         {
             if (ModelState.IsValid)
             {
-                var issuerId = GetUserId();
-                var result = await treatmentRepository.EditTreatment(treatment, issuerId);
-                var msg = new { errors = new { Message = new string[] { result.Message } } };
-                if (result.Success)
+                var result = await treatmentRepository.ShowTreatmentDetails(treatmentId);
+
+                if (!result.Success)
                 {
-                    return Ok(msg);
+                    return BadRequest(new { errors = new { Message = new string[] { result.Message } } });
                 }
-                else
-                {
-                    return BadRequest(msg);
-                }
+
+                return Ok(mapper.Map<TreatmentGetDTO>(result.Data));
             }
-            return BadRequest(new { message = "Invalid data" });
+            return BadRequest(new { errors = new { Message = new string[] { "Invalid data" } } });
         }
+
+            [HttpPut("editTreatment")]
+            public async Task<IActionResult> EditTreatment(TreatmentUpdateDTO treatment)
+            {
+                if (ModelState.IsValid)
+                {
+                    var issuerId = GetUserId();
+                    var result = await treatmentRepository.EditTreatment(treatment, issuerId);
+                    var msg = new { errors = new { Message = new string[] { result.Message } } };
+                    if (result.Success)
+                    {
+                        return Ok(msg);
+                    }
+                    else
+                    {
+                        return BadRequest(msg);
+                    }
+                }
+                return BadRequest(new { message = "Invalid data" });
+            }
     }
 }

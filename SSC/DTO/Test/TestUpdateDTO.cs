@@ -16,7 +16,7 @@ namespace SSC.DTO.Test
         public char? Result { get; set; }
 
         [Required]
-        public string? TestTypeName { get; set; }
+        public Guid? TestTypeId { get; set; }
 
         [Required]
         public Guid? PlaceId { get; set; }

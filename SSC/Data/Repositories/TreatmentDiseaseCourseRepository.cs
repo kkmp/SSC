@@ -7,7 +7,7 @@ using SSC.Models;
 
 namespace SSC.Data.Repositories
 {
-    public class TreatmentDiseaseCoursesRepository : BaseRepository<TreatmentDiseaseCourse>, ITreatmentDiseaseCourseRepository
+    public class TreatmentDiseaseCourseRepository : BaseRepository<TreatmentDiseaseCourse>, ITreatmentDiseaseCourseRepository
     {
         private readonly DataContext context;
         private readonly IMapper mapper;
@@ -15,7 +15,7 @@ namespace SSC.Data.Repositories
         private readonly ITreatmentRepository treatmentRepository;
         private readonly IDiseaseCourseRepository diseaseCourseRepository;
 
-        public TreatmentDiseaseCoursesRepository(DataContext context, IMapper mapper, IPatientRepository patientRepository, ITreatmentRepository treatmentRepository, IDiseaseCourseRepository diseaseCourseRepository)
+        public TreatmentDiseaseCourseRepository(DataContext context, IMapper mapper, IPatientRepository patientRepository, ITreatmentRepository treatmentRepository, IDiseaseCourseRepository diseaseCourseRepository)
         {
             this.context = context;
             this.mapper = mapper;
@@ -110,14 +110,14 @@ namespace SSC.Data.Repositories
             }
 
             var treatment = await treatmentRepository.GetTreatment(checkTreatmentDiseaseCourse.TreatmentId.Value);
-            var diseaseCourse = await diseaseCourseRepository.GetDiseaseCourseByName(treatmentDiseaseCourse.DiseaseCourseName);
+            var diseaseCourse = await diseaseCourseRepository.GetDiseaseCourse(treatmentDiseaseCourse.DiseaseCourseId);
             var newest = await context.TreatmentDiseaseCourses.OrderByDescending(x => x.Date).FirstOrDefaultAsync(x => x.TreatmentId == checkTreatmentDiseaseCourse.TreatmentId);
 
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
                 { () => checkTreatmentDiseaseCourse.UserId != issuerId, "Tylko użytkownik, który dodał powikłanie może je edytować"},
-                { () => treatment.EndDate != null, "The treatment disease course entry cannot be edited anymore - the treatment has been ended"},
-                { () => checkTreatmentDiseaseCourse.Id != newest.Id,  "Tego powikłania nie można już edytować - leczenie zostało zakończone" },
+                { () => treatment.EndDate != null, "Tego powikłania nie można już edytować - leczenie zostało zakończone"},
+                { () => checkTreatmentDiseaseCourse.Id != newest.Id,  "Nie można edytować wpisu przed innym powikłaniem" },
                 { () => treatmentDiseaseCourse.Date < treatment.StartDate, "Nie można dodać wpisu przed datą rozpoczęcia leczenia"},
                 { () => context.TreatmentDiseaseCourses.AnyAsync(x => x.Id != treatmentDiseaseCourse.Id && treatmentDiseaseCourse.Date < x.Date && x.TreatmentId == checkTreatmentDiseaseCourse.TreatmentId).Result, "Nie można dodać wpisu przed innym powikłaniem" },
                 { () => diseaseCourse == null, "Powikłanie nie znalezione" },
@@ -140,5 +140,27 @@ namespace SSC.Data.Repositories
         }
 
         private async Task<TreatmentDiseaseCourse> GetTreatmentDiseaseCourse(Guid treatmentDiseaseCourseId) => await context.TreatmentDiseaseCourses.FirstOrDefaultAsync(x => x.Id == treatmentDiseaseCourseId);
+
+        public async Task<DbResult<TreatmentDiseaseCourse>> ShowTreatmentDiseaseCourseDetails(Guid treatmentDiseaseCourseId)
+        {
+            Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
+            {
+                { () => GetTreatmentDiseaseCourse(treatmentDiseaseCourseId).Result == null, "Powikłanie nie istnieje" }
+            };
+
+            var result = Validate(conditions);
+            if (result != null)
+            {
+                return result;
+            }
+
+            var data = await context.TreatmentDiseaseCourses
+                .Include(x => x.DiseaseCourse)
+                .Include(x => x.Treatment)
+                .Include(x => x.User.Role)
+                .FirstOrDefaultAsync(x => x.Id == treatmentDiseaseCourseId);
+
+            return DbResult<TreatmentDiseaseCourse>.CreateSuccess("Powodzenie", data);
+        }
     }
 }

@@ -37,17 +37,16 @@ namespace SSC.Controllers
             if (ModelState.IsValid)
             {
                 var result = await userRepository.AddUser(user);
-                var msg = new { message = result.Message };
                 if (result.Success)
                 {
-                    return Ok(msg);
+                    return Ok(new { message = result.Message });
                 }
                 else
                 {
-                    return BadRequest(msg);
+                    return BadRequest(new { errors = new { Message = new string[] { result.Message } } });
                 }
             }
-            return BadRequest(new { message = "Invalid data" });
+            return BadRequest(new { errors = new { Message = new string[] { "Invalid data" } } });
         }
 
         [Authorize(Roles = "Administrator")]
@@ -96,13 +95,11 @@ namespace SSC.Controllers
                 if (!result.Success)
                 {
                     return BadRequest(new { errors = new { Message = new string[] { result.Message } } });
-
                 }
 
                 return Ok(mapper.Map<UserDTO>(result.Data));
             }
             return BadRequest(new { errors = new { Message = new string[] { "Invalid data" } } });
-
         }
 
         [Authorize(Roles = "Administrator")]
@@ -114,17 +111,16 @@ namespace SSC.Controllers
                 var issuerId = GetUserId();
                 var result = await userRepository.EditUser(user, issuerId);
 
-                var msg = new { message = result.Message };
                 if (result.Success)
                 {
-                    return Ok(msg);
+                    return Ok(new { message = result.Message });
                 }
                 else
                 {
-                    return BadRequest(msg);
+                    return BadRequest(new { errors = new { Message = new string[] { result.Message } } });
                 }
             }
-            return BadRequest(new { message = "Invalid data" });
+            return BadRequest(new { errors = new { Message = new string[] { "Invalid data" } } });
         }
 
         [Authorize(Roles = "Administrator")]
@@ -152,12 +148,13 @@ namespace SSC.Controllers
 
             if (searchName != null)
             {
-                searchName = searchName.ToLower();
+                searchName = NormalizeWhiteSpaceExtension.NormalizeWhiteSpaceForLoop(searchName.ToLower().Trim());
                 result = result
                     .Where(x => x.Name.ToLower().Contains(searchName)
                     || x.Surname.ToLower().Contains(searchName)
                     || x.Email.ToLower().Contains(searchName)
-                    || (x.Name + " " + x.Surname).ToLower().Contains(searchName));
+                    || (x.Name + " " + x.Surname).ToLower().Contains(searchName)
+                    || (x.Surname + " " + x.Name).ToLower().Contains(searchName));
             }
 
             result = result.GetPage(pageNr, 3).ToList();
