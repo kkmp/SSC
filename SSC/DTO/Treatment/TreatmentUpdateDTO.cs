@@ -15,6 +15,6 @@ namespace SSC.DTO.Treatment
         public bool? IsCovid { get; set; }
 
         [Required]
-        public string? TreatmentStatusName { get; set; }
+        public Guid? TreatmentStatusId { get; set; }
     }
 }

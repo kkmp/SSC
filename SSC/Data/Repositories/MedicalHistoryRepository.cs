@@ -90,6 +90,26 @@ namespace SSC.Data.Repositories
             return DbResult<List<MedicalHistory>>.CreateSuccess("Powodzenie", result);
         }
 
+        public async Task<DbResult<MedicalHistory>> ShowMedicalHistoryDetails(Guid medicalHistoryId)
+        {
+            Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
+            {
+                { () => GetMedicalHistory(medicalHistoryId).Result == null, "Historia choroby nie istnieje" }
+            };
+
+            var result = Validate(conditions);
+            if (result != null)
+            {
+                return result;
+            }
+
+            var data = await context.MedicalHistories
+                .Include(x => x.User.Role)
+                .FirstOrDefaultAsync(x => x.Id == medicalHistoryId);
+
+            return DbResult<MedicalHistory>.CreateSuccess("Powodzenie", data);
+        }
+
         private async Task<MedicalHistory> GetMedicalHistory(Guid medicalHistoryId) => await context.MedicalHistories.FirstOrDefaultAsync(x => x.Id == medicalHistoryId);
     }
 }

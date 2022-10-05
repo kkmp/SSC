@@ -9,6 +9,7 @@ using SSC.DTO.Test;
 using SSC.DTO.TestType;
 using SSC.DTO.Treatment;
 using SSC.DTO.TreatmentDiseaseCourse;
+using SSC.DTO.TreatmentStatus;
 using SSC.DTO.User;
 using SSC.Models;
 
@@ -19,6 +20,8 @@ namespace SSC.Services
         public AutoMapping()
         {
             CreateMap<Patient, PatientOverallGetDTO>();
+            CreateMap<MedicalHistory, MedicalHistoryOverallGetDTO>()
+                .ForMember(x => x.UserRole, x => x.MapFrom(y => y.User.Role.Name));
             CreateMap<MedicalHistory, MedicalHistoryGetDTO>()
                 .ForMember(x => x.UserRole, x => x.MapFrom(y => y.User.Role.Name));
             CreateMap<Patient, PatientOverallGetDTO>();
@@ -52,6 +55,7 @@ namespace SSC.Services
                 .ForMember(x => x.DiseaseCourseDescription, x => x.MapFrom(y => y.DiseaseCourse.Description))
                 .ForMember(x => x.UserRole, x => x.MapFrom(y => y.User.Role.Name));
             CreateMap<DiseaseCourse, DiseaseCourseGetDTO>();
+            CreateMap<TreatmentStatus, TreatmentStatusGetDTO>();
 
             CreateMap<TreatmentCreateDTO, Treatment>();
             CreateMap<TestUpdateDTO, Test>();

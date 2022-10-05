@@ -53,7 +53,7 @@ namespace SSC.Data.Repositories
         public async Task<DbResult<Treatment>> EditTreatment(TreatmentUpdateDTO treatment, Guid issuerId)
         {
             var treatmentToCheck = await context.Treatments.FirstOrDefaultAsync(x => x.Id == treatment.Id);
-            var treatmentStatus = await treatmentStatusRepository.GetTreatmentStatusByName(treatment.TreatmentStatusName);
+            var treatmentStatus = await treatmentStatusRepository.GetTreatmentStatus(treatment.TreatmentStatusId.Value);
 
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
@@ -75,8 +75,6 @@ namespace SSC.Data.Repositories
             }
 
             mapper.Map(treatment, treatmentToCheck);
-
-            treatmentToCheck.TreatmentStatus = treatmentStatus;
 
             context.Update(treatmentToCheck);
             await context.SaveChangesAsync();

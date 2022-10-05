@@ -73,7 +73,25 @@ namespace SSC.Controllers
                     return BadRequest(new { errors = new { Message = new string[] { result.Message } } });
                 }
 
-                return Ok(mapper.Map<List<MedicalHistoryGetDTO>>(result.Data));
+                return Ok(mapper.Map<List<MedicalHistoryOverallGetDTO>>(result.Data));
+            }
+            return BadRequest(new { errors = new { Message = new string[] { "Invalid data" } } });
+        }
+
+
+        [HttpGet("showMedicalHistoryDetails/{medicalHistoryId}")]
+        public async Task<IActionResult> ShowMedicalHistoryDetails(Guid medicalHistoryId)
+        {
+            if (ModelState.IsValid)
+            {
+                var result = await medicalHistoryRepository.ShowMedicalHistoryDetails(medicalHistoryId);
+
+                if (!result.Success)
+                {
+                    return BadRequest(new { errors = new { Message = new string[] { result.Message } } });
+                }
+
+                return Ok(mapper.Map<MedicalHistoryGetDTO>(result.Data));
             }
             return BadRequest(new { errors = new { Message = new string[] { "Invalid data" } } });
         }

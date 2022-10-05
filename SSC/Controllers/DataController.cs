@@ -6,6 +6,7 @@ using SSC.DTO;
 using SSC.DTO.Citizenship;
 using SSC.DTO.City;
 using SSC.DTO.TestType;
+using SSC.DTO.TreatmentStatus;
 
 namespace SSC.Controllers
 {
@@ -18,14 +19,16 @@ namespace SSC.Controllers
         private readonly ICitizenshipRepository citizenshipRepository;
         private readonly ITestTypeRepository testTypeRepository;
         private readonly IDiseaseCourseRepository diseaseCourseRepository;
+        private readonly ITreatmentStatusRepository treatmentStatusRepository;
         private readonly IMapper mapper;
 
-        public DataController(ICityRepository cityRepository, ICitizenshipRepository citizenshipRepository, ITestTypeRepository testTypeRepository, IDiseaseCourseRepository diseaseCourseRepository, IMapper mapper)
+        public DataController(ICityRepository cityRepository, ICitizenshipRepository citizenshipRepository, ITestTypeRepository testTypeRepository, IDiseaseCourseRepository diseaseCourseRepository, ITreatmentStatusRepository treatmentStatusRepository, IMapper mapper)
         {
             this.cityRepository = cityRepository;
             this.citizenshipRepository = citizenshipRepository;
             this.testTypeRepository = testTypeRepository;
             this.diseaseCourseRepository = diseaseCourseRepository;
+            this.treatmentStatusRepository = treatmentStatusRepository;
             this.mapper = mapper;
         }
 
@@ -55,6 +58,13 @@ namespace SSC.Controllers
         {
             var result = await diseaseCourseRepository.GetDiseaseCourses();
             return Ok(mapper.Map<List<DiseaseCourseGetDTO>>(result));
+        }
+
+        [HttpGet("getTreatmentStatuses")]
+        public async Task<IActionResult> GetTreatmentStatuses()
+        {
+            var result = await treatmentStatusRepository.GetTreatmentStatuses();
+            return Ok(mapper.Map<List<TreatmentStatusGetDTO>>(result));
         }
     }
 }
