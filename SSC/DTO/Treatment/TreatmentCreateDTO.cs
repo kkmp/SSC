@@ -13,6 +13,6 @@ namespace SSC.DTO.Treatment
         public Guid? PatientId { get; set; }
 
         [Required]
-        public string? TreatmentStatusName { get; set; }
+        public Guid? TreatmentStatusId { get; set; }
     }
 }

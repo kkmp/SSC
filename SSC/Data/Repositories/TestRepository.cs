@@ -11,24 +11,26 @@ namespace SSC.Data.Repositories
     {
         private readonly DataContext context;
         private readonly ITreatmentRepository treatmentRepository;
+        private readonly ITreatmentStatusRepository treatmentStatusRepository;
         private readonly IPatientRepository patientRepository;
         private readonly ITestTypeRepository testTypeRepository;
         private readonly IPlaceRepository placeRepository;
         private readonly IMapper mapper;
 
-        public TestRepository(DataContext context, ITreatmentRepository treatmentRepository, IPatientRepository patientRepository, ITestTypeRepository testTypeRepository, IPlaceRepository placeRepository, IMapper mapper)
+        public TestRepository(DataContext context, ITreatmentRepository treatmentRepository, IPatientRepository patientRepository, ITestTypeRepository testTypeRepository, IPlaceRepository placeRepository, ITreatmentStatusRepository treatmentStatusRepository, IMapper mapper)
         {
             this.context = context;
             this.treatmentRepository = treatmentRepository;
             this.patientRepository = patientRepository;
             this.testTypeRepository = testTypeRepository;
             this.placeRepository = placeRepository;
+            this.treatmentStatusRepository = treatmentStatusRepository;
             this.mapper = mapper;
         }
 
         public async Task<DbResult<Test>> AddTest(TestCreateDTO test, Guid issuerId)
         {
-            var testType = await testTypeRepository.GetTestTypeByName(test.TestTypeName);
+            var testType = await testTypeRepository.GetTestType(test.TestTypeId.Value);
 
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
@@ -47,7 +49,6 @@ namespace SSC.Data.Repositories
 
             var newTest = mapper.Map<Test>(test);
 
-            newTest.TestType = testType;
             newTest.UserId = issuerId;
 
             var treatment = await treatmentRepository.TreatmentLasts(test.PatientId.Value);
@@ -56,9 +57,9 @@ namespace SSC.Data.Repositories
             {
                 var newTreatment = new TreatmentCreateDTO
                 {
-                    StartDate = DateTime.Now,
+                    StartDate = test.TestDate,
                     PatientId = test.PatientId.Value,
-                    TreatmentStatusName = "Rozpoczęto" //status z seedera
+                    TreatmentStatusId = treatmentStatusRepository.GetTreatmentStatusByName(TreatmentStatusOptions.Started).Result.Id //status "Rozpoczęto"
                 };
                 var info = await treatmentRepository.AddTreatment(newTreatment, issuerId);
                 treatment = info.Data;
@@ -78,10 +79,10 @@ namespace SSC.Data.Repositories
 
             switch (newTest.Result)
             {
-                case 'P':
+                case TestResultOptions.Positive:
                     treatment.IsCovid = true;
                     break;
-                case 'N':
+                case TestResultOptions.Negative:
                     treatment.IsCovid = false;
                     break;
             }

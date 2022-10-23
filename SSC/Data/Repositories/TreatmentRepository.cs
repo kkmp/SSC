@@ -23,7 +23,7 @@ namespace SSC.Data.Repositories
 
         public async Task<DbResult<Treatment>> AddTreatment(TreatmentCreateDTO treatment, Guid issuerId)
         {
-            var treatmentStatus = await treatmentStatusRepository.GetTreatmentStatusByName(treatment.TreatmentStatusName);
+            var treatmentStatus = await treatmentStatusRepository.GetTreatmentStatus(treatment.TreatmentStatusId.Value);
 
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
@@ -42,7 +42,6 @@ namespace SSC.Data.Repositories
             var newTreatment = mapper.Map<Treatment>(treatment);
 
             newTreatment.UserId = issuerId;
-            newTreatment.TreatmentStatus = treatmentStatus;
 
             await context.Treatments.AddAsync(newTreatment);
             await context.SaveChangesAsync();

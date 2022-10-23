@@ -13,14 +13,16 @@ namespace SSC.Data.Repositories
         private readonly IMapper mapper;
         private readonly IPatientRepository patientRepository;
         private readonly ITreatmentRepository treatmentRepository;
+        private readonly ITreatmentStatusRepository treatmentStatusRepository;
         private readonly IDiseaseCourseRepository diseaseCourseRepository;
 
-        public TreatmentDiseaseCourseRepository(DataContext context, IMapper mapper, IPatientRepository patientRepository, ITreatmentRepository treatmentRepository, IDiseaseCourseRepository diseaseCourseRepository)
+        public TreatmentDiseaseCourseRepository(DataContext context, IMapper mapper, IPatientRepository patientRepository, ITreatmentRepository treatmentRepository, ITreatmentStatusRepository treatmentStatusRepository, IDiseaseCourseRepository diseaseCourseRepository)
         {
             this.context = context;
             this.mapper = mapper;
             this.patientRepository = patientRepository;
             this.treatmentRepository = treatmentRepository;
+            this.treatmentStatusRepository = treatmentStatusRepository;
             this.diseaseCourseRepository = diseaseCourseRepository;
         }
 
@@ -36,7 +38,7 @@ namespace SSC.Data.Repositories
 
         public async Task<DbResult<TreatmentDiseaseCourse>> AddTreatmentDiseaseCourse(TreatmentDiseaseCourseCreateDTO treatmentDiseaseCourse, Guid issuerId)
         {
-            var diseaseCourse = await diseaseCourseRepository.GetDiseaseCourseByName(treatmentDiseaseCourse.DiseaseCourseName);
+            var diseaseCourse = await diseaseCourseRepository.GetDiseaseCourse(treatmentDiseaseCourse.DiseaseCourseId.Value);
 
             var conditions = new Dictionary<Func<bool>, string>
             {
@@ -55,9 +57,9 @@ namespace SSC.Data.Repositories
             {
                 var newTreatment = new TreatmentCreateDTO
                 {
-                    StartDate = DateTime.Now,
+                    StartDate = treatmentDiseaseCourse.Date,
                     PatientId = treatmentDiseaseCourse.PatientId.Value,
-                    TreatmentStatusName = "Rozpoczęto" //z seedera
+                    TreatmentStatusId = treatmentStatusRepository.GetTreatmentStatusByName(TreatmentStatusOptions.Started).Result.Id //status "Rozpoczęto"
                 };
                 var info = await treatmentRepository.AddTreatment(newTreatment, issuerId);
                 treatment = info.Data;
@@ -76,7 +78,6 @@ namespace SSC.Data.Repositories
             var newTreatmentDiseaseCourse = mapper.Map<TreatmentDiseaseCourse>(treatmentDiseaseCourse);
 
             newTreatmentDiseaseCourse.TreatmentId = treatment.Id;
-            newTreatmentDiseaseCourse.DiseaseCourse = diseaseCourse;
             newTreatmentDiseaseCourse.UserId = issuerId;
 
             await context.TreatmentDiseaseCourses.AddAsync(newTreatmentDiseaseCourse);

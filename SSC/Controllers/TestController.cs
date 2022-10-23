@@ -31,7 +31,7 @@ namespace SSC.Controllers
             {
                 var issuerId = GetUserId();
                 var result = await testRepository.AddTest(test, issuerId);
-                var msg = new { errors = new { Message = new string[] { result.Message } } };
+                var msg = new { errors = new { Message = new string[] { result.Message } } }; //!!!!!!!!!!!!
                 if (result.Success)
                 {
                     return Ok(msg);

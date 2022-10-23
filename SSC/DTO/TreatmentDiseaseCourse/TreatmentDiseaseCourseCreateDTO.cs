@@ -13,7 +13,7 @@ namespace SSC.DTO.TreatmentDiseaseCourse
         public string? Description { get; set; }
 
         [Required]
-        public string? DiseaseCourseName { get; set; }
+        public Guid? DiseaseCourseId { get; set; }
 
         [Required]
         public Guid? PatientId { get; set; }
