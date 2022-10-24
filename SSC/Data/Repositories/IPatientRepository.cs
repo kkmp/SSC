@@ -1,6 +1,5 @@
 ﻿using SSC.Data.Models;
 using SSC.DTO.Patient;
-using SSC.Models;
 using System.Linq.Expressions;
 
 namespace SSC.Data.Repositories

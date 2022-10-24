@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using SSC.Data.Models;
 using SSC.DTO.Treatment;
 using SSC.DTO.TreatmentDiseaseCourse;
-using SSC.Models;
 
 namespace SSC.Data.Repositories
 {

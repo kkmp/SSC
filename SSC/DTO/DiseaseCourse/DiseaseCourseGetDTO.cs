@@ -1,4 +1,4 @@
-﻿namespace SSC.DTO
+﻿namespace SSC.DTO.DiseaseCourse
 {
     public class DiseaseCourseGetDTO
     {

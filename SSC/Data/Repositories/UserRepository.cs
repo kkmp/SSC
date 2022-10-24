@@ -1,12 +1,11 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using SSC.Data.Models;
+using SSC.DTO.MailRequest;
 using SSC.DTO.User;
-using SSC.Models;
 using SSC.Services;
 using SSC.Tools;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace SSC.Data.Repositories
 {
@@ -82,7 +81,7 @@ namespace SSC.Data.Repositories
             await context.AddAsync(newUser);
             await context.SaveChangesAsync();
 
-            await mailService.SendEmailAsync(new MailRequest(user.Email, "Dostęp do nowego konta", "Tymczasowe hasło logowania do nowego konta: " + password));
+            await mailService.SendEmailAsync(new MailRequestDTO(user.Email, "Dostęp do nowego konta", "Tymczasowe hasło logowania do nowego konta: " + password));
 
             return DbResult<User>.CreateSuccess(password, newUser);
         }

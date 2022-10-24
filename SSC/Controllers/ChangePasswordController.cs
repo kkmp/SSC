@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SSC.Data.Repositories;
-using SSC.DTO;
-using SSC.Models;
+using SSC.DTO.Email;
+using SSC.DTO.MailRequest;
+using SSC.DTO.Password;
 using SSC.Services;
 
 namespace SSC.Controllers
@@ -38,7 +39,7 @@ namespace SSC.Controllers
                 return BadRequest(new { errors = new { Message = new string[] { result.Message } } });
             }
 
-            await mailService.SendEmailAsync(new MailRequest(model.Email, "Zmiana hasła", "Twój link do zmiany hasła: http://localhost:3000/changePassword/useCode/" + result.Data.Code));
+            await mailService.SendEmailAsync(new MailRequestDTO(model.Email, "Zmiana hasła", "Twój link do zmiany hasła: http://localhost:3000/changePassword/useCode/" + result.Data.Code));
 
             return Ok(new { message = "Wiadomość została wysłana na wskazny adres email" });
         }

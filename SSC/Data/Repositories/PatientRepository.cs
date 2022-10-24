@@ -2,9 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using SSC.Data.Models;
 using SSC.DTO.Patient;
-using SSC.Models;
 using System.Linq.Expressions;
-using System.Web.Http;
 
 namespace SSC.Data.Repositories
 {

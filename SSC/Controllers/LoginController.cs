@@ -4,7 +4,6 @@ using Microsoft.IdentityModel.Tokens;
 using SSC.Data.Models;
 using SSC.Data.Repositories;
 using SSC.DTO.User;
-using SSC.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;

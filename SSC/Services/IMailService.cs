@@ -1,9 +1,9 @@
-﻿using SSC.Models;
+﻿using SSC.DTO.MailRequest;
 
 namespace SSC.Services
 {
     public interface IMailService
     {
-        Task SendEmailAsync(MailRequest mailRequest);
+        Task SendEmailAsync(MailRequestDTO mailRequest);
     }
 }

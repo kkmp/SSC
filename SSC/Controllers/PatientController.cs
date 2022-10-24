@@ -3,9 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SSC.Data.Models;
 using SSC.Data.Repositories;
-using SSC.DTO;
 using SSC.DTO.Patient;
-using SSC.Models;
 using SSC.Tools;
 using System.ComponentModel.DataAnnotations;
 

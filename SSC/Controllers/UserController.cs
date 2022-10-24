@@ -1,19 +1,11 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 using SSC.Data.Models;
 using SSC.Data.Repositories;
-using SSC.DTO;
 using SSC.DTO.User;
-using SSC.Models;
-using SSC.Services;
 using SSC.Tools;
 using System.ComponentModel.DataAnnotations;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using System.Web.Http.Cors;
 
 namespace SSC.Controllers
 {
@@ -50,8 +42,8 @@ namespace SSC.Controllers
         }
 
         [Authorize(Roles = "Administrator")]
-        [HttpPut("changeActivity/{option}")]
-        public async Task<IActionResult> ChangeActivity(string option, IdCreateDTO userId)
+        [HttpPut("changeActivity/{option}/{userId}")]
+        public async Task<IActionResult> ChangeActivity(string option, Guid userId)
         {
             if (ModelState.IsValid)
             {
@@ -69,7 +61,7 @@ namespace SSC.Controllers
                 }
 
                 var issuer = GetUserId();
-                var result = await userRepository.ChangeActivity(userId.Id, issuer, activation);
+                var result = await userRepository.ChangeActivity(userId, issuer, activation);
 
                 if (result.Success)
                 {

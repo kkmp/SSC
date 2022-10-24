@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using SSC.Data.Models;
-using SSC.DTO;
 using SSC.DTO.Citizenship;
 using SSC.DTO.City;
+using SSC.DTO.DiseaseCourse;
 using SSC.DTO.MedicalHistory;
 using SSC.DTO.Patient;
 using SSC.DTO.Test;
@@ -11,7 +11,6 @@ using SSC.DTO.Treatment;
 using SSC.DTO.TreatmentDiseaseCourse;
 using SSC.DTO.TreatmentStatus;
 using SSC.DTO.User;
-using SSC.Models;
 
 namespace SSC.Services
 {

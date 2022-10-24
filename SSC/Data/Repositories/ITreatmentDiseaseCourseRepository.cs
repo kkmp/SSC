@@ -1,6 +1,5 @@
 ﻿using SSC.Data.Models;
 using SSC.DTO.TreatmentDiseaseCourse;
-using SSC.Models;
 
 namespace SSC.Data.Repositories
 {

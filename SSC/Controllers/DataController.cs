@@ -5,6 +5,7 @@ using SSC.Data.Repositories;
 using SSC.DTO;
 using SSC.DTO.Citizenship;
 using SSC.DTO.City;
+using SSC.DTO.DiseaseCourse;
 using SSC.DTO.TestType;
 using SSC.DTO.TreatmentStatus;
 

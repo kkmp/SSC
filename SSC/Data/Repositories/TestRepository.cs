@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using SSC.Data.Models;
 using SSC.DTO.Test;
 using SSC.DTO.Treatment;
-using SSC.Models;
 
 namespace SSC.Data.Repositories
 {
@@ -134,9 +133,20 @@ namespace SSC.Data.Repositories
                 return result;
             }
 
+            switch (test.Result) //!!!!
+            {
+                case TestResultOptions.Positive:
+                    treatment.IsCovid = true;
+                    break;
+                case TestResultOptions.Negative:
+                    treatment.IsCovid = false;
+                    break;
+            }
+
             mapper.Map(test, testToCheck);
 
             context.Update(testToCheck);
+            context.Update(treatment); //!!!!
             await context.SaveChangesAsync();
 
             return DbResult<Test>.CreateSuccess("Test został zedytowany", testToCheck);
