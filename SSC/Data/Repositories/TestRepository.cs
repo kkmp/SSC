@@ -133,8 +133,11 @@ namespace SSC.Data.Repositories
                 return result;
             }
 
-            switch (test.Result) //!!!!
+            switch (test.Result)
             {
+                case TestResultOptions.Inconclusive:
+                    treatment.IsCovid = null;
+                    break;
                 case TestResultOptions.Positive:
                     treatment.IsCovid = true;
                     break;
@@ -146,7 +149,7 @@ namespace SSC.Data.Repositories
             mapper.Map(test, testToCheck);
 
             context.Update(testToCheck);
-            context.Update(treatment); //!!!!
+            context.Update(treatment);
             await context.SaveChangesAsync();
 
             return DbResult<Test>.CreateSuccess("Test został zedytowany", testToCheck);
@@ -164,6 +167,7 @@ namespace SSC.Data.Repositories
                 .Include(x => x.TestType)
                 .Include(x => x.Place)
                 .Where(x => x.Treatment.PatientId == patientId)
+                .OrderByDescending(x => x.TestDate)
                 .ToListAsync();
 
             return DbResult<List<Test>>.CreateSuccess("Powodzenie", result);

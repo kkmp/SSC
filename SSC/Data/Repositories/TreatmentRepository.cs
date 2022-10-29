@@ -119,7 +119,9 @@ namespace SSC.Data.Repositories
 
             var result = await context.Treatments
                 .Include(x => x.TreatmentStatus)
-                .Where(x => x.PatientId == patientId).ToListAsync();
+                .Where(x => x.PatientId == patientId)
+                .OrderByDescending(x => x.StartDate)
+                .ToListAsync();
 
             return DbResult<List<Treatment>>.CreateSuccess("Powodzenie", result);
         }

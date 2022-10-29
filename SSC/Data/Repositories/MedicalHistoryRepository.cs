@@ -84,7 +84,9 @@ namespace SSC.Data.Repositories
 
             var result = await context.MedicalHistories
                 .Include(x => x.User.Role)
-                .Where(x => x.PatientId == patientId).ToListAsync();
+                .Where(x => x.PatientId == patientId)
+                .OrderByDescending(x => x.Date)
+                .ToListAsync();
 
             return DbResult<List<MedicalHistory>>.CreateSuccess("Powodzenie", result);
         }

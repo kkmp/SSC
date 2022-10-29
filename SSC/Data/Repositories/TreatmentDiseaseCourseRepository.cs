@@ -95,6 +95,7 @@ namespace SSC.Data.Repositories
             var data =  await context.TreatmentDiseaseCourses
                 .Include(x => x.DiseaseCourse)
                 .Where(x => x.Treatment.PatientId == patientId)
+                .OrderByDescending(x => x.Date)
                 .ToListAsync();
 
             return DbResult<List<TreatmentDiseaseCourse>>.CreateSuccess("Powodzenie", data);
