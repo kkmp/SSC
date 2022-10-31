@@ -1,7 +1,7 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SSC.Data.Repositories;
+using SSC.Data.UnitOfWork;
+using SSC.DTO.Place;
 using SSC.DTO.Test;
 
 namespace SSC.Controllers
@@ -11,13 +11,11 @@ namespace SSC.Controllers
     [Route("api/[controller]")]
     public class TestController : CommonController
     {
-        private readonly ITestRepository testRepository;
-        private readonly IMapper mapper;
+        private readonly IUnitOfWork unitOfWork;
 
-        public TestController(ITestRepository testRepository, IMapper mapper)
+        public TestController(IUnitOfWork unitOfWork)
         {
-            this.testRepository = testRepository;
-            this.mapper = mapper;
+            this.unitOfWork = unitOfWork;
         }
 
         [HttpPost("addTest")]
@@ -26,18 +24,18 @@ namespace SSC.Controllers
             if (ModelState.IsValid)
             {
                 var issuerId = GetUserId();
-                var result = await testRepository.AddTest(test, issuerId);
-                var msg = new { errors = new { Message = new string[] { result.Message } } }; //!!!!!!!!!!!!
+                var result = await unitOfWork.TestRepository.AddTest(test, issuerId);
+
                 if (result.Success)
                 {
-                    return Ok(msg);
+                    return Ok(new { message = result.Message });
                 }
                 else
                 {
-                    return BadRequest(msg);
+                    return BadRequest(new { errors = new { Message = new string[] { result.Message } } });
                 }
             }
-            return BadRequest(new { message = "Invalid data" });
+            return BadRequest(new { errors = new { Message = new string[] { "Invalid data" } } });
         }
 
         [HttpPut("editTest")]
@@ -46,7 +44,7 @@ namespace SSC.Controllers
             if (ModelState.IsValid)
             {
                 var issuerId = GetUserId();
-                var result = await testRepository.EditTest(test, issuerId);
+                var result = await unitOfWork.TestRepository.EditTest(test, issuerId);
                 if (result.Success)
                 {
                     return Ok(new { message = result.Message });
@@ -65,12 +63,12 @@ namespace SSC.Controllers
         {
             if (ModelState.IsValid)
             {
-                var result = await testRepository.ShowTests(patientId);
+                var result = await unitOfWork.TestRepository.ShowTests(patientId);
                 if(!result.Success)
                 {
                     return BadRequest(new { errors = new { Message = new string[] { result.Message } } });
                 }
-                return Ok(mapper.Map<List<TestOverallGetDTO>>(result.Data));
+                return Ok(unitOfWork.Mapper.Map<List<TestOverallGetDTO>>(result.Data));
             }
             return BadRequest(new { errors = new { Message = new string[] { "Invalid data" } } });
         }
@@ -80,12 +78,31 @@ namespace SSC.Controllers
         {
             if (ModelState.IsValid)
             {
-                var result = await testRepository.TestDetails(testId);
+                var result = await unitOfWork.TestRepository.TestDetails(testId);
                 if (!result.Success)
                 {
                     return BadRequest(new { errors = new { Message = new string[] { result.Message } } });
                 }
-                return Ok(mapper.Map<TestGetDTO>(result.Data));
+                return Ok(unitOfWork.Mapper.Map<TestGetDTO>(result.Data));
+            }
+            return BadRequest(new { errors = new { Message = new string[] { "Invalid data" } } });
+        }
+
+        [HttpPost("addPlace")]
+        public async Task<IActionResult> AddPlace(PlaceCreateDTO place)
+        {
+            if (ModelState.IsValid)
+            {
+                var result = await unitOfWork.PlaceRepository.AddPlace(place);
+
+                if (result.Success)
+                {
+                    return Ok(new { message = result.Message });
+                }
+                else
+                {
+                    return BadRequest(new { errors = new { Message = new string[] { result.Message } } });
+                }
             }
             return BadRequest(new { errors = new { Message = new string[] { "Invalid data" } } });
         }

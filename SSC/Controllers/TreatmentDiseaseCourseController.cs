@@ -1,7 +1,6 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SSC.Data.Repositories;
+using SSC.Data.UnitOfWork;
 using SSC.DTO.TreatmentDiseaseCourse;
 
 namespace SSC.Controllers
@@ -11,13 +10,11 @@ namespace SSC.Controllers
     [Route("api/[controller]")]
     public class TreatmentDiseaseCourseController : CommonController
     {
-        private readonly ITreatmentDiseaseCourseRepository treatmentDiseaseCourseRepository;
-        private readonly IMapper mapper;
+        private readonly IUnitOfWork unitOfWork;
 
-        public TreatmentDiseaseCourseController(ITreatmentDiseaseCourseRepository treatmentDiseaseCourseRepository, IMapper mapper)
+        public TreatmentDiseaseCourseController(IUnitOfWork unitOfWork)
         {
-            this.treatmentDiseaseCourseRepository = treatmentDiseaseCourseRepository;
-            this.mapper = mapper;
+            this.unitOfWork = unitOfWork;
         }
 
         [HttpPost("addTreatmentDiseaseCourse")]
@@ -26,7 +23,7 @@ namespace SSC.Controllers
             if (ModelState.IsValid)
             {
                 var issuerId = GetUserId();
-                var result = await treatmentDiseaseCourseRepository.AddTreatmentDiseaseCourse(treatmentDiseaseCourse, issuerId);
+                var result = await unitOfWork.TreatmentDiseaseCourseRepository.AddTreatmentDiseaseCourse(treatmentDiseaseCourse, issuerId);
                 var msg = new { errors = new { Message = new string[] { result.Message } } };
                 if (result.Success)
                 {
@@ -45,12 +42,12 @@ namespace SSC.Controllers
         {
             if (ModelState.IsValid)
             {
-                var result = await treatmentDiseaseCourseRepository.ShowTreatmentDiseaseCourses(patientId);
+                var result = await unitOfWork.TreatmentDiseaseCourseRepository.ShowTreatmentDiseaseCourses(patientId);
                 if (!result.Success)
                 {
                     return BadRequest(new { errors = new { Message = new string[] { result.Message } } });
                 }
-                return Ok(mapper.Map<List<TreatmentDiseaseCourseOverallGetDTO>>(result.Data));
+                return Ok(unitOfWork.Mapper.Map<List<TreatmentDiseaseCourseOverallGetDTO>>(result.Data));
             }
             return BadRequest(new { errors = new { Message = new string[] { "Invalid data" } } });
         }
@@ -60,12 +57,12 @@ namespace SSC.Controllers
         {
             if (ModelState.IsValid)
             {
-                var result = await treatmentDiseaseCourseRepository.ShowTreatmentDiseaseCourseDetails(treatmentDiseaseCourseId);
+                var result = await unitOfWork.TreatmentDiseaseCourseRepository.ShowTreatmentDiseaseCourseDetails(treatmentDiseaseCourseId);
                 if (!result.Success)
                 {
                     return BadRequest(new { errors = new { Message = new string[] { result.Message } } });
                 }
-                return Ok(mapper.Map<TreatmentDiseaseCourseGetDTO>(result.Data));
+                return Ok(unitOfWork.Mapper.Map<TreatmentDiseaseCourseGetDTO>(result.Data));
             }
             return BadRequest(new { errors = new { Message = new string[] { "Invalid data" } } });
         }
@@ -76,7 +73,7 @@ namespace SSC.Controllers
             if (ModelState.IsValid)
             {
                 var issuerId = GetUserId();
-                var result = await treatmentDiseaseCourseRepository.EditTreatmentDiseaseCourse(treatmentDiseaseCourse, issuerId);
+                var result = await unitOfWork.TreatmentDiseaseCourseRepository.EditTreatmentDiseaseCourse(treatmentDiseaseCourse, issuerId);
                 if (result.Success)
                 {
                     return Ok(new { message = result.Message });

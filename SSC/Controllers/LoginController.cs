@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using SSC.Data.Models;
-using SSC.Data.Repositories;
+using SSC.Data.UnitOfWork;
 using SSC.DTO.User;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -16,14 +16,12 @@ namespace SSC.Controllers
     public class LoginController : CommonController
     {
         private IConfiguration _config;
-        private readonly IUserRepository userRepository;
-        private readonly IRoleRepository roleRepository;
+        private readonly IUnitOfWork unitOfWork;
 
-        public LoginController(IConfiguration _config, IUserRepository userRepository, IRoleRepository roleRepository)
+        public LoginController(IConfiguration _config, IUnitOfWork unitOfWork)
         {
             this._config = _config;
-            this.userRepository = userRepository;
-            this.roleRepository = roleRepository;
+            this.unitOfWork = unitOfWork;
         }
 
         [HttpPost("login")]
@@ -31,11 +29,11 @@ namespace SSC.Controllers
         {
             IActionResult response;
 
-            var result = await userRepository.AuthenticateUser(login.Email, login.Password);
+            var result = await unitOfWork.UserRepository.AuthenticateUser(login.Email, login.Password);
 
             if (result.Success)
             {
-                var role = await roleRepository.GetRole(result.Data.RoleId.Value);
+                var role = await unitOfWork.RoleRepository.GetRole(result.Data.RoleId.Value);
                 if (!role.Success)
                 {
                     return BadRequest(new { errors = new { Message = new string[] { result.Message } } });

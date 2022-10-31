@@ -1,6 +1,6 @@
-﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using SSC.Data.Models;
+using SSC.Data.UnitOfWork;
 using SSC.DTO.Treatment;
 using SSC.DTO.TreatmentDiseaseCourse;
 
@@ -9,20 +9,12 @@ namespace SSC.Data.Repositories
     public class TreatmentDiseaseCourseRepository : BaseRepository<TreatmentDiseaseCourse>, ITreatmentDiseaseCourseRepository
     {
         private readonly DataContext context;
-        private readonly IMapper mapper;
-        private readonly IPatientRepository patientRepository;
-        private readonly ITreatmentRepository treatmentRepository;
-        private readonly ITreatmentStatusRepository treatmentStatusRepository;
-        private readonly IDiseaseCourseRepository diseaseCourseRepository;
+        private readonly IUnitOfWork unitOfWork;
 
-        public TreatmentDiseaseCourseRepository(DataContext context, IMapper mapper, IPatientRepository patientRepository, ITreatmentRepository treatmentRepository, ITreatmentStatusRepository treatmentStatusRepository, IDiseaseCourseRepository diseaseCourseRepository)
+        public TreatmentDiseaseCourseRepository(DataContext context, IUnitOfWork unitOfWork)
         {
             this.context = context;
-            this.mapper = mapper;
-            this.patientRepository = patientRepository;
-            this.treatmentRepository = treatmentRepository;
-            this.treatmentStatusRepository = treatmentStatusRepository;
-            this.diseaseCourseRepository = diseaseCourseRepository;
+            this.unitOfWork = unitOfWork;
         }
 
         public async Task<List<TreatmentDiseaseCourse>> GetTreatmentDiseaseCourses(Guid provinceId, DateTime dateFrom, DateTime dateTo)
@@ -37,11 +29,11 @@ namespace SSC.Data.Repositories
 
         public async Task<DbResult<TreatmentDiseaseCourse>> AddTreatmentDiseaseCourse(TreatmentDiseaseCourseCreateDTO treatmentDiseaseCourse, Guid issuerId)
         {
-            var diseaseCourse = await diseaseCourseRepository.GetDiseaseCourse(treatmentDiseaseCourse.DiseaseCourseId.Value);
+            var diseaseCourse = await unitOfWork.DiseaseCourseRepository.GetDiseaseCourse(treatmentDiseaseCourse.DiseaseCourseId.Value);
 
             var conditions = new Dictionary<Func<bool>, string>
             {
-                { () => patientRepository.GetPatient(treatmentDiseaseCourse.PatientId.Value).Result == null, "Pacjent nie istnieje" },
+                { () => unitOfWork.PatientRepository.GetPatient(treatmentDiseaseCourse.PatientId.Value).Result == null, "Pacjent nie istnieje" },
                 { () => diseaseCourse == null, "Powikłanie nie istnieje" }
             };
 
@@ -51,16 +43,16 @@ namespace SSC.Data.Repositories
                 return result;
             }
 
-            var treatment = await treatmentRepository.TreatmentLasts(treatmentDiseaseCourse.PatientId.Value);
+            var treatment = await unitOfWork.TreatmentRepository.TreatmentLasts(treatmentDiseaseCourse.PatientId.Value);
             if (treatment == null)
             {
                 var newTreatment = new TreatmentCreateDTO
                 {
                     StartDate = treatmentDiseaseCourse.Date,
                     PatientId = treatmentDiseaseCourse.PatientId.Value,
-                    TreatmentStatusId = treatmentStatusRepository.GetTreatmentStatusByName(TreatmentStatusOptions.Started).Result.Id //status "Rozpoczęto"
+                    TreatmentStatusId = unitOfWork.TreatmentStatusRepository.GetTreatmentStatusByName(TreatmentStatusOptions.Started).Result.Id //status "Rozpoczęto"
                 };
-                var info = await treatmentRepository.AddTreatment(newTreatment, issuerId);
+                var info = await unitOfWork.TreatmentRepository.AddTreatment(newTreatment, issuerId);
                 treatment = info.Data;
             }
 
@@ -74,7 +66,7 @@ namespace SSC.Data.Repositories
                 return result;
             }
 
-            var newTreatmentDiseaseCourse = mapper.Map<TreatmentDiseaseCourse>(treatmentDiseaseCourse);
+            var newTreatmentDiseaseCourse = unitOfWork.Mapper.Map<TreatmentDiseaseCourse>(treatmentDiseaseCourse);
 
             newTreatmentDiseaseCourse.TreatmentId = treatment.Id;
             newTreatmentDiseaseCourse.UserId = issuerId;
@@ -87,7 +79,7 @@ namespace SSC.Data.Repositories
 
         public async Task<DbResult<List<TreatmentDiseaseCourse>>> ShowTreatmentDiseaseCourses(Guid patientId)
         {
-            if (await patientRepository.GetPatient(patientId) == null)
+            if (await unitOfWork.PatientRepository.GetPatient(patientId) == null)
             {
                 return DbResult<List<TreatmentDiseaseCourse>>.CreateFail("Pacjent nie istnieje");
             }
@@ -110,8 +102,8 @@ namespace SSC.Data.Repositories
                 return DbResult<TreatmentDiseaseCourse>.CreateFail("Powikłanie nie istnieje");
             }
 
-            var treatment = await treatmentRepository.GetTreatment(checkTreatmentDiseaseCourse.TreatmentId.Value);
-            var diseaseCourse = await diseaseCourseRepository.GetDiseaseCourse(treatmentDiseaseCourse.DiseaseCourseId);
+            var treatment = await unitOfWork.TreatmentRepository.GetTreatment(checkTreatmentDiseaseCourse.TreatmentId.Value);
+            var diseaseCourse = await unitOfWork.DiseaseCourseRepository.GetDiseaseCourse(treatmentDiseaseCourse.DiseaseCourseId);
             var newest = await context.TreatmentDiseaseCourses.OrderByDescending(x => x.Date).FirstOrDefaultAsync(x => x.TreatmentId == checkTreatmentDiseaseCourse.TreatmentId);
 
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
@@ -130,7 +122,7 @@ namespace SSC.Data.Repositories
                 return result;
             }
 
-            mapper.Map(treatmentDiseaseCourse, checkTreatmentDiseaseCourse);
+            unitOfWork.Mapper.Map(treatmentDiseaseCourse, checkTreatmentDiseaseCourse);
 
             checkTreatmentDiseaseCourse.DiseaseCourse = diseaseCourse;
 

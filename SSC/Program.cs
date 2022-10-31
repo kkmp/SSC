@@ -6,6 +6,7 @@ using SSC.Data.Repositories;
 using System.Text;
 using AutoMapper;
 using SSC.Services;
+using SSC.Data.UnitOfWork;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +30,8 @@ builder.Services.AddScoped<IPlaceRepository, PlaceRepository>();
 builder.Services.AddScoped<ITestTypeRepository, TestTypeRepository>();
 builder.Services.AddScoped<IDiseaseCourseRepository, DiseaseCourseRepository>();
 builder.Services.AddScoped<ITreatmentStatusRepository, TreatmentStatusRepository>();
+
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddAutoMapper(typeof(AutoMapping));
 

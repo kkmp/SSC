@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using OfficeOpenXml;
 using SSC.Data.Models;
-using SSC.Data.Repositories;
+using SSC.Data.UnitOfWork;
 using SSC.Tools;
 
 namespace SSC.Controllers
@@ -12,21 +11,18 @@ namespace SSC.Controllers
     [Authorize(Roles = "Lekarz,Administrator")]
     public class ReportController : CommonController
     {
-        private readonly ITestRepository testRepository;
-        private readonly ITreatmentDiseaseCourseRepository treatmentDiseaseCoursesRepository;
-        private readonly ITreatmentRepository treatmentRepository;
-        public ReportController(ITestRepository testRepository, ITreatmentDiseaseCourseRepository treatmentDiseaseCoursesRepository, ITreatmentRepository treatmentRepository)
+        private readonly IUnitOfWork unitOfWork;
+
+        public ReportController(IUnitOfWork unitOfWork)
         {
-            this.testRepository = testRepository;
-            this.treatmentDiseaseCoursesRepository = treatmentDiseaseCoursesRepository;
-            this.treatmentRepository = treatmentRepository;
+            this.unitOfWork = unitOfWork;
         }
 
         [HttpGet("tests/{category}/{provinceId}/{dateFrom}/{dateTo}/")]
         [HttpGet("tests/{category}/{provinceId}/{dateFrom}/{dateTo}/{type}")]
         public async Task<IActionResult> GetTestsReport(string category, Guid provinceId, DateTime dateFrom, DateTime dateTo, string? type)
         {
-            var tests = await testRepository.GetTests(provinceId, dateFrom, dateTo);
+            var tests = await unitOfWork.TestRepository.GetTests(provinceId, dateFrom, dateTo);
 
             switch (type)
             {
@@ -68,7 +64,7 @@ namespace SSC.Controllers
         [HttpGet("diseaseCourses/{provinceId}/{dateFrom}/{dateTo}/{type}")]
         public async Task<IActionResult> GetTestsReport(Guid provinceId, DateTime dateFrom, DateTime dateTo, string? type)
         {
-            var diseaseCourses = await treatmentDiseaseCoursesRepository.GetTreatmentDiseaseCourses(provinceId, dateFrom, dateTo);
+            var diseaseCourses = await unitOfWork.TreatmentDiseaseCourseRepository.GetTreatmentDiseaseCourses(provinceId, dateFrom, dateTo);
 
             switch (type)
             {
@@ -99,7 +95,7 @@ namespace SSC.Controllers
         [HttpGet("treatments/{provinceId}/{dateFrom}/{dateTo}/{type}")]
         public async Task<IActionResult> GetTreatment(Guid provinceId, DateTime dateFrom, DateTime dateTo, string? type)
         {
-            var treatments = await treatmentRepository.GetTreatments(provinceId, dateFrom, dateTo);
+            var treatments = await unitOfWork.TreatmentRepository.GetTreatments(provinceId, dateFrom, dateTo);
 
             switch (type)
             {

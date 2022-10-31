@@ -5,6 +5,7 @@ using SSC.DTO.City;
 using SSC.DTO.DiseaseCourse;
 using SSC.DTO.MedicalHistory;
 using SSC.DTO.Patient;
+using SSC.DTO.Place;
 using SSC.DTO.Test;
 using SSC.DTO.TestType;
 using SSC.DTO.Treatment;
@@ -55,6 +56,7 @@ namespace SSC.Services
                 .ForMember(x => x.UserRole, x => x.MapFrom(y => y.User.Role.Name));
             CreateMap<DiseaseCourse, DiseaseCourseGetDTO>();
             CreateMap<TreatmentStatus, TreatmentStatusGetDTO>();
+            CreateMap<Place, PlaceGetDTO>();
 
             CreateMap<TreatmentCreateDTO, Treatment>();
             CreateMap<TestUpdateDTO, Test>();
@@ -67,6 +69,7 @@ namespace SSC.Services
             CreateMap<PatientUpdateDTO, Patient>();
             CreateMap<UserCreateDTO, User>();
             CreateMap<UserUpdateDTO, User>();
+            CreateMap<PlaceCreateDTO, Place>();
         }
     }
 }

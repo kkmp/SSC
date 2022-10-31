@@ -1,7 +1,6 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SSC.Data.Repositories;
+using SSC.Data.UnitOfWork;
 using SSC.DTO.Treatment;
 
 namespace SSC.Controllers
@@ -10,13 +9,11 @@ namespace SSC.Controllers
     [Route("api/[controller]")]
     public class TreatmentController : CommonController
     {
-        private readonly ITreatmentRepository treatmentRepository;
-        private readonly IMapper mapper;
+        private readonly IUnitOfWork unitOfWork;
 
-        public TreatmentController(ITreatmentRepository treatmentRepository, IMapper mapper)
+        public TreatmentController(IUnitOfWork unitOfWork)
         {
-            this.treatmentRepository = treatmentRepository;
-            this.mapper = mapper;
+            this.unitOfWork = unitOfWork;
         }
 
         [Authorize]
@@ -26,7 +23,7 @@ namespace SSC.Controllers
             if (ModelState.IsValid)
             {
                 var issuerId = GetUserId();
-                var result = await treatmentRepository.AddTreatment(treatment, issuerId);
+                var result = await unitOfWork.TreatmentRepository.AddTreatment(treatment, issuerId);
                 var msg = new { errors = new { Message = new string[] { result.Message } } };
                 if (result.Success)
                 {
@@ -45,14 +42,14 @@ namespace SSC.Controllers
         {
             if (ModelState.IsValid)
             {
-                var result = await treatmentRepository.ShowTreatments(patientId);
+                var result = await unitOfWork.TreatmentRepository.ShowTreatments(patientId);
 
                 if (!result.Success)
                 {
                     return BadRequest(new { errors = new { Message = new string[] { result.Message } } });
                 }
 
-                return Ok(mapper.Map<List<TreatmentOverallGetDTO>>(result.Data));
+                return Ok(unitOfWork.Mapper.Map<List<TreatmentOverallGetDTO>>(result.Data));
             }
             return BadRequest(new { errors = new { Message = new string[] { "Invalid data" } } });
         }
@@ -62,14 +59,14 @@ namespace SSC.Controllers
         {
             if (ModelState.IsValid)
             {
-                var result = await treatmentRepository.ShowTreatmentDetails(treatmentId);
+                var result = await unitOfWork.TreatmentRepository.ShowTreatmentDetails(treatmentId);
 
                 if (!result.Success)
                 {
                     return BadRequest(new { errors = new { Message = new string[] { result.Message } } });
                 }
 
-                return Ok(mapper.Map<TreatmentGetDTO>(result.Data));
+                return Ok(unitOfWork.Mapper.Map<TreatmentGetDTO>(result.Data));
             }
             return BadRequest(new { errors = new { Message = new string[] { "Invalid data" } } });
         }
@@ -80,7 +77,7 @@ namespace SSC.Controllers
                 if (ModelState.IsValid)
                 {
                     var issuerId = GetUserId();
-                    var result = await treatmentRepository.EditTreatment(treatment, issuerId);
+                    var result = await unitOfWork.TreatmentRepository.EditTreatment(treatment, issuerId);
                     var msg = new { errors = new { Message = new string[] { result.Message } } };
                     if (result.Success)
                     {

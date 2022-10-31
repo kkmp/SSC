@@ -1,8 +1,7 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SSC.Data.Models;
-using SSC.Data.Repositories;
+using SSC.Data.UnitOfWork;
 using SSC.DTO.Patient;
 using SSC.Tools;
 using System.ComponentModel.DataAnnotations;
@@ -13,13 +12,11 @@ namespace SSC.Controllers
     [Route("api/[controller]")]
     public class PatientController : CommonController
     {
-        private readonly IPatientRepository patientRepository;
-        private readonly IMapper mapper;
+        private readonly IUnitOfWork unitOfWork;
 
-        public PatientController(IPatientRepository patientRepository, IMapper mapper)
+        public PatientController(IUnitOfWork unitOfWork)
         {
-            this.patientRepository = patientRepository;
-            this.mapper = mapper;
+            this.unitOfWork = unitOfWork;
         }
 
         [Authorize]
@@ -29,7 +26,7 @@ namespace SSC.Controllers
             if (ModelState.IsValid)
             {
                 var issuerId = GetUserId();
-                var result = await patientRepository.AddPatient(patient, issuerId);
+                var result = await unitOfWork.PatientRepository.AddPatient(patient, issuerId);
 
                 if (result.Success)
                 {
@@ -50,7 +47,7 @@ namespace SSC.Controllers
             if (ModelState.IsValid)
             {
                 var issuerId = GetUserId();
-                var result = await patientRepository.EditPatient(patient, issuerId);
+                var result = await unitOfWork.PatientRepository.EditPatient(patient, issuerId);
                 if (result.Success)
                 {
                     return Ok(new { message = result.Message });
@@ -69,14 +66,14 @@ namespace SSC.Controllers
         {
             if (ModelState.IsValid)
             {
-                var result = await patientRepository.PatientDetails(patientId);
+                var result = await unitOfWork.PatientRepository.PatientDetails(patientId);
 
                 if (!result.Success)
                 {
                     return BadRequest(new { errors = new { Message = new string[] { result.Message } } });
                 }
 
-                return Ok(mapper.Map<PatientGetDTO>(result.Data));
+                return Ok(unitOfWork.Mapper.Map<PatientGetDTO>(result.Data));
             }
             return BadRequest(new { errors = new { Message = new string[] { "Invalid data" } } });
         }
@@ -90,13 +87,13 @@ namespace SSC.Controllers
             switch (sex)
             {
                 case "both":
-                    result = await patientRepository.GetPatients();
+                    result = await unitOfWork.PatientRepository.GetPatients();
                     break;
                 case "male":
-                    result = await patientRepository.GetPatients(x => x.Sex == 'M');
+                    result = await unitOfWork.PatientRepository.GetPatients(x => x.Sex == 'M');
                     break;
                 case "female":
-                    result = await patientRepository.GetPatients(x => x.Sex == 'F');
+                    result = await unitOfWork.PatientRepository.GetPatients(x => x.Sex == 'F');
                     break;
                 default:
                     return BadRequest(new { errors = new { Message = new string[] { "Niepoprawna opcja wyboru płci" } } });
@@ -128,7 +125,7 @@ namespace SSC.Controllers
 
             result = result.GetPage(pageNr, 3).ToList();
 
-            return Ok(mapper.Map<List<PatientOverallGetDTO>>(result));
+            return Ok(unitOfWork.Mapper.Map<List<PatientOverallGetDTO>>(result));
         }
 
         [Authorize]
@@ -137,9 +134,9 @@ namespace SSC.Controllers
         {
             var issuerId = GetUserId();
 
-            var result = await patientRepository.RecentlyAddedPatients(3, issuerId);
+            var result = await unitOfWork.PatientRepository.RecentlyAddedPatients(3, issuerId);
 
-            return Ok(mapper.Map<List<PatientOverallGetDTO>>(result));
+            return Ok(unitOfWork.Mapper.Map<List<PatientOverallGetDTO>>(result));
         }
     }
 }

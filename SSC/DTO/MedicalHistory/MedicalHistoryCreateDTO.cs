@@ -8,7 +8,8 @@ namespace SSC.DTO.MedicalHistory
         public DateTime? Date { get; set; }
 
         [Required]
-        [MaxLength(255)]
+        [MinLength(3, ErrorMessage = "Długość opisu musi być dłuższa niż 3 znaki")]
+        [MaxLength(255, ErrorMessage = "Długość opisu nie może przekraczać 255 znaków")]
         public string? Description { get; set; }
 
         [Required]

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SSC.Data.Models;
+using SSC.Data.UnitOfWork;
 using SSC.Tools;
 using System.Security.Cryptography;
 
@@ -8,12 +9,12 @@ namespace SSC.Data.Repositories
     public class ChangePasswordRepository : BaseRepository, IChangePasswordRepository
     {
         private readonly DataContext context;
-        private readonly IUserRepository userRepository;
+        private readonly IUnitOfWork unitOfWork;
 
-        public ChangePasswordRepository(DataContext context, IUserRepository userRepository)
+        public ChangePasswordRepository(DataContext context, IUnitOfWork unitOfWork)
         {
             this.context = context;
-            this.userRepository = userRepository;
+            this.unitOfWork = unitOfWork;
         }
 
         public async Task<DbResult<ChangePasswordCode>> AddCode(Guid userId)
@@ -59,7 +60,7 @@ namespace SSC.Data.Repositories
 
         public async Task<DbResult> ChangePassword(string password, Guid issuerId)
         {
-            var user = await userRepository.GetUser(issuerId);
+            var user = await unitOfWork.UserRepository.GetUser(issuerId);
 
             HMACSHA512 hmac = new HMACSHA512();
             user.PasswordSalt = hmac.Key;
@@ -90,12 +91,12 @@ namespace SSC.Data.Repositories
 
         private async Task<bool> CheckPassword(string password, Guid issuerId)
         {
-            var user = await userRepository.GetUser(issuerId);
+            var user = await unitOfWork.UserRepository.GetUser(issuerId);
 
             HMACSHA512 hmac = new HMACSHA512(user.PasswordSalt);
             byte[] computedHash = hmac.ComputeHash(System.Text.ASCIIEncoding.UTF8.GetBytes(password));
 
-            return userRepository.CompareHash(computedHash, user.PasswordHash);
+            return unitOfWork.UserRepository.CompareHash(computedHash, user.PasswordHash);
         }
     }
 }

@@ -1,6 +1,6 @@
-﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using SSC.Data.Models;
+using SSC.Data.UnitOfWork;
 using SSC.DTO.Patient;
 using System.Linq.Expressions;
 
@@ -9,23 +9,19 @@ namespace SSC.Data.Repositories
     public class PatientRepository : BaseRepository<Patient>, IPatientRepository
     {
         private readonly DataContext context;
-        private readonly ICityRepository cityRepository;
-        private readonly ICitizenshipRepository citizenshipRepository;
-        private readonly IMapper mapper;
+        private readonly IUnitOfWork unitOfWork;
 
-        public PatientRepository(DataContext context, ICityRepository cityRepository, ICitizenshipRepository citizenshipRepository, IMapper mapper)
+        public PatientRepository(DataContext context, IUnitOfWork unitOfWork)
         {
             this.context = context;
-            this.cityRepository = cityRepository;
-            this.citizenshipRepository = citizenshipRepository;
-            this.mapper = mapper;
+            this.unitOfWork = unitOfWork;
         }
 
         public async Task<DbResult<Patient>> AddPatient(PatientCreateDTO patient, Guid issuerId)
         {
             var peselValidator = new PeselValidator(patient.Pesel);
-            var citizenship = await citizenshipRepository.GetCitizenship(patient.CitizenshipId);
-            var city = await cityRepository.GetCity(patient.CityId);
+            var citizenship = await unitOfWork.CitizenshipRepository.GetCitizenship(patient.CitizenshipId);
+            var city = await unitOfWork.CityRepository.GetCity(patient.CityId);
 
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
@@ -43,7 +39,7 @@ namespace SSC.Data.Repositories
                 return result;
             }
 
-            Patient newPatient = mapper.Map<Patient>(patient);
+            Patient newPatient = unitOfWork.Mapper.Map<Patient>(patient);
 
             newPatient.City = city;
             newPatient.Citizenship = citizenship;
@@ -58,8 +54,8 @@ namespace SSC.Data.Repositories
         public async Task<DbResult<Patient>> EditPatient(PatientUpdateDTO patient, Guid issuerId)
         {
             var patientToCheck = await GetPatient(patient.Id);
-            var citizenship = await citizenshipRepository.GetCitizenship(patient.CitizenshipId);
-            var city = await cityRepository.GetCity(patient.CityId);
+            var citizenship = await unitOfWork.CitizenshipRepository.GetCitizenship(patient.CitizenshipId);
+            var city = await unitOfWork.CityRepository.GetCity(patient.CityId);
 
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
@@ -74,7 +70,7 @@ namespace SSC.Data.Repositories
                 return result;
             }
 
-            mapper.Map(patient, patientToCheck);
+            unitOfWork.Mapper.Map(patient, patientToCheck);
 
             context.Update(patientToCheck);
             await context.SaveChangesAsync();

@@ -1,8 +1,7 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SSC.Data.Models;
-using SSC.Data.Repositories;
+using SSC.Data.UnitOfWork;
 using SSC.DTO.User;
 using SSC.Tools;
 using System.ComponentModel.DataAnnotations;
@@ -13,13 +12,11 @@ namespace SSC.Controllers
     [Route("api/[controller]")]
     public class UserController : CommonController
     {
-        private readonly IUserRepository userRepository;
-        private readonly IMapper mapper;
+        private readonly IUnitOfWork unitOfWork;
 
-        public UserController(IUserRepository userRepository, IMapper mapper)
+        public UserController(IUnitOfWork unitOfWork)
         {
-            this.userRepository = userRepository;
-            this.mapper = mapper;
+            this.unitOfWork = unitOfWork;
         }
 
         [Authorize(Roles = "Administrator")]
@@ -28,7 +25,7 @@ namespace SSC.Controllers
         {
             if (ModelState.IsValid)
             {
-                var result = await userRepository.AddUser(user);
+                var result = await unitOfWork.UserRepository.AddUser(user);
                 if (result.Success)
                 {
                     return Ok(new { message = result.Message });
@@ -61,7 +58,7 @@ namespace SSC.Controllers
                 }
 
                 var issuer = GetUserId();
-                var result = await userRepository.ChangeActivity(userId, issuer, activation);
+                var result = await unitOfWork.UserRepository.ChangeActivity(userId, issuer, activation);
 
                 if (result.Success)
                 {
@@ -82,14 +79,14 @@ namespace SSC.Controllers
         {
             if (ModelState.IsValid)
             {
-                var result = await userRepository.UserDetails(userid);
+                var result = await unitOfWork.UserRepository.UserDetails(userid);
 
                 if (!result.Success)
                 {
                     return BadRequest(new { errors = new { Message = new string[] { result.Message } } });
                 }
 
-                return Ok(mapper.Map<UserDTO>(result.Data));
+                return Ok(unitOfWork.Mapper.Map<UserDTO>(result.Data));
             }
             return BadRequest(new { errors = new { Message = new string[] { "Invalid data" } } });
         }
@@ -101,7 +98,7 @@ namespace SSC.Controllers
             if (ModelState.IsValid)
             {
                 var issuerId = GetUserId();
-                var result = await userRepository.EditUser(user, issuerId);
+                var result = await unitOfWork.UserRepository.EditUser(user, issuerId);
 
                 if (result.Success)
                 {
@@ -120,7 +117,7 @@ namespace SSC.Controllers
         [HttpGet("filterUsers/{pageNr}/{option}/{orderType}/{searchName}")]
         public async Task<IActionResult> FilterUsers([Range(1, 100000000)] int pageNr, string option, string orderType, string? searchName)
         {
-            IEnumerable<User> result = await userRepository.GetUsers();
+            IEnumerable<User> result = await unitOfWork.UserRepository.GetUsers();
 
             switch (option)
             {
@@ -151,7 +148,7 @@ namespace SSC.Controllers
 
             result = result.GetPage(pageNr, 3).ToList();
 
-            return Ok(mapper.Map<List<UserOverallDTO>>(result));
+            return Ok(unitOfWork.Mapper.Map<List<UserOverallDTO>>(result));
         }
     }
 }

@@ -1,6 +1,6 @@
-﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using SSC.Data.Models;
+using SSC.Data.UnitOfWork;
 using SSC.DTO.Treatment;
 
 namespace SSC.Data.Repositories
@@ -8,25 +8,21 @@ namespace SSC.Data.Repositories
     public class TreatmentRepository : BaseRepository<Treatment>, ITreatmentRepository
     {
         private readonly DataContext context;
-        private readonly IMapper mapper;
-        private readonly IPatientRepository patientRepository;
-        private readonly ITreatmentStatusRepository treatmentStatusRepository;
+        private readonly IUnitOfWork unitOfWork;
 
-        public TreatmentRepository(DataContext context, IMapper mapper, IPatientRepository patientRepository, ITreatmentStatusRepository treatmentStatusRepository)
+        public TreatmentRepository(DataContext context, IUnitOfWork unitOfWork)
         {
             this.context = context;
-            this.mapper = mapper;
-            this.patientRepository = patientRepository;
-            this.treatmentStatusRepository = treatmentStatusRepository;
+            this.unitOfWork = unitOfWork;
         }
 
         public async Task<DbResult<Treatment>> AddTreatment(TreatmentCreateDTO treatment, Guid issuerId)
         {
-            var treatmentStatus = await treatmentStatusRepository.GetTreatmentStatus(treatment.TreatmentStatusId.Value);
+            var treatmentStatus = await unitOfWork.TreatmentStatusRepository.GetTreatmentStatus(treatment.TreatmentStatusId.Value);
 
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
-                { () => patientRepository.GetPatient(treatment.PatientId.Value).Result == null, "Pacjent nie istnieje" },
+                { () => unitOfWork.PatientRepository.GetPatient(treatment.PatientId.Value).Result == null, "Pacjent nie istnieje" },
                 { () => treatmentStatus == null, "Status leczenia nie istnieje" },
                 { () => context.Treatments.AnyAsync(x => x.PatientId == treatment.PatientId && x.EndDate == null).Result, "Ostatnie leczenie nie zostało jeszcze zakończone"},
                 { () => context.Treatments.AnyAsync(x => treatment.StartDate > x.StartDate && treatment.StartDate < x.EndDate && x.PatientId == treatment.PatientId).Result, "Niepoprawna data rozpoczęcia leczenia" }
@@ -38,7 +34,7 @@ namespace SSC.Data.Repositories
                 return result;
             }
 
-            var newTreatment = mapper.Map<Treatment>(treatment);
+            var newTreatment = unitOfWork.Mapper.Map<Treatment>(treatment);
 
             newTreatment.UserId = issuerId;
 
@@ -51,7 +47,7 @@ namespace SSC.Data.Repositories
         public async Task<DbResult<Treatment>> EditTreatment(TreatmentUpdateDTO treatment, Guid issuerId)
         {
             var treatmentToCheck = await context.Treatments.FirstOrDefaultAsync(x => x.Id == treatment.Id);
-            var treatmentStatus = await treatmentStatusRepository.GetTreatmentStatus(treatment.TreatmentStatusId.Value);
+            var treatmentStatus = await unitOfWork.TreatmentStatusRepository.GetTreatmentStatus(treatment.TreatmentStatusId.Value);
 
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
@@ -72,7 +68,7 @@ namespace SSC.Data.Repositories
                 return result;
             }
 
-            mapper.Map(treatment, treatmentToCheck);
+            unitOfWork.Mapper.Map(treatment, treatmentToCheck);
 
             context.Update(treatmentToCheck);
             await context.SaveChangesAsync();
@@ -112,7 +108,7 @@ namespace SSC.Data.Repositories
 
         public async Task<DbResult<List<Treatment>>> ShowTreatments(Guid patientId)
         {
-            if (await patientRepository.GetPatient(patientId) == null)
+            if (await unitOfWork.PatientRepository.GetPatient(patientId) == null)
             {
                 return DbResult<List<Treatment>>.CreateFail("Pacjent nie istnieje");
             }

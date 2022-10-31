@@ -1,9 +1,8 @@
-﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using SSC.Data.Models;
+using SSC.Data.UnitOfWork;
 using SSC.DTO.MailRequest;
 using SSC.DTO.User;
-using SSC.Services;
 using SSC.Tools;
 using System.Security.Cryptography;
 
@@ -12,16 +11,12 @@ namespace SSC.Data.Repositories
     public class UserRepository : BaseRepository<User>, IUserRepository
     {
         private readonly DataContext context;
-        private readonly IRoleRepository roleRepository;
-        private readonly IMailService mailService;
-        private readonly IMapper mapper;
+        private readonly IUnitOfWork unitOfWork;
 
-        public UserRepository(DataContext context, IRoleRepository roleRepository, IMailService mailService, IMapper mapper)
+        public UserRepository(DataContext context, IUnitOfWork unitOfWork)
         {
             this.context = context;
-            this.roleRepository = roleRepository;
-            this.mailService = mailService;
-            this.mapper = mapper;
+            this.unitOfWork = unitOfWork;
         }
 
         public async Task<DbResult<User>> AuthenticateUser(string email, string password)
@@ -68,7 +63,7 @@ namespace SSC.Data.Repositories
                 return result;
             }
 
-            var newUser = mapper.Map<User>(user);
+            var newUser = unitOfWork.Mapper.Map<User>(user);
 
             var password = PasswordGenerator.CreatePassword(5);
             HMACSHA512 hmac = new HMACSHA512();
@@ -76,12 +71,12 @@ namespace SSC.Data.Repositories
             newUser.PasswordHash = hmac.ComputeHash(System.Text.ASCIIEncoding.UTF8.GetBytes(password));
 
             newUser.IsActive = true;
-            newUser.Role = await roleRepository.GetRoleByName(user.RoleName);
+            newUser.Role = await unitOfWork.RoleRepository.GetRoleByName(user.RoleName);
 
             await context.AddAsync(newUser);
             await context.SaveChangesAsync();
 
-            await mailService.SendEmailAsync(new MailRequestDTO(user.Email, "Dostęp do nowego konta", "Tymczasowe hasło logowania do nowego konta: " + password));
+            await unitOfWork.MailService.SendEmailAsync(new MailRequestDTO(user.Email, "Dostęp do nowego konta", "Tymczasowe hasło logowania do nowego konta: " + password));
 
             return DbResult<User>.CreateSuccess(password, newUser);
         }
@@ -151,9 +146,9 @@ namespace SSC.Data.Repositories
                 return result;
             }
 
-            mapper.Map(user, userToCheck);
+            unitOfWork.Mapper.Map(user, userToCheck);
 
-            userToCheck.Role = await roleRepository.GetRoleByName(Roles.Admin);
+            userToCheck.Role = await unitOfWork.RoleRepository.GetRoleByName(Roles.Admin);
 
             context.Update(userToCheck);
             await context.SaveChangesAsync();

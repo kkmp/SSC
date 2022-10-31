@@ -8,8 +8,8 @@ namespace SSC.DTO.Test
         public DateTime? TestDate { get; set; }
 
         [Required]
-        [MinLength(12)]
-        [MaxLength(12)]
+        [MinLength(12, ErrorMessage = "Numer testu składa się z 12 znaków")]
+        [MaxLength(12, ErrorMessage = "Numer testu składa się z 12 znaków")]
         public string? OrderNumber { get; set; }
 
         public DateTime? ResultDate { get; set; }

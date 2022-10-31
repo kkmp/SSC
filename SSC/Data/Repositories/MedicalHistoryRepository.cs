@@ -1,6 +1,6 @@
-﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using SSC.Data.Models;
+using SSC.Data.UnitOfWork;
 using SSC.DTO.MedicalHistory;
 
 namespace SSC.Data.Repositories
@@ -8,21 +8,19 @@ namespace SSC.Data.Repositories
     public class MedicalHistoryRepository : BaseRepository<MedicalHistory>, IMedicalHistoryRepository
     {
         private readonly DataContext context;
-        private readonly IMapper mapper;
-        private readonly IPatientRepository patientRepository;
+        private readonly IUnitOfWork unitOfWork;
 
-        public MedicalHistoryRepository(DataContext context, IMapper mapper, IPatientRepository patientRepository)
+        public MedicalHistoryRepository(DataContext context, IUnitOfWork unitOfWork)
         {
             this.context = context;
-            this.mapper = mapper;
-            this.patientRepository = patientRepository;
+            this.unitOfWork = unitOfWork;
         }
 
         public async Task<DbResult<MedicalHistory>> AddMedicalHistory(MedicalHistoryCreateDTO medicalHistory, Guid issuerId)
         {
             Dictionary<Func<bool>, string> conditions = new Dictionary<Func<bool>, string>
             {
-                { () => patientRepository.GetPatient(medicalHistory.PatientId.Value).Result == null, "Pacjent nie istnieje" },
+                { () => unitOfWork.PatientRepository.GetPatient(medicalHistory.PatientId.Value).Result == null, "Pacjent nie istnieje" },
                 { () => context.MedicalHistories.AnyAsync(x => x.PatientId == medicalHistory.PatientId && x.Date >= medicalHistory.Date).Result, "Nie można dodać historii choroby. Istnieje już wpis przed podaną datą" }
             };
 
@@ -32,7 +30,7 @@ namespace SSC.Data.Repositories
                 return result;
             }
 
-            var newMedicalHistory = mapper.Map<MedicalHistory>(medicalHistory);
+            var newMedicalHistory = unitOfWork.Mapper.Map<MedicalHistory>(medicalHistory);
 
             newMedicalHistory.UserId = issuerId;
 
@@ -77,7 +75,7 @@ namespace SSC.Data.Repositories
 
         public async Task<DbResult<List<MedicalHistory>>> ShowMedicalHistories(Guid patientId)
         {
-            if (await patientRepository.GetPatient(patientId) == null)
+            if (await unitOfWork.PatientRepository.GetPatient(patientId) == null)
             {
                 return DbResult<List<MedicalHistory>>.CreateFail("Pacjent nie istnieje");
             }

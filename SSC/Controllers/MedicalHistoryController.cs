@@ -1,7 +1,6 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SSC.Data.Repositories;
+using SSC.Data.UnitOfWork;
 using SSC.DTO.MedicalHistory;
 
 namespace SSC.Controllers
@@ -11,13 +10,11 @@ namespace SSC.Controllers
     [Route("api/[controller]")]
     public class MedicalHistoryController : CommonController
     {
-        private readonly IMedicalHistoryRepository medicalHistoryRepository;
-        private readonly IMapper mapper;
+        private readonly IUnitOfWork unitOfWork;
 
-        public MedicalHistoryController(IMedicalHistoryRepository medicalHistoryRepository, IMapper mapper)
+        public MedicalHistoryController(IUnitOfWork unitOfWork)
         {
-            this.medicalHistoryRepository = medicalHistoryRepository;
-            this.mapper = mapper;
+            this.unitOfWork = unitOfWork;
         }
 
         [HttpPost("addMedicalHistory")]
@@ -26,7 +23,7 @@ namespace SSC.Controllers
             if (ModelState.IsValid)
             {
                 var issuerId = GetUserId();
-                var result = await medicalHistoryRepository.AddMedicalHistory(medicalHistory, issuerId);
+                var result = await unitOfWork.MedicalHistoryRepository.AddMedicalHistory(medicalHistory, issuerId);
                 var msg = new { errors = new { Message = new string[] { result.Message } } };
                 if (result.Success)
                 {
@@ -46,7 +43,7 @@ namespace SSC.Controllers
             if (ModelState.IsValid)
             {
                 var issuerId = GetUserId();
-                var result = await medicalHistoryRepository.EditMedicalHistory(medicalHistory, issuerId);
+                var result = await unitOfWork.MedicalHistoryRepository.EditMedicalHistory(medicalHistory, issuerId);
                 if (result.Success)
                 {
                     return Ok(new { message = result.Message });
@@ -64,14 +61,14 @@ namespace SSC.Controllers
         {
             if (ModelState.IsValid)
             {
-                var result = await medicalHistoryRepository.ShowMedicalHistories(patientId);
+                var result = await unitOfWork.MedicalHistoryRepository.ShowMedicalHistories(patientId);
 
                 if (!result.Success)
                 {
                     return BadRequest(new { errors = new { Message = new string[] { result.Message } } });
                 }
 
-                return Ok(mapper.Map<List<MedicalHistoryOverallGetDTO>>(result.Data));
+                return Ok(unitOfWork.Mapper.Map<List<MedicalHistoryOverallGetDTO>>(result.Data));
             }
             return BadRequest(new { errors = new { Message = new string[] { "Invalid data" } } });
         }
@@ -82,14 +79,14 @@ namespace SSC.Controllers
         {
             if (ModelState.IsValid)
             {
-                var result = await medicalHistoryRepository.ShowMedicalHistoryDetails(medicalHistoryId);
+                var result = await unitOfWork.MedicalHistoryRepository.ShowMedicalHistoryDetails(medicalHistoryId);
 
                 if (!result.Success)
                 {
                     return BadRequest(new { errors = new { Message = new string[] { result.Message } } });
                 }
 
-                return Ok(mapper.Map<MedicalHistoryGetDTO>(result.Data));
+                return Ok(unitOfWork.Mapper.Map<MedicalHistoryGetDTO>(result.Data));
             }
             return BadRequest(new { errors = new { Message = new string[] { "Invalid data" } } });
         }
