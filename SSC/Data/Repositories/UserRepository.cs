@@ -148,7 +148,7 @@ namespace SSC.Data.Repositories
 
             unitOfWork.Mapper.Map(user, userToCheck);
 
-            userToCheck.Role = await unitOfWork.RoleRepository.GetRoleByName(Roles.Admin);
+            userToCheck.Role = await unitOfWork.RoleRepository.GetRoleByName(user.RoleName);
 
             context.Update(userToCheck);
             await context.SaveChangesAsync();

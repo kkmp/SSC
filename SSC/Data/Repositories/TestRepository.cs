@@ -155,7 +155,6 @@ namespace SSC.Data.Repositories
             var result = await context.Tests
                 .Include(x => x.Treatment)
                 .Include(x => x.TestType)
-                .Include(x => x.Place)
                 .Where(x => x.Treatment.PatientId == patientId)
                 .OrderByDescending(x => x.TestDate)
                 .ToListAsync();
@@ -179,8 +178,8 @@ namespace SSC.Data.Repositories
             var data = await context.Tests
                 .Include(x => x.TestType)
                 .Include(x => x.Treatment)
-                .Include(x => x.Place)
                 .Include(x => x.User.Role)
+                .Include(x => x.Place.City.Province)
                 .FirstOrDefaultAsync(x => x.Id == testId);
 
             return DbResult<Test>.CreateSuccess("Powodzenie", data);

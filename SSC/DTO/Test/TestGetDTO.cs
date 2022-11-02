@@ -13,6 +13,10 @@
         public string? UserSurname { get; set; }
         public string? UserEmail { get; set; }
         public string? UserRole { get; set; }
-        public string? Place { get; set; }
+        public string? PlaceId { get; set; }
+        public string? PlaceName { get; set; }
+        public string? PlaceStreet { get; set; }
+        public string? PlaceCityName { get; set; }
+        public string? PlaceCityProvinceName { get; set; }
     }
 }

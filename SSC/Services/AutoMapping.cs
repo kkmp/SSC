@@ -30,12 +30,10 @@ namespace SSC.Services
                 .ForMember(x => x.Province, x => x.MapFrom(y => y.City.Province.Name))
                 .ForMember(x => x.Citizenship, x => x.MapFrom(y => y.Citizenship.Name));
             CreateMap<Test, TestOverallGetDTO>()
-                .ForMember(x => x.TestType, x => x.MapFrom(y => y.TestType.Name))
-                .ForMember(x => x.Place, x => x.MapFrom(y => y.Place.Name));
+                .ForMember(x => x.TestType, x => x.MapFrom(y => y.TestType.Name));
             CreateMap<Test, TestGetDTO>()
                 .ForMember(x => x.TestType, x => x.MapFrom(y => y.TestType.Name))
-                .ForMember(x => x.UserRole, x => x.MapFrom(y => y.User.Role.Name))
-                .ForMember(x => x.Place, x => x.MapFrom(y => y.Place.Name));
+                .ForMember(x => x.UserRole, x => x.MapFrom(y => y.User.Role.Name));
             CreateMap<Treatment, TreatmentOverallGetDTO>()
                 .ForMember(x => x.TreatmentStatus, x => x.MapFrom(y => y.TreatmentStatus.Name));
             CreateMap<Treatment, TreatmentGetDTO>()

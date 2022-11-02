@@ -8,6 +8,5 @@
         public string? ResultDate { get; set; }
         public string? Result { get; set; }
         public string? TestType { get; set; }
-        public string? Place { get; set; }
     }
 }
