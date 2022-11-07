@@ -16,6 +16,7 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultMySQL")
 builder.Services.AddDbContext<DataContext>(options =>
   options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 22))));
 
+/*
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IPatientRepository, PatientRepository>();
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
@@ -30,6 +31,8 @@ builder.Services.AddScoped<IPlaceRepository, PlaceRepository>();
 builder.Services.AddScoped<ITestTypeRepository, TestTypeRepository>();
 builder.Services.AddScoped<IDiseaseCourseRepository, DiseaseCourseRepository>();
 builder.Services.AddScoped<ITreatmentStatusRepository, TreatmentStatusRepository>();
+builder.Services.AddScoped<IProvinceRepository, ProvinceRepository>();
+*/
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 

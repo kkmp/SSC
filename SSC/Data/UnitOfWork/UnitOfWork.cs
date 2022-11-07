@@ -20,6 +20,7 @@ namespace SSC.Data.UnitOfWork
         public ITestTypeRepository TestTypeRepository { get; set; }
         public IDiseaseCourseRepository DiseaseCourseRepository { get; set; }
         public ITreatmentStatusRepository TreatmentStatusRepository { get; set; }
+        public IProvinceRepository ProvinceRepository { get; set; }
         public IMailService MailService { get; set; }
         public IMapper Mapper { get; set; }
 
@@ -41,6 +42,7 @@ namespace SSC.Data.UnitOfWork
             TreatmentDiseaseCourseRepository = new TreatmentDiseaseCourseRepository(context, this);
             TreatmentRepository = new TreatmentRepository(context, this);
             TreatmentStatusRepository = new TreatmentStatusRepository(context);
+            ProvinceRepository = new ProvinceRepository(context);
         }
     }
 }

@@ -6,6 +6,7 @@ using SSC.DTO.DiseaseCourse;
 using SSC.DTO.MedicalHistory;
 using SSC.DTO.Patient;
 using SSC.DTO.Place;
+using SSC.DTO.Province;
 using SSC.DTO.Test;
 using SSC.DTO.TestType;
 using SSC.DTO.Treatment;
@@ -55,6 +56,7 @@ namespace SSC.Services
             CreateMap<DiseaseCourse, DiseaseCourseGetDTO>();
             CreateMap<TreatmentStatus, TreatmentStatusGetDTO>();
             CreateMap<Place, PlaceGetDTO>();
+            CreateMap<Province, ProvinceGetDTO>();
 
             CreateMap<TreatmentCreateDTO, Treatment>();
             CreateMap<TestUpdateDTO, Test>();

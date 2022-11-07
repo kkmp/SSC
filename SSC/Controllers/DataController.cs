@@ -5,6 +5,7 @@ using SSC.DTO.Citizenship;
 using SSC.DTO.City;
 using SSC.DTO.DiseaseCourse;
 using SSC.DTO.Place;
+using SSC.DTO.Province;
 using SSC.DTO.TestType;
 using SSC.DTO.TreatmentStatus;
 
@@ -62,6 +63,13 @@ namespace SSC.Controllers
         {
             var result = await unitOfWork.PlaceRepository.GetPlaces();
             return Ok(unitOfWork.Mapper.Map<List<PlaceGetDTO>>(result));
+        }
+
+        [HttpGet("getProvinces")]
+        public async Task<IActionResult> GetProvinces()
+        {
+            var result = await unitOfWork.ProvinceRepository.GetProvinces();
+            return Ok(unitOfWork.Mapper.Map<List<ProvinceGetDTO>>(result));
         }
     }
 }

@@ -34,12 +34,12 @@ namespace SSC.Controllers
                 case null:
                     break;
                 default:
-                    return BadRequest(new { message = "Niepoprawna opcja typu pliku" });
+                    return BadRequest(new { errors = new { Message = new string[] { "Niepoprawna opcja typu pliku" } } });
             }
 
             if (tests.Count() == 0)
             {
-                return NotFound();
+                return BadRequest(new { errors = new { Message = new string[] { "Nie znaleziono danych dla wybranych filtrów!" } } });
             }
 
             var dict = new Dictionary<string, Func<Test, object>>
@@ -50,7 +50,7 @@ namespace SSC.Controllers
 
             if (!dict.ContainsKey(category))
             {
-                return BadRequest();
+                return BadRequest(new { errors = new { Message = new string[] { "Niepoprawna kategoria" } } });
             }
 
             var result = tests
@@ -76,12 +76,12 @@ namespace SSC.Controllers
                 case null:
                     break;
                 default:
-                    return BadRequest(new { message = "Niepoprawna opcja typu pliku" });
+                    return BadRequest(new { errors = new { Message = new string[] { "Niepoprawna opcja typu pliku" } } });
             }
 
             if (diseaseCourses.Count() == 0)
             {
-                return NotFound();
+                return BadRequest(new { errors = new { Message = new string[] { "Nie znaleziono danych dla wybranych filtrów!" } } });
             }
 
             var result = diseaseCourses
@@ -112,7 +112,7 @@ namespace SSC.Controllers
 
             if (treatments.Count() == 0)
             {
-                return NotFound();
+                return BadRequest(new { errors = new { Message = new string[] { "Nie znaleziono danych dla wybranych filtrów!" } } });
             }
 
             var result = treatments
