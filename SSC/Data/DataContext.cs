@@ -15,6 +15,13 @@ namespace SSC.Data
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.SeedRoles();
+            modelBuilder.SeedDiseaseCourses();
+            modelBuilder.SeedTreatmentStatuses();
+            modelBuilder.SeedUsers();
+            modelBuilder.SeedCitizenships();
+            modelBuilder.SeedProvinces();
+            modelBuilder.SeedCities();
+            modelBuilder.SeedTestTypes();
         }
 
         public DbSet<User> Users { get; set; }
