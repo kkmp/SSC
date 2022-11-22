@@ -11,8 +11,8 @@ using SSC.Data;
 namespace SSC.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20220801182656_init 11")]
-    partial class init11
+    [Migration("20221122180556_init")]
+    partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -20,6 +20,32 @@ namespace SSC.Migrations
             modelBuilder
                 .HasAnnotation("ProductVersion", "6.0.6")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
+
+            modelBuilder.Entity("SSC.Data.Models.ChangePasswordCode", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<DateTime?>("ExpiredDate")
+                        .IsRequired()
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<Guid?>("UserId")
+                        .IsRequired()
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ChangePasswordCodes");
+                });
 
             modelBuilder.Entity("SSC.Data.Models.Citizenship", b =>
                 {
@@ -38,6 +64,33 @@ namespace SSC.Migrations
                         .IsUnique();
 
                     b.ToTable("Citizenships");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("35cb0a90-9589-41a3-a0b9-d2e6323d412e"),
+                            Name = "Obywatelstwo polskie"
+                        },
+                        new
+                        {
+                            Id = new Guid("e676e030-baa1-4091-b685-9b326782da57"),
+                            Name = "Obywatelstwo francuskie"
+                        },
+                        new
+                        {
+                            Id = new Guid("b5b842de-e3af-4717-816e-3993c19a8d30"),
+                            Name = "Obywatelstwo brytyjskie"
+                        },
+                        new
+                        {
+                            Id = new Guid("ac9a7363-a4d1-4e58-be30-09a2c43be9c5"),
+                            Name = "Obywatelstwo słowackie"
+                        },
+                        new
+                        {
+                            Id = new Guid("8ecd38fb-b961-4a97-89b9-79a46818a733"),
+                            Name = "Obywatelstwo włoskie"
+                        });
                 });
 
             modelBuilder.Entity("SSC.Data.Models.City", b =>
@@ -60,6 +113,104 @@ namespace SSC.Migrations
                     b.HasIndex("ProvinceId");
 
                     b.ToTable("Cities");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("ca1f1f15-f996-4f54-ad9f-1bdb91ebc98d"),
+                            Name = "Wrocław",
+                            ProvinceId = new Guid("3e4ae992-210e-482b-a961-3e132fe02d15")
+                        },
+                        new
+                        {
+                            Id = new Guid("0966f27d-a998-4eff-bf88-9e8f47ad497c"),
+                            Name = "Bydgoszcz",
+                            ProvinceId = new Guid("23a0abb8-e9b6-4f7e-99e3-edef8989f5f4")
+                        },
+                        new
+                        {
+                            Id = new Guid("a238f198-3bed-4cdd-8c03-c0ed8371fff6"),
+                            Name = "Lublin",
+                            ProvinceId = new Guid("4afb93c9-f1e7-49b9-ab9c-7152d98c51c9")
+                        },
+                        new
+                        {
+                            Id = new Guid("44c2b1ef-622b-4c60-bd54-f104cbfc4ace"),
+                            Name = "Zielona Góra",
+                            ProvinceId = new Guid("8e56be84-1e53-48cc-8cfd-efe9de55091e")
+                        },
+                        new
+                        {
+                            Id = new Guid("2317669a-df86-47a8-bdca-36dd6ffac43a"),
+                            Name = "Łódź",
+                            ProvinceId = new Guid("0ea63e3a-31f4-4b49-a908-1f85152d3e67")
+                        },
+                        new
+                        {
+                            Id = new Guid("a0e9046a-ceff-4dcf-a9b9-aa963850ecae"),
+                            Name = "Kraków",
+                            ProvinceId = new Guid("424d832e-b345-4d77-be86-61b57018052e")
+                        },
+                        new
+                        {
+                            Id = new Guid("01288c5a-1a7c-4b19-9103-62d5ad35d232"),
+                            Name = "Warszawa",
+                            ProvinceId = new Guid("263e6778-60e5-4caa-9389-a57a6505cfab")
+                        },
+                        new
+                        {
+                            Id = new Guid("e5a73afd-cf08-4a97-8b8b-44fad559ac47"),
+                            Name = "Opole",
+                            ProvinceId = new Guid("39f1ab90-d13a-4e8b-ba4b-38e690463c0b")
+                        },
+                        new
+                        {
+                            Id = new Guid("6eae3a80-7f29-4a8f-b4ae-7d0ffe2f27d1"),
+                            Name = "Rzeszów",
+                            ProvinceId = new Guid("09e64566-4f17-4e1e-af07-fe3651ee5784")
+                        },
+                        new
+                        {
+                            Id = new Guid("797550f3-975d-4a22-912b-9febd426c5f9"),
+                            Name = "Białystok",
+                            ProvinceId = new Guid("b543d147-8550-46b0-8035-2027e54028a4")
+                        },
+                        new
+                        {
+                            Id = new Guid("2b22474e-8adb-4e82-915a-d253f6ac5d78"),
+                            Name = "Gdańsk",
+                            ProvinceId = new Guid("628490fe-563f-4a2f-9938-0d0ef543575f")
+                        },
+                        new
+                        {
+                            Id = new Guid("9c635480-4bac-415a-a9ea-3a5413edd398"),
+                            Name = "Katowice",
+                            ProvinceId = new Guid("114b7d3e-3c94-4d56-9139-4e232f6fdad4")
+                        },
+                        new
+                        {
+                            Id = new Guid("2d3aa1f8-2c04-430d-b1e4-a9cf8a5bb844"),
+                            Name = "Kielce",
+                            ProvinceId = new Guid("b7fbea40-841f-41c5-b8b4-802639e09211")
+                        },
+                        new
+                        {
+                            Id = new Guid("67d6d5ba-d6f4-4bc4-bbec-3c786dcdd763"),
+                            Name = "Olsztyn",
+                            ProvinceId = new Guid("0751b70c-ca54-4bfc-ac68-61468112fbcb")
+                        },
+                        new
+                        {
+                            Id = new Guid("21a02399-e314-4c87-9fbe-435ca0975187"),
+                            Name = "Poznań",
+                            ProvinceId = new Guid("79ff058e-cdf0-4dc0-a47f-397988305bf1")
+                        },
+                        new
+                        {
+                            Id = new Guid("0abfc740-3794-4bdd-87c8-9cc4e3e53e85"),
+                            Name = "Szczecin",
+                            ProvinceId = new Guid("61f9e794-c161-4df2-b7fe-01cee90a62cc")
+                        });
                 });
 
             modelBuilder.Entity("SSC.Data.Models.DiseaseCourse", b =>
@@ -84,6 +235,44 @@ namespace SSC.Migrations
                         .IsUnique();
 
                     b.ToTable("DiseaseCourses");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("ce4d9efd-4065-4c7d-ad64-20ad0e2b65c1"),
+                            Description = "Klasterowy bądź napięciowy ból głowy, który może wynikać z bólu twarzy, głowy lub szyi.",
+                            Name = "Nawracający ból głowy"
+                        },
+                        new
+                        {
+                            Id = new Guid("87feb19d-84c7-4332-856e-cbeefb08a66d"),
+                            Description = "Powikłania neurologiczne przejawiające się problemami z pamięcią i koncentracją.",
+                            Name = "Mgła mózgowa"
+                        },
+                        new
+                        {
+                            Id = new Guid("455df914-7758-4e95-8e15-a32c8dce71aa"),
+                            Description = "Zwiększona temperatura ciała, która może obejmować stan podgorączkowy, gorączkę nieznaczną, umiarkowaną, znaczną i wysoką.",
+                            Name = "Gorączka"
+                        },
+                        new
+                        {
+                            Id = new Guid("5a055498-aa04-4d96-a8a1-8ef5b08f3e5a"),
+                            Description = "Problemy kardiologiczne charakteryzujące się przyśpieszeniem, zwolnieniem lub nieregularnością rytmu bicia serca.",
+                            Name = "Zaburzenia rytmu serca"
+                        },
+                        new
+                        {
+                            Id = new Guid("b942cf77-74c0-47f7-a626-dd8784cbcd3e"),
+                            Description = "Bóle mięśni, stawów i kości. Najczęściej dotyczą bólu kończyn górnych oraz dolnych, szyi, ramion i pleców.",
+                            Name = "Bóle mięśniowo-stawowe"
+                        },
+                        new
+                        {
+                            Id = new Guid("6d3a708a-b686-4126-81c4-3638ae855ddd"),
+                            Description = "Stan zapalny płuc powodujący przedłużający się kaszel, uczucie duszności, łatwe męczenie się oraz ból w klatce piersiowej.",
+                            Name = "Zapalenie płuc"
+                        });
                 });
 
             modelBuilder.Entity("SSC.Data.Models.MedicalHistory", b =>
@@ -92,9 +281,9 @@ namespace SSC.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
-                    b.Property<string>("Date")
+                    b.Property<DateTime?>("Date")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -229,8 +418,8 @@ namespace SSC.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("varchar(30)");
+                        .HasMaxLength(40)
+                        .HasColumnType("varchar(40)");
 
                     b.HasKey("Id");
 
@@ -238,6 +427,88 @@ namespace SSC.Migrations
                         .IsUnique();
 
                     b.ToTable("Provinces");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("3e4ae992-210e-482b-a961-3e132fe02d15"),
+                            Name = "Województwo dolnośląskie"
+                        },
+                        new
+                        {
+                            Id = new Guid("23a0abb8-e9b6-4f7e-99e3-edef8989f5f4"),
+                            Name = "Województwo kujawsko-pomorskie"
+                        },
+                        new
+                        {
+                            Id = new Guid("4afb93c9-f1e7-49b9-ab9c-7152d98c51c9"),
+                            Name = "Województwo lubelskie"
+                        },
+                        new
+                        {
+                            Id = new Guid("8e56be84-1e53-48cc-8cfd-efe9de55091e"),
+                            Name = "Województwo lubuskie"
+                        },
+                        new
+                        {
+                            Id = new Guid("0ea63e3a-31f4-4b49-a908-1f85152d3e67"),
+                            Name = "Województwo łódzkie"
+                        },
+                        new
+                        {
+                            Id = new Guid("424d832e-b345-4d77-be86-61b57018052e"),
+                            Name = "Województwo małopolskie"
+                        },
+                        new
+                        {
+                            Id = new Guid("263e6778-60e5-4caa-9389-a57a6505cfab"),
+                            Name = "Województwo mazowieckie"
+                        },
+                        new
+                        {
+                            Id = new Guid("39f1ab90-d13a-4e8b-ba4b-38e690463c0b"),
+                            Name = "Województwo opolskie"
+                        },
+                        new
+                        {
+                            Id = new Guid("09e64566-4f17-4e1e-af07-fe3651ee5784"),
+                            Name = "Województwo podkarpackie"
+                        },
+                        new
+                        {
+                            Id = new Guid("b543d147-8550-46b0-8035-2027e54028a4"),
+                            Name = "Województwo podlaskie"
+                        },
+                        new
+                        {
+                            Id = new Guid("628490fe-563f-4a2f-9938-0d0ef543575f"),
+                            Name = "Województwo pomorskie"
+                        },
+                        new
+                        {
+                            Id = new Guid("114b7d3e-3c94-4d56-9139-4e232f6fdad4"),
+                            Name = "Województwo śląskie"
+                        },
+                        new
+                        {
+                            Id = new Guid("b7fbea40-841f-41c5-b8b4-802639e09211"),
+                            Name = "Województwo świętokrzyskie"
+                        },
+                        new
+                        {
+                            Id = new Guid("0751b70c-ca54-4bfc-ac68-61468112fbcb"),
+                            Name = "Województwo warmińsko-mazurskie"
+                        },
+                        new
+                        {
+                            Id = new Guid("79ff058e-cdf0-4dc0-a47f-397988305bf1"),
+                            Name = "Województwo wielkopolskie"
+                        },
+                        new
+                        {
+                            Id = new Guid("61f9e794-c161-4df2-b7fe-01cee90a62cc"),
+                            Name = "Województwo zachodniopomorskie"
+                        });
                 });
 
             modelBuilder.Entity("SSC.Data.Models.Role", b =>
@@ -264,19 +535,19 @@ namespace SSC.Migrations
                         new
                         {
                             Id = new Guid("64afcb40-4e45-4b94-9f31-19b57c20027f"),
-                            Description = "Leczy ludzi",
+                            Description = "Pracownik służby zdrowia, który jest odpowiedzialny za badanie, diagnostykę i leczenie chorób u pacjentów.",
                             Name = "Lekarz"
                         },
                         new
                         {
                             Id = new Guid("0c051c70-61a2-44bb-bf9c-691bf30a9c11"),
-                            Description = "Sprawdza ludzi",
+                            Description = "Pomocniczy pracownik laboratorium odpowiedzialny za wykonywanie analiz laboratoryjnych.",
                             Name = "Laborant"
                         },
                         new
                         {
                             Id = new Guid("af4fafea-b5fe-4a17-be95-60f35f4cca0a"),
-                            Description = "Zarzadza ludzi",
+                            Description = "Pracownik zarządzający systemem i kontami użytkowników.",
                             Name = "Administrator"
                         });
                 });
@@ -297,7 +568,6 @@ namespace SSC.Migrations
                         .HasColumnType("char(36)");
 
                     b.Property<string>("Result")
-                        .IsRequired()
                         .HasColumnType("varchar(1)");
 
                     b.Property<DateTime?>("ResultDate")
@@ -352,6 +622,23 @@ namespace SSC.Migrations
                         .IsUnique();
 
                     b.ToTable("TestTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("e3b9c042-6910-4353-8c47-8dacf77b149b"),
+                            Name = "Test antygenowy"
+                        },
+                        new
+                        {
+                            Id = new Guid("7a273b91-7d73-4060-ab98-77d66ef1a187"),
+                            Name = "Test RT-PCR/RT-LAMP"
+                        },
+                        new
+                        {
+                            Id = new Guid("867a5e9c-32c2-49ea-b540-9f300f94416e"),
+                            Name = "Test na przeciwciała"
+                        });
                 });
 
             modelBuilder.Entity("SSC.Data.Models.Treatment", b =>
@@ -403,6 +690,7 @@ namespace SSC.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("varchar(255)");
 
@@ -410,7 +698,11 @@ namespace SSC.Migrations
                         .IsRequired()
                         .HasColumnType("char(36)");
 
-                    b.Property<Guid?>("PatientId")
+                    b.Property<Guid?>("TreatmentId")
+                        .IsRequired()
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid?>("UserId")
                         .IsRequired()
                         .HasColumnType("char(36)");
 
@@ -418,7 +710,9 @@ namespace SSC.Migrations
 
                     b.HasIndex("DiseaseCourseId");
 
-                    b.HasIndex("PatientId");
+                    b.HasIndex("TreatmentId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("TreatmentDiseaseCourses");
                 });
@@ -440,6 +734,23 @@ namespace SSC.Migrations
                         .IsUnique();
 
                     b.ToTable("TreatmentStatuses");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("6eac697b-8839-4d87-bf3c-51ba2308e75f"),
+                            Name = "Rozpoczęto"
+                        },
+                        new
+                        {
+                            Id = new Guid("85ddc1f6-b4d5-4936-9e1f-7d8d1e7e6bc9"),
+                            Name = "Zgon pacjenta"
+                        },
+                        new
+                        {
+                            Id = new Guid("3b55e949-1c36-4182-b0c4-38eaf9e70251"),
+                            Name = "Ozdrowienie"
+                        });
                 });
 
             modelBuilder.Entity("SSC.Data.Models.User", b =>
@@ -495,6 +806,58 @@ namespace SSC.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("3e7e4cc3-d3e1-4917-9647-42422b4c429a"),
+                            Date = new DateTime(2022, 11, 22, 19, 5, 56, 19, DateTimeKind.Local).AddTicks(9267),
+                            Email = "j.kowalski@gmail.com",
+                            IsActive = true,
+                            Name = "Jan",
+                            PasswordHash = new byte[] { 237, 252, 127, 72, 112, 89, 59, 150, 57, 135, 93, 228, 212, 49, 35, 166, 100, 242, 55, 195, 76, 229, 201, 50, 131, 215, 13, 175, 17, 237, 45, 15, 100, 115, 150, 72, 253, 25, 245, 18, 241, 185, 111, 56, 248, 85, 171, 120, 99, 95, 46, 30, 109, 169, 26, 185, 169, 63, 188, 212, 236, 182, 192, 128 },
+                            PasswordSalt = new byte[] { 250, 77, 138, 143, 145, 45, 32, 18, 236, 180, 43, 158, 19, 92, 50, 189, 165, 205, 81, 4, 110, 224, 253, 147, 37, 103, 213, 201, 72, 15, 241, 37, 19, 144, 88, 176, 110, 90, 237, 4, 234, 80, 33, 96, 74, 13, 72, 189, 1, 12, 238, 205, 85, 76, 55, 196, 175, 224, 248, 122, 38, 90, 230, 172, 121, 70, 245, 116, 95, 200, 247, 116, 117, 186, 193, 14, 100, 121, 88, 247, 248, 0, 193, 25, 248, 124, 32, 36, 149, 133, 126, 235, 172, 77, 181, 230, 216, 117, 123, 140, 93, 201, 88, 171, 74, 251, 142, 38, 51, 96, 108, 143, 126, 34, 30, 246, 129, 234, 118, 196, 175, 54, 165, 101, 173, 206, 29, 17 },
+                            PhoneNumber = "123456789",
+                            RoleId = new Guid("af4fafea-b5fe-4a17-be95-60f35f4cca0a"),
+                            Surname = "Kowalski"
+                        },
+                        new
+                        {
+                            Id = new Guid("9c489ff7-2100-443c-bbf6-e2737ce6ee83"),
+                            Date = new DateTime(2022, 11, 22, 19, 5, 56, 19, DateTimeKind.Local).AddTicks(9273),
+                            Email = "a.nowak@gmail.com",
+                            IsActive = true,
+                            Name = "Adam",
+                            PasswordHash = new byte[] { 161, 140, 144, 194, 255, 4, 100, 194, 252, 47, 200, 228, 140, 115, 150, 94, 128, 135, 29, 141, 88, 72, 224, 236, 12, 149, 195, 186, 246, 248, 203, 250, 62, 130, 215, 88, 226, 145, 27, 13, 249, 152, 104, 197, 53, 143, 129, 212, 156, 49, 122, 226, 184, 137, 157, 135, 123, 253, 220, 222, 46, 179, 139, 47 },
+                            PasswordSalt = new byte[] { 203, 38, 31, 137, 153, 97, 171, 231, 255, 74, 139, 210, 154, 23, 241, 229, 75, 71, 108, 200, 160, 192, 235, 244, 98, 203, 214, 204, 218, 152, 90, 67, 27, 228, 13, 76, 56, 52, 40, 136, 156, 17, 227, 85, 182, 41, 100, 99, 6, 107, 118, 215, 138, 95, 154, 28, 39, 249, 45, 45, 237, 97, 48, 112, 177, 217, 197, 162, 226, 249, 112, 134, 16, 145, 63, 104, 38, 143, 133, 18, 233, 46, 64, 161, 242, 243, 186, 167, 156, 60, 211, 254, 200, 128, 38, 14, 91, 161, 133, 139, 182, 236, 212, 175, 172, 119, 202, 84, 54, 191, 173, 173, 89, 204, 20, 205, 41, 26, 196, 44, 208, 23, 138, 40, 148, 199, 35, 120 },
+                            PhoneNumber = "987654321",
+                            RoleId = new Guid("64afcb40-4e45-4b94-9f31-19b57c20027f"),
+                            Surname = "Nowak"
+                        },
+                        new
+                        {
+                            Id = new Guid("6fc75b09-f3a5-41eb-894a-318e02e1e2e1"),
+                            Date = new DateTime(2022, 11, 22, 19, 5, 56, 19, DateTimeKind.Local).AddTicks(9278),
+                            Email = "s.kowalczyk@gmail.com",
+                            IsActive = true,
+                            Name = "Szymon",
+                            PasswordHash = new byte[] { 34, 34, 211, 39, 41, 14, 244, 170, 81, 161, 225, 20, 170, 72, 117, 57, 67, 58, 185, 47, 90, 194, 73, 203, 105, 99, 184, 103, 50, 115, 213, 222, 136, 218, 225, 90, 139, 181, 5, 119, 165, 2, 100, 107, 173, 61, 167, 45, 188, 171, 99, 130, 23, 240, 242, 35, 208, 36, 0, 92, 74, 32, 35, 14 },
+                            PasswordSalt = new byte[] { 27, 217, 239, 148, 179, 106, 214, 126, 195, 56, 94, 217, 251, 163, 119, 148, 178, 105, 245, 189, 64, 110, 159, 238, 237, 221, 163, 167, 11, 197, 79, 179, 0, 246, 120, 74, 3, 172, 41, 29, 121, 224, 94, 224, 219, 173, 8, 96, 4, 246, 236, 28, 54, 183, 238, 197, 107, 78, 198, 58, 192, 111, 150, 130, 241, 42, 166, 230, 57, 221, 148, 48, 220, 11, 201, 139, 186, 22, 125, 38, 72, 26, 247, 147, 125, 176, 255, 20, 149, 176, 192, 238, 17, 177, 140, 113, 188, 138, 236, 230, 159, 74, 56, 200, 90, 23, 209, 39, 156, 156, 71, 78, 162, 186, 220, 196, 250, 181, 57, 215, 35, 214, 239, 17, 161, 109, 111, 53 },
+                            PhoneNumber = "456123789",
+                            RoleId = new Guid("0c051c70-61a2-44bb-bf9c-691bf30a9c11"),
+                            Surname = "Kowalczyk"
+                        });
+                });
+
+            modelBuilder.Entity("SSC.Data.Models.ChangePasswordCode", b =>
+                {
+                    b.HasOne("SSC.Data.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("SSC.Data.Models.City", b =>
@@ -635,15 +998,23 @@ namespace SSC.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SSC.Data.Models.Patient", "Patient")
+                    b.HasOne("SSC.Data.Models.Treatment", "Treatment")
                         .WithMany()
-                        .HasForeignKey("PatientId")
+                        .HasForeignKey("TreatmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SSC.Data.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("DiseaseCourse");
 
-                    b.Navigation("Patient");
+                    b.Navigation("Treatment");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("SSC.Data.Models.User", b =>

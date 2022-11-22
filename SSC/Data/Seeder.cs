@@ -68,7 +68,7 @@ namespace SSC.Data
                 new Province {Id = new Guid("628490fe-563f-4a2f-9938-0d0ef543575f"), Name = "Województwo pomorskie"},
                 new Province {Id = new Guid("114b7d3e-3c94-4d56-9139-4e232f6fdad4"), Name = "Województwo śląskie"},
                 new Province {Id = new Guid("b7fbea40-841f-41c5-b8b4-802639e09211"), Name = "Województwo świętokrzyskie"},
-                new Province {Id = new Guid("0751b70c-ca54-4bfc-ac68-61468112fbcb"), Name = "Województwo świętokrzyskie"},
+                new Province {Id = new Guid("0751b70c-ca54-4bfc-ac68-61468112fbcb"), Name = "Województwo warmińsko-mazurskie"},
                 new Province {Id = new Guid("79ff058e-cdf0-4dc0-a47f-397988305bf1"), Name = "Województwo wielkopolskie"},
                 new Province {Id = new Guid("61f9e794-c161-4df2-b7fe-01cee90a62cc"), Name = "Województwo zachodniopomorskie"}
             });
