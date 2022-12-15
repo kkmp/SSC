@@ -361,7 +361,7 @@ namespace Tests
 
                 Assert.False(result.Success);
                 Assert.Null(result.Data);
-                Assert.Equal("Użytkownik nie istnieje", result.Message);
+                Assert.Equal("Hasło nie jest poprawne", result.Message);
             }
         }
 
