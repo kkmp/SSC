@@ -26,7 +26,7 @@ namespace SSC.Controllers
             var user = await unitOfWork.UserRepository.GetUserByEmail(model.Email);
             if (user == null)
             {
-                return NotFound(new { errors = new { Message = new string[] { "Nie znaleziono adresu email użytkownika" } } });
+                return Ok(new { message = "Wiadomość została wysłana na wskazny adres email" });
             }
             var result = await unitOfWork.ChangePasswordRepository.AddCode(user.Id);
             if (!result.Success)

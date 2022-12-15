@@ -2127,7 +2127,5 @@ namespace Tests
                 Assert.Equal(treatmentDto.TreatmentStatusId, result.Data.TreatmentStatusId);
             }
         }
-
-        //add treatment zrobić dla błędów
     }
 }

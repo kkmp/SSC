@@ -1,5 +1,4 @@
-﻿using SSC.Data.Models;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace SSC.DTO.Patient
 {

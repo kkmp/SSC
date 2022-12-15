@@ -25,7 +25,7 @@ namespace SSC.Data.Repositories
 
             var conditions = new Dictionary<Func<bool>, string>
             {
-                { () => user == null, "Użytkownik nie istnieje" },
+                { () => user == null, "Hasło nie jest poprawne" },
                 { () => !user.IsActive, "Konto użytkownika nie jest aktywne" }
             };
 
