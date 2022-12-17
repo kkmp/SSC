@@ -73,6 +73,26 @@ namespace SSC.Controllers
             return BadRequest(new { errors = new { Message = new string[] { "Invalid data" } } });
         }
 
+        [Authorize]
+        [HttpGet("getMyDetails")]
+        public async Task<IActionResult> GetMyDetails()
+        {
+            var issuerId = GetUserId();
+
+            if (ModelState.IsValid)
+            {
+                var result = await unitOfWork.UserRepository.UserDetails(issuerId);
+
+                if (!result.Success)
+                {
+                    return BadRequest(new { errors = new { Message = new string[] { result.Message } } });
+                }
+
+                return Ok(unitOfWork.Mapper.Map<UserDTO>(result.Data));
+            }
+            return BadRequest(new { errors = new { Message = new string[] { "Invalid data" } } });
+        }
+
         [Authorize(Roles = "Administrator")]
         [HttpGet("userDetails/{userid}")]
         public async Task<IActionResult> UserDetails(Guid userid)
