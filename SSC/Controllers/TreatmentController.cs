@@ -5,6 +5,7 @@ using SSC.DTO.Treatment;
 
 namespace SSC.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class TreatmentController : CommonController
@@ -16,7 +17,6 @@ namespace SSC.Controllers
             this.unitOfWork = unitOfWork;
         }
 
-        [Authorize]
         [HttpPost("addTreatment")]
         public async Task<IActionResult> AddTreatment(TreatmentCreateDTO treatment)
         {

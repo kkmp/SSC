@@ -24,17 +24,16 @@ namespace SSC.Controllers
             {
                 var issuerId = GetUserId();
                 var result = await unitOfWork.MedicalHistoryRepository.AddMedicalHistory(medicalHistory, issuerId);
-                var msg = new { errors = new { Message = new string[] { result.Message } } };
                 if (result.Success)
                 {
-                    return Ok(msg);
+                    return Ok(new { message = result.Message });
                 }
                 else
                 {
-                    return BadRequest(msg);
+                    return BadRequest(new { errors = new { Message = new string[] { result.Message } } });
                 }
             }
-            return BadRequest(new { message = "Invalid data" });
+            return BadRequest(new { errors = new { Message = new string[] { "Invalid data" } } });
         }
 
         [HttpPut("editMedicalHistory")]

@@ -5,7 +5,7 @@ using SSC.DTO.TreatmentDiseaseCourse;
 
 namespace SSC.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Lekarz,Administrator")]
     [ApiController]
     [Route("api/[controller]")]
     public class TreatmentDiseaseCourseController : CommonController
