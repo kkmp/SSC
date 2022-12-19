@@ -117,7 +117,7 @@ namespace SSC.Data.Repositories
 
         public async Task<List<Patient>> RecentlyAddedPatients(int quantity, Guid issuerId)
         {
-            return await context.Patients.OrderByDescending(x => x.AddDate).Take(quantity).ToListAsync();
+            return await context.Patients.Where(x => x.UserId == issuerId).OrderByDescending(x => x.AddDate).Take(quantity).ToListAsync();
         }
 
         private async Task<Patient> GetPatientByPesel(string pesel) => await context.Patients.FirstOrDefaultAsync(x => x.Pesel == pesel);
